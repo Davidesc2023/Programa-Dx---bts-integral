@@ -1,10 +1,10 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { clearTokens, getAccessToken } from '@/lib/token';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
-
+// All requests go to /api/* which Next.js rewrites proxy to the NestJS backend.
+// This avoids CORS and keeps the backend URL server-side only (no NEXT_PUBLIC_ needed).
 export const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },
