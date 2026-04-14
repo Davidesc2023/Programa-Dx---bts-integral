@@ -4,8 +4,8 @@
 - **Project Name**: Sistema de Solicitud de Laboratorios (APP-DX)
 - **Project Type**: Brownfield (incremento activo)
 - **Start Date**: 2026-04-13
-- **Current Phase**: CONSTRUCTION — Increment v9: Flujo Clínico Completo + UX Fixes
-- **Current Stage**: IN PROGRESS
+- **Current Phase**: CONSTRUCTION — Increment v10: Modelo Clínico — COMPLETE
+- **Current Stage**: COMPLETE
 
 ## Workspace State
 - **Existing Code**: No
@@ -156,3 +156,30 @@
 - [x] UDT-V9-03: PatientPicker component — Complete (2026-04-16) — components/ui/PatientPicker.tsx; combobox con debounce y dropdown
 - [x] UDT-V9-04: Wire PatientPicker en OrderForm + AppointmentForm — Complete (2026-04-16)
 - [x] Build and Test — Complete (2026-04-16) — next build: 19 rutas, 0 TS errors, 0 warnings
+
+### INCEPTION PHASE — Increment v10: Modelo Clínico — Campos Médico + Diagnóstico + Ubicación Paciente
+
+- [x] Workspace Detection — Complete (2026-04-14) — Brownfield; bug "El ID del doctor no es válido" reportado via screenshot; campos clínicos faltantes en User, Patient, Order; formularios MoreApp analizados (5 URLs)
+- [x] Requirements Analysis — Complete (2026-04-14) — 5 requerimientos directos del usuario + análisis de 5 formularios MoreApp
+- [x] User Stories — Complete (2026-04-14) — 8 historias (HU-V10-01 a HU-V10-08) en aidlc-docs/inception/user-stories/v10-stories.md
+- [x] Workflow Planning — Complete (2026-04-14) — UDTs definidos: backend schema/migración, DTOs, servicios, frontend tipos/servicios/componentes/formularios
+- [x] Application Design — Complete (2026-04-14) — DoctorPicker combobox diseñado; diagnóstico en OrderForm; campos condicionales por rol en UserList
+- [x] Units Generation — Complete (2026-04-14)
+
+### CONSTRUCTION PHASE — Increment v10: Modelo Clínico
+
+- [x] UDT-V10-01: Prisma schema + migration — Complete (2026-04-14) — User +7 campos, Patient +3 campos, Order +1 campo; migración 20260416100000_expand_user_patient_order_fields
+- [x] UDT-V10-02: Backend DTOs + servicios — Complete (2026-04-14) — create/update-user.dto, find-users-query.dto (NEW), create-order.dto (@Transform bugfix), create-patient.dto; users/orders/patients services actualizados
+- [x] UDT-V10-03: Frontend tipos y servicios — Complete (2026-04-14) — api.types.ts User/Patient/Order expandidos; users.service.ts getDoctors() + UsersQuery añadidos
+- [x] UDT-V10-04: DoctorPicker component — Complete (2026-04-14) — components/ui/DoctorPicker.tsx; combobox GET /users?role=MEDICO&search=; muestra nombre+especialidad+registro
+- [x] UDT-V10-05: OrderForm actualizado — Complete (2026-04-14) — physician text field reemplazado por DoctorPicker; campo diagnosis añadido; physician removido del schema Zod
+- [x] UDT-V10-06: UserList expandido — Complete (2026-04-14) — CreateUserForm/EditUserForm con firstName/lastName/phone + specialty/medicalLicense condicionales (role=MEDICO); tabla añade columna Nombre
+- [x] UDT-V10-07: PatientForm expandido — Complete (2026-04-14) — city/address/insurance añadidos; schema Zod actualizado; defaultValues + campos en formulario
+- [x] UDT-V10-08: Vistas de órdenes actualizadas — Complete (2026-04-14) — OrderDetail/OrderList/RecentOrders muestran doctor.firstName+lastName+specialty; diagnosis renderizado en OrderDetail
+- [x] UDT-V10-09: Unit tests actualizados — Complete (2026-04-14) — users.service.spec.ts con 7 campos nuevos en USER_SELECT_RESULT; tests para specialty update y role filter
+- [x] Build and Test — Complete (2026-04-14) — 0 errores TypeScript (VSCode checker); commits 09cba5e + 8646c1d pushed to origin/main
+
+## Current Phase
+
+**Current Phase**: CONSTRUCTION — Increment v10: Modelo Clínico — COMPLETE
+**HEAD**: `8646c1d`

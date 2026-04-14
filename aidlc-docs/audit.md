@@ -2,6 +2,66 @@
 
 ---
 
+## [2026-04-14T00:00:00Z] — Increment v10 — Modelo Clínico — Build and Test — Complete
+
+**Event**: Increment v10 completado y pushado a `origin/main`. Commits `09cba5e` y `8646c1d`.
+
+**Requerimientos del usuario**:
+1. Bug: "El ID del doctor no es válido" al crear una orden (screenshot adjunto)
+2. Crear usuario debe pedir más datos: nombres, cargo, correo, etc.
+3. Al agregar médico: nombre completo, especialidad, registro médico, correo, cédula
+4. Las órdenes no muestran qué pruebas se realizarán ni si hay resultados
+5. Alineación con 5 formularios MoreApp reales (Wilson, Alfa-1, Duchenne, Autorización DAAT, Autorización Wilson)
+
+**Root Cause del Bug**:
+- `@IsOptional() + @IsUUID()` en NestJS solo saltea `null`/`undefined`, **no** strings vacíos
+- El frontend enviaba `doctorId: ""` (valor por defecto del formulario) → `@IsUUID()` fallaba con "El ID del doctor no es válido"
+- **Fix**: `@Transform(({ value }) => (value === '' ? undefined : value))` aplicado antes de `@IsUUID()` en `create-order.dto.ts` y `update-order.dto.ts`
+
+**Archivos modificados (19)**:
+
+### Backend
+| Archivo | Cambio |
+|---|---|
+| `prisma/schema.prisma` | User +7 campos, Patient +3, Order +1 |
+| `prisma/migrations/20260416100000_.../migration.sql` | NEW — 11 `ALTER TABLE ADD COLUMN IF NOT EXISTS` |
+| `src/modules/users/dto/create-user.dto.ts` | Reescrito — firstName, lastName, specialty, medicalLicense, phone, documentType, documentNumber; rol MEDICO añadido |
+| `src/modules/users/dto/update-user.dto.ts` | Reescrito — mismo conjunto de campos opcionales + password |
+| `src/modules/users/dto/find-users-query.dto.ts` | NEW — `?role=MEDICO&search=Carlos` con paginación |
+| `src/modules/users/users.service.ts` | USER_SELECT expandido; findAll soporta role+search filter; create/update persisten nuevos campos |
+| `src/modules/users/users.controller.ts` | Cambiado a FindUsersQueryDto |
+| `src/modules/orders/dto/create-order.dto.ts` | @Transform bugfix + campo diagnosis |
+| `src/modules/orders/dto/update-order.dto.ts` | Ídem |
+| `src/modules/orders/orders.service.ts` | ORDER_SELECT incluye diagnosis + doctor fullName/specialty |
+| `src/modules/patients/dto/create-patient.dto.ts` | DocumentType expandido (CC/TI/RC); city/address/insurance añadidos |
+| `src/modules/patients/patients.service.ts` | PATIENT_SELECT + create actualizados |
+| `src/modules/users/users.service.spec.ts` | USER_SELECT_RESULT con 7 nuevos campos; tests para specialty update y role filter |
+
+### Frontend
+| Archivo | Cambio |
+|---|---|
+| `frontend/src/types/api.types.ts` | User, Patient, Order interfaces expandidas |
+| `frontend/src/services/users.service.ts` | CreateUserPayload expandido; getDoctors(); UsersQuery type |
+| `frontend/src/components/ui/DoctorPicker.tsx` | NEW — combobox GET /users?role=MEDICO&search= |
+| `frontend/src/lib/validators.ts` | orderSchema: physician removido, diagnosis añadido; patientSchema: city/address/insurance añadidos; userSchema NEW |
+| `frontend/src/modules/orders/OrderForm.tsx` | DoctorPicker reemplaza texto libre; campo diagnosis añadido |
+| `frontend/src/modules/users/UserList.tsx` | CreateUserForm/EditUserForm expandidos; tabla muestra columna Nombre |
+| `frontend/src/modules/patients/PatientForm.tsx` | city/address/insurance añadidos |
+| `frontend/src/modules/orders/OrderDetail.tsx` | Doctor name+specialty; diagnosis section |
+| `frontend/src/modules/orders/OrderList.tsx` | Doctor name desde doctor object |
+| `frontend/src/modules/dashboard/RecentOrders.tsx` | Doctor name desde doctor object |
+
+**Verificación**: 0 errores TypeScript (VSCode language server). No se pudo ejecutar Docker (Docker Desktop 500 Internal Server Error en esta sesión).
+
+**Commits**:
+- `09cba5e` — feat(v10): clinical model — doctor fields, diagnosis, patient location, doctorId bug fix
+- `8646c1d` — fix(v10): show doctor name in order views + add diagnosis display + expand unit tests
+
+**Extension Compliance**:
+- Security Baseline: ✅ — @Transform antes de @IsUUID previene UUID injection; nuevos campos opcionales (no nuevas superficies de ataque); DoctorPicker usa API existente con autenticación JWT
+
+---
+
 ## [2026-04-15T00:00:00Z] — Increment v8 — Full Codebase Audit — Post-Deploy
 
 **Event**: Auditoría completa de todo el proyecto (AI-DLC v8 Post-Deploy). Revisión exhaustiva de cada archivo, módulo y carpeta del repositorio. Vercel build fallaba con "npm run build exited with 1".
