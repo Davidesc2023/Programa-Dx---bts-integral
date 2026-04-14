@@ -7,13 +7,32 @@ export type CreateUserPayload = {
   email: string;
   password: string;
   role: UserRole;
+  firstName?: string;
+  lastName?: string;
+  documentType?: string;
+  documentNumber?: string;
+  phone?: string;
+  specialty?: string;
+  medicalLicense?: string;
 };
 
 export type UpdateUserPayload = Partial<CreateUserPayload>;
 
-export async function getUsers(params?: PaginationQuery): Promise<PaginatedApiResponse<User>> {
+export type UsersQuery = PaginationQuery & {
+  role?: UserRole;
+  search?: string;
+};
+
+export async function getUsers(params?: UsersQuery): Promise<PaginatedApiResponse<User>> {
   const { data } = await api.get<PaginatedApiResponse<User>>('/users', { params });
   return data;
+}
+
+export async function getDoctors(search?: string): Promise<User[]> {
+  const params: UsersQuery = { role: UserRole.MEDICO, limit: 20, page: 1 };
+  if (search) params.search = search;
+  const res = await getUsers(params);
+  return res.data;
 }
 
 export async function createUser(payload: CreateUserPayload): Promise<User> {

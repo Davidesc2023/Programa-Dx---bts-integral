@@ -72,6 +72,9 @@ export interface Patient {
   birthDate: string;
   phone: string;
   email: string;
+  city: string | null;
+  address: string | null;
+  insurance: string | null;
   deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -86,7 +89,9 @@ export interface Order {
   patientId: string;
   patient?: Patient;
   doctorId: string | null;
+  doctor?: Pick<User, 'id' | 'email' | 'role' | 'firstName' | 'lastName' | 'specialty' | 'medicalLicense'>;
   physician: string | null;
+  diagnosis: string | null;
   priority: Priority;
   status: OrderStatus;
   observations: string | null;
@@ -165,6 +170,13 @@ export interface User {
   id: string;
   email: string;
   role: UserRole;
+  firstName: string | null;
+  lastName: string | null;
+  documentType: DocumentType | null;
+  documentNumber: string | null;
+  phone: string | null;
+  specialty: string | null;
+  medicalLicense: string | null;
   createdAt: string;
   updatedAt: string;
 }

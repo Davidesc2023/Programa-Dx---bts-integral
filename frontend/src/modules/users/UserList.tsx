@@ -41,17 +41,53 @@ function CreateUserForm({ onClose }: CreateFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<UserRole>(UserRole.OPERADOR);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [specialty, setSpecialty] = useState('');
+  const [medicalLicense, setMedicalLicense] = useState('');
 
   const mutation = useCreateUser(onClose);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const payload: CreateUserPayload = { email, password, role };
+    const payload: CreateUserPayload = {
+      email, password, role,
+      ...(firstName && { firstName }),
+      ...(lastName && { lastName }),
+      ...(phone && { phone }),
+      ...(role === UserRole.MEDICO && specialty && { specialty }),
+      ...(role === UserRole.MEDICO && medicalLicense && { medicalLicense }),
+    };
     mutation.mutate(payload);
   }
 
+  const isMedico = role === UserRole.MEDICO;
+
   return (
     <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+          <input
+            type="text"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="Ej. Carlos"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
+          <input
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="Ej. Martínez"
+          />
+        </div>
+      </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
         <input
@@ -63,17 +99,29 @@ function CreateUserForm({ onClose }: CreateFormProps) {
           placeholder="usuario@ejemplo.com"
         />
       </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
-        <input
-          type="password"
-          required
-          minLength={8}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-          placeholder="Mínimo 8 caracteres"
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+          <input
+            type="password"
+            required
+            minLength={8}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="Mínimo 8 caracteres"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="Ej. 3001234567"
+          />
+        </div>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
@@ -89,6 +137,30 @@ function CreateUserForm({ onClose }: CreateFormProps) {
           ))}
         </select>
       </div>
+      {isMedico && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t pt-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Especialidad</label>
+            <input
+              type="text"
+              value={specialty}
+              onChange={(e) => setSpecialty(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder="Ej. Neurología"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Registro médico</label>
+            <input
+              type="text"
+              value={medicalLicense}
+              onChange={(e) => setMedicalLicense(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder="Ej. RM-12345"
+            />
+          </div>
+        </div>
+      )}
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="ghost" size="sm" onClick={onClose}>
           Cancelar
@@ -111,35 +183,107 @@ interface EditFormProps {
 function EditUserForm({ user, onClose }: EditFormProps) {
   const [role, setRole] = useState<UserRole>(user.role);
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState(user.firstName ?? '');
+  const [lastName, setLastName] = useState(user.lastName ?? '');
+  const [phone, setPhone] = useState(user.phone ?? '');
+  const [specialty, setSpecialty] = useState(user.specialty ?? '');
+  const [medicalLicense, setMedicalLicense] = useState(user.medicalLicense ?? '');
 
   const mutation = useUpdateUser(user.id, onClose);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const payload: UpdateUserPayload = { role };
+    const payload: UpdateUserPayload = {
+      role,
+      firstName: firstName || undefined,
+      lastName: lastName || undefined,
+      phone: phone || undefined,
+      specialty: role === UserRole.MEDICO ? (specialty || undefined) : undefined,
+      medicalLicense: role === UserRole.MEDICO ? (medicalLicense || undefined) : undefined,
+    };
     if (password) payload.password = password;
     mutation.mutate(payload);
   }
+
+  const isMedico = role === UserRole.MEDICO;
 
   return (
     <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
       <p className="text-xs text-gray-500">
         Editando: <span className="font-medium text-gray-700">{user.email}</span>
       </p>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value as UserRole)}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-        >
-          {Object.values(UserRole).map((r) => (
-            <option key={r} value={r}>
-              {ROLE_LABELS[r]}
-            </option>
-          ))}
-        </select>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+          <input
+            type="text"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="Ej. Carlos"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
+          <input
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="Ej. Martínez"
+          />
+        </div>
       </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="Ej. 3001234567"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value as UserRole)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            {Object.values(UserRole).map((r) => (
+              <option key={r} value={r}>
+                {ROLE_LABELS[r]}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      {isMedico && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t pt-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Especialidad</label>
+            <input
+              type="text"
+              value={specialty}
+              onChange={(e) => setSpecialty(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder="Ej. Neurología"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Registro médico</label>
+            <input
+              type="text"
+              value={medicalLicense}
+              onChange={(e) => setMedicalLicense(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder="Ej. RM-12345"
+            />
+          </div>
+        </div>
+      )}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Nueva contraseña{' '}
@@ -215,7 +359,7 @@ export function UserList() {
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50">
-                    {['Correo electrónico', 'Rol', 'Creado', 'Acciones'].map((h) => (
+                    {['Nombre', 'Correo electrónico', 'Rol', 'Creado', 'Acciones'].map((h) => (
                       <th
                         key={h}
                         className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide"
@@ -228,6 +372,11 @@ export function UserList() {
                 <tbody className="divide-y divide-gray-50">
                   {users.map((u) => (
                     <tr key={u.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-5 py-3 text-gray-900">
+                        {u.firstName || u.lastName
+                          ? `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim()
+                          : <span className="text-gray-400 text-xs">—</span>}
+                      </td>
                       <td className="px-5 py-3 font-medium text-gray-900">{u.email}</td>
                       <td className="px-5 py-3">
                         <RoleBadge role={u.role} />

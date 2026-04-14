@@ -6,6 +6,7 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateOrderDto {
   @ApiProperty({ example: '11111111-1111-1111-1111-111111111111', description: 'UUID del paciente' })
@@ -14,6 +15,7 @@ export class CreateOrderDto {
 
   @ApiPropertyOptional({ example: '22222222-2222-2222-2222-222222222222', description: 'UUID del médico (User) responsable' })
   @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsUUID('4', { message: 'El ID del doctor no es válido' })
   doctorId?: string;
 
@@ -21,6 +23,11 @@ export class CreateOrderDto {
   @IsOptional()
   @IsString()
   physician?: string;
+
+  @ApiPropertyOptional({ example: 'Sospecha de Enfermedad de Wilson', description: 'Diagnóstico o justificación clínica' })
+  @IsOptional()
+  @IsString()
+  diagnosis?: string;
 
   @ApiPropertyOptional({ enum: ['URGENTE', 'NORMAL', 'RUTINA'], example: 'NORMAL' })
   @IsOptional()

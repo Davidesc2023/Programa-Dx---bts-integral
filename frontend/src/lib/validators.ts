@@ -37,6 +37,10 @@ export const patientSchema = z.object({
   email: z
     .string({ required_error: 'El correo es requerido' })
     .email('Ingresa un correo válido'),
+  // Ubicación y cobertura (opcionales)
+  city: z.string().optional(),
+  address: z.string().optional(),
+  insurance: z.string().optional(),
 });
 
 export type PatientFormValues = z.infer<typeof patientSchema>;
@@ -45,10 +49,8 @@ export type PatientFormValues = z.infer<typeof patientSchema>;
 
 export const orderSchema = z.object({
   patientId: z.string({ required_error: 'Selecciona un paciente' }).min(1, 'Selecciona un paciente'),
-  physician: z
-    .string({ required_error: 'El nombre del médico es requerido' })
-    .min(3, 'Mínimo 3 caracteres'),
   doctorId: z.string().optional(),
+  diagnosis: z.string().optional(),
   priority: z.enum(['URGENTE', 'NORMAL', 'RUTINA'], {
     required_error: 'Selecciona la prioridad',
   }),
@@ -57,6 +59,23 @@ export const orderSchema = z.object({
 });
 
 export type OrderFormValues = z.infer<typeof orderSchema>;
+
+// ─── User schemas ─────────────────────────────────────────────────────────────
+
+export const userSchema = z.object({
+  email: z.string({ required_error: 'El correo es requerido' }).email('Ingresa un correo válido'),
+  password: z.string().min(8, 'Mínimo 8 caracteres').optional().or(z.literal('')),
+  role: z.enum(['ADMIN', 'OPERADOR', 'LABORATORIO', 'MEDICO'], { required_error: 'Selecciona un rol' }),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  documentType: z.enum(['DNI', 'PASAPORTE', 'CE', 'NIT', 'CC', 'TI', 'RC']).optional(),
+  documentNumber: z.string().optional(),
+  phone: z.string().optional(),
+  specialty: z.string().optional(),
+  medicalLicense: z.string().optional(),
+});
+
+export type UserFormValues = z.infer<typeof userSchema>;
 
 // ─── Result schemas ───────────────────────────────────────────────────────────
 

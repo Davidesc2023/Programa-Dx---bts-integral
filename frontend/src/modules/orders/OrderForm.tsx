@@ -7,6 +7,7 @@ import { orderSchema, type OrderFormValues } from '@/lib/validators';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { PatientPicker } from '@/components/ui/PatientPicker';
+import { DoctorPicker } from '@/components/ui/DoctorPicker';
 import { Priority } from '@/types/enums';
 import type { Order } from '@/types/api.types';
 
@@ -41,8 +42,8 @@ export function OrderForm({
     resolver: zodResolver(orderSchema),
     defaultValues: {
       patientId: defaultValues?.patientId ?? preselectedPatientId ?? '',
-      physician: defaultValues?.physician ?? '',
       doctorId: defaultValues?.doctorId ?? '',
+      diagnosis: defaultValues?.diagnosis ?? '',
       priority: (defaultValues?.priority as OrderFormValues['priority']) ?? 'NORMAL',
       estimatedCompletionDate: defaultValues?.estimatedCompletionDate?.slice(0, 10) ?? '',
       observations: defaultValues?.observations ?? '',
@@ -70,13 +71,20 @@ export function OrderForm({
         )}
       />
 
+      <Controller
+        name="doctorId"
+        control={control}
+        render={({ field }) => (
+          <DoctorPicker
+            label="Médico solicitante"
+            value={field.value ?? ''}
+            onChange={field.onChange}
+            error={errors.doctorId?.message}
+          />
+        )}
+      />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Input
-          label="Médico solicitante"
-          placeholder="Ej. Dr. Martínez"
-          error={errors.physician?.message}
-          {...register('physician')}
-        />
         <div className="space-y-1">
           <label className="text-sm font-medium text-gray-700">Prioridad</label>
           <select
@@ -93,14 +101,26 @@ export function OrderForm({
             <p className="text-xs text-red-500">{errors.priority.message}</p>
           )}
         </div>
+        <Input
+          label="Fecha estimada de completado"
+          type="date"
+          error={errors.estimatedCompletionDate?.message}
+          {...register('estimatedCompletionDate')}
+        />
       </div>
 
-      <Input
-        label="Fecha estimada de completado"
-        type="date"
-        error={errors.estimatedCompletionDate?.message}
-        {...register('estimatedCompletionDate')}
-      />
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-gray-700">
+          Diagnóstico / Justificación clínica{' '}
+          <span className="text-gray-400 font-normal">(opcional)</span>
+        </label>
+        <textarea
+          rows={2}
+          placeholder="Ej. Sospecha de enfermedad de Wilson…"
+          {...register('diagnosis')}
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+        />
+      </div>
 
       <div className="space-y-1">
         <label className="text-sm font-medium text-gray-700">

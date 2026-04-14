@@ -67,18 +67,26 @@ enum AppointmentStatus {
 // ============================================================
 
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  password      String
-  role          UserRole       @default(OPERADOR)
-  deletedAt     DateTime?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  createdBy     String?
-  updatedBy     String?
-  refreshTokens RefreshToken[]
-  consents      Consent[]
-  doctorOrders  Order[]        @relation("OrderDoctor")
+  id             String        @id @default(uuid())
+  email          String        @unique
+  password       String
+  role           UserRole      @default(OPERADOR)
+  // Personal / clinical fields
+  firstName      String?
+  lastName       String?
+  documentType   DocumentType?
+  documentNumber String?
+  phone          String?
+  specialty      String?       // Solo MEDICO
+  medicalLicense String?       // Registro médico — Solo MEDICO
+  deletedAt      DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  refreshTokens  RefreshToken[]
+  consents       Consent[]
+  doctorOrders   Order[]       @relation("OrderDoctor")
 
   @@map("users")
 }
@@ -108,6 +116,9 @@ model Patient {
   birthDate      DateTime
   phone          String?
   email          String?
+  city           String?       // Ciudad de residencia
+  address        String?       // Dirección
+  insurance      String?       // EPS / Seguro
   deletedAt      DateTime?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
@@ -129,6 +140,7 @@ model Order {
   patientId               String
   patient                 Patient       @relation(fields: [patientId], references: [id])
   physician               String?
+  diagnosis               String?       // Diagnóstico / justificación clínica
   priority                Priority?
   observations            String?
   estimatedCompletionDate DateTime?

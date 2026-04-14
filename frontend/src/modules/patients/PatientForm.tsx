@@ -47,6 +47,9 @@ export function PatientForm({
         : '',
       phone: defaultValues?.phone ?? '',
       email: defaultValues?.email ?? '',
+      city: defaultValues?.city ?? '',
+      address: defaultValues?.address ?? '',
+      insurance: defaultValues?.insurance ?? '',
     },
   });
 
@@ -117,6 +120,28 @@ export function PatientForm({
         placeholder="paciente@correo.com"
         error={errors.email?.message}
         {...register('email')}
+      />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Input
+          label="Ciudad"
+          placeholder="Ej. Bogotá"
+          error={errors.city?.message}
+          {...register('city')}
+        />
+        <Input
+          label="EPS / Aseguradora"
+          placeholder="Ej. Sura"
+          error={errors.insurance?.message}
+          {...register('insurance')}
+        />
+      </div>
+
+      <Input
+        label="Dirección"
+        placeholder="Ej. Calle 123 # 45-67"
+        error={errors.address?.message}
+        {...register('address')}
       />
 
       <div className="flex justify-end gap-3 pt-2">
