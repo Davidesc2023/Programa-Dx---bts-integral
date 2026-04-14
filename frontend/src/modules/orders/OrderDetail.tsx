@@ -123,7 +123,14 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
             </div>
             <div>
               <dt className="text-gray-500 text-xs uppercase tracking-wide mb-0.5">Médico</dt>
-              <dd className="text-gray-900">{order.physician ?? '—'}</dd>
+              <dd className="text-gray-900">
+                {order.doctor?.firstName || order.doctor?.lastName
+                  ? [order.doctor.firstName, order.doctor.lastName].filter(Boolean).join(' ')
+                  : (order.physician ?? '—')}
+                {order.doctor?.specialty && (
+                  <span className="ml-1.5 text-xs text-gray-400">· {order.doctor.specialty}</span>
+                )}
+              </dd>
             </div>
             <div>
               <dt className="text-gray-500 text-xs uppercase tracking-wide mb-0.5">Prioridad</dt>
@@ -159,6 +166,14 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
                   Observaciones
                 </dt>
                 <dd className="text-gray-700">{order.observations}</dd>
+              </div>
+            )}
+            {order.diagnosis && (
+              <div className="sm:col-span-2">
+                <dt className="text-gray-500 text-xs uppercase tracking-wide mb-0.5">
+                  Diagnóstico / Justificación clínica
+                </dt>
+                <dd className="text-gray-700">{order.diagnosis}</dd>
               </div>
             )}
           </dl>

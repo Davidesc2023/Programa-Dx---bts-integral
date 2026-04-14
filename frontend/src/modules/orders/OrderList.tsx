@@ -109,7 +109,9 @@ export function OrderList() {
                           {patientName}
                         </td>
                         <td className="px-5 py-3 text-gray-600 max-w-[140px] truncate">
-                          {o.physician ?? '—'}
+                          {o.doctor?.firstName || o.doctor?.lastName
+                            ? [o.doctor.firstName, o.doctor.lastName].filter(Boolean).join(' ')
+                            : (o.physician ?? '—')}
                         </td>
                         <td className="px-5 py-3">
                           <span

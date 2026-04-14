@@ -6,6 +6,13 @@ const USER_SELECT_RESULT = {
   id: 'uuid-1',
   email: 'u@test.com',
   role: 'OPERADOR',
+  firstName: null,
+  lastName: null,
+  documentType: null,
+  documentNumber: null,
+  phone: null,
+  specialty: null,
+  medicalLicense: null,
   createdAt: new Date(),
   updatedAt: new Date(),
   createdBy: 'admin-id',
@@ -97,6 +104,33 @@ describe('UsersService', () => {
 
       expect(result.role).toBe('ADMIN');
       expect(result.updatedBy).toBe('admin-id');
+    });
+
+    it('actualiza campos clínicos de médico', async () => {
+      mockPrisma.user.findFirst.mockResolvedValue(USER_SELECT_RESULT);
+      const updated = { ...USER_SELECT_RESULT, specialty: 'Neurología', medicalLicense: 'RM-123' };
+      mockPrisma.user.update.mockResolvedValue(updated);
+
+      const result = await service.update('uuid-1', { specialty: 'Neurología', medicalLicense: 'RM-123' }, 'admin-id');
+
+      expect(result.specialty).toBe('Neurología');
+      expect(result.medicalLicense).toBe('RM-123');
+    });
+  });
+
+  describe('findAll()', () => {
+    it('filtra por role=MEDICO cuando se especifica', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([]);
+      mockPrisma.user.count.mockResolvedValue(0);
+      mockPrisma.$transaction.mockImplementation((fns: Array<() => unknown>) => Promise.all(fns.map((f) => f())));
+
+      await service.findAll({ role: 'MEDICO', page: 1, limit: 10 });
+
+      expect(mockPrisma.user.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ role: 'MEDICO' }),
+        }),
+      );
     });
   });
 });

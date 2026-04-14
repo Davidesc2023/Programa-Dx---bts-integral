@@ -82,7 +82,9 @@ export function RecentOrders({ orders, isLoading }: RecentOrdersProps) {
                     </Link>
                   </td>
                   <td className="px-6 py-3 text-gray-700 max-w-[160px] truncate">
-                    {order.physician ?? '—'}
+                    {order.doctor?.firstName || order.doctor?.lastName
+                      ? [order.doctor.firstName, order.doctor.lastName].filter(Boolean).join(' ')
+                      : (order.physician ?? '—')}
                   </td>
                   <td className="px-6 py-3">
                     <span
