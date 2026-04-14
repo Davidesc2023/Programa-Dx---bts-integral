@@ -1,19 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Proxy /api/* to the NestJS backend (server-to-server — no CORS, no NEXT_PUBLIC_ leak)
-  async rewrites() {
-    const backendUrl =
-      process.env.BACKEND_URL ??
-      'https://programa-dx-bts-integral-production.up.railway.app';
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${backendUrl}/:path*`,
-      },
-    ];
-  },
-
-  // CSP and security headers (OWASP A05 / XSS mitigation)
+  // Security headers (OWASP A05 / XSS mitigation)
   async headers() {
     return [
       {
