@@ -21,7 +21,7 @@ import { extname, join } from 'path';
 import { randomUUID } from 'crypto';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 
-interface UploadedFile {
+interface MulterFile {
   fieldname: string;
   originalname: string;
   mimetype: string;
@@ -59,7 +59,7 @@ export class AttachmentsController {
   )
   async upload(
     @Param('resultId', ParseUUIDPipe) resultId: string,
-    @UploadedFile() file: UploadedFile,
+    @UploadedFile() file: MulterFile,
     @CurrentUser() user: ICurrentUser,
   ) {
     const attachment = await this.attachmentsService.upload(resultId, file, user.userId);

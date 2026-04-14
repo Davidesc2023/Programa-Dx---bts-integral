@@ -1,32 +1,15 @@
-'use client';
-
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from 'sonner';
+import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { Providers } from './providers';
 import './globals.css';
 
+// next/font must live in a Server Component for optimal font loading (no FOUT)
 const inter = Inter({ subsets: ['latin'] });
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 30_000,
-      retry: (failureCount, error) => {
-        // No reintentar en errores 4xx
-        if (
-          error &&
-          typeof error === 'object' &&
-          'response' in error &&
-          (error as { response?: { status?: number } }).response?.status !== undefined
-        ) {
-          const status = (error as { response: { status: number } }).response.status;
-          if (status >= 400 && status < 500) return false;
-        }
-        return failureCount < 1;
-      },
-    },
-  },
-});
+export const metadata: Metadata = {
+  title: 'APP-DX — BTS Integral',
+  description: 'Sistema de Gestión de Laboratorios',
+};
 
 export default function RootLayout({
   children,
@@ -35,15 +18,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es">
-      <head>
-        <title>APP-DX — BTS Integral</title>
-        <meta name="description" content="Sistema de Gestión de Laboratorios" />
-      </head>
       <body className={inter.className}>
-        <QueryClientProvider client={queryClient}>
-          {children}
-          <Toaster position="top-right" richColors closeButton />
-        </QueryClientProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -62,8 +62,8 @@ jobs:
       - name: Build Next.js app
         run: npm run build
         env:
-          # Use a placeholder URL for build-time check; real URL set in Vercel
-          NEXT_PUBLIC_API_URL: https://placeholder.railway.app
+          # BACKEND_URL is consumed server-side by next.config.mjs rewrites
+          BACKEND_URL: https://placeholder.railway.app
 
   # ─── Job 3: Deploy Backend to Railway ──────────────────────────────────────
   deploy-backend:

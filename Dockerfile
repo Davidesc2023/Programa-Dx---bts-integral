@@ -39,4 +39,4 @@ COPY --from=builder /app/dist ./dist
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma migrate resolve --rolled-back 20260413155305_add_consent_module 2>/dev/null || true ; npx prisma migrate deploy && node dist/main.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
