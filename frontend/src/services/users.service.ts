@@ -1,11 +1,12 @@
 import { api } from '@/services/api';
 import type { ApiResponse, PaginatedApiResponse, User } from '@/types/api.types';
 import type { PaginationQuery } from '@/types/api.types';
+import type { UserRole } from '@/types/enums';
 
 export type CreateUserPayload = {
   email: string;
   password: string;
-  role: 'ADMIN' | 'OPERADOR' | 'LABORATORIO';
+  role: UserRole;
 };
 
 export type UpdateUserPayload = Partial<CreateUserPayload>;
