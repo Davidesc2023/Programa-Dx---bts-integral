@@ -1,0 +1,33 @@
+# ─── Dependencies ────────────────────────────────────────────────────────────
+node_modules/
+frontend/node_modules/
+
+# ─── Build outputs ───────────────────────────────────────────────────────────
+dist/
+frontend/.next/
+frontend/out/
+
+# ─── Environment variables — NEVER commit real secrets ───────────────────────
+.env
+.env.*
+!.env.example
+!frontend/.env.production.example
+
+# ─── Logs ────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+
+# ─── OS / Editor ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ─── Test coverage ───────────────────────────────────────────────────────────
+coverage/
+
+# ─── Prisma generated ────────────────────────────────────────────────────────
+prisma/*.db
+
+# ─── Uploads (user-generated content, not source code) ───────────────────────
+uploads/

@@ -1,0 +1,250 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  ADMIN
+  OPERADOR
+  LABORATORIO
+  MEDICO
+}
+
+enum OrderStatus {
+  PENDIENTE
+  CONSENT_PENDING
+  ACCEPTED
+  SCHEDULED
+  RECHAZADA
+  MUESTRA_RECOLECTADA
+  EN_ANALISIS
+  COMPLETADA
+  CANCELADA
+}
+
+enum ConsentStatus {
+  PENDIENTE_FIRMA_MEDICO
+  FIRMADO_MEDICO
+  ENVIADO_PACIENTE
+  ACEPTADO
+  RECHAZADO
+}
+
+enum DocumentType {
+  DNI
+  PASAPORTE
+  CE
+  NIT
+}
+
+enum Priority {
+  URGENTE
+  NORMAL
+  RUTINA
+}
+
+enum AppointmentStatus {
+  PROGRAMADA
+  CONFIRMADA
+  CANCELADA
+  COMPLETADA
+}
+
+// ============================================================
+// MÓDULO: Users + Auth (UDT-02)
+// ============================================================
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  password      String
+  role          UserRole       @default(OPERADOR)
+  deletedAt     DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  refreshTokens RefreshToken[]
+  consents      Consent[]
+  doctorOrders  Order[]        @relation("OrderDoctor")
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id            String    @id @default(uuid())
+  token         String    @unique
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  expiresAt     DateTime
+  invalidatedAt DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@map("refresh_tokens")
+}
+
+// ============================================================
+// MÓDULO: Patients (UDT-03)
+// ============================================================
+
+model Patient {
+  id             String        @id @default(uuid())
+  documentType   DocumentType
+  documentNumber String
+  firstName      String
+  lastName       String
+  birthDate      DateTime
+  phone          String?
+  email          String?
+  deletedAt      DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  orders         Order[]
+  appointments   Appointment[]
+
+  @@unique([documentType, documentNumber])
+  @@map("patients")
+}
+
+// ============================================================
+// MÓDULO: Orders (UDT-04)
+// ============================================================
+
+model Order {
+  id                      String        @id @default(uuid())
+  patientId               String
+  patient                 Patient       @relation(fields: [patientId], references: [id])
+  physician               String?
+  priority                Priority?
+  observations            String?
+  estimatedCompletionDate DateTime?
+  status                  OrderStatus   @default(PENDIENTE)
+  deletedAt               DateTime?
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+  createdBy               String?
+  updatedBy               String?
+  results                 Result[]
+  appointments            Appointment[]
+  consent                 Consent?
+  doctorId                String?
+  doctor                  User?         @relation("OrderDoctor", fields: [doctorId], references: [id])
+  tests                   OrderTest[]
+
+  @@map("orders")
+}
+
+// ============================================================
+// MÓDULO: Consent (UDT-C01)
+// ============================================================
+
+model Consent {
+  id                String        @id @default(uuid())
+  orderId           String        @unique
+  order             Order         @relation(fields: [orderId], references: [id])
+  status            ConsentStatus @default(PENDIENTE_FIRMA_MEDICO)
+  doctorId          String?
+  doctor            User?         @relation(fields: [doctorId], references: [id])
+  doctorSignedAt    DateTime?
+  patientResponseAt DateTime?
+  notes             String?
+  deletedAt         DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  @@map("consents")
+}
+
+// ============================================================
+// MÓDULO: Results (UDT-05)
+// ============================================================
+
+model Result {
+  id             String             @id @default(uuid())
+  orderId        String
+  order          Order              @relation(fields: [orderId], references: [id])
+  examType       String
+  value          String
+  unit           String?
+  referenceRange String?
+  notes          String?
+  deletedAt      DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  attachments    ResultAttachment[]
+
+  @@map("results")
+}
+
+model ResultAttachment {
+  id           String    @id @default(uuid())
+  resultId     String
+  result       Result    @relation(fields: [resultId], references: [id])
+  originalName String
+  mimeType     String
+  size         Int
+  filePath     String
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String?
+  updatedBy    String?
+
+  @@map("result_attachments")
+}
+
+// ============================================================
+// MÓDULO: Appointments (UDT-06)
+// ============================================================
+
+model Appointment {
+  id          String    @id @default(uuid())
+  patientId   String
+  patient     Patient   @relation(fields: [patientId], references: [id])
+  orderId     String?
+  order       Order?    @relation(fields: [orderId], references: [id])
+  scheduledAt DateTime
+  status      AppointmentStatus @default(PROGRAMADA)
+  notes       String?
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+  updatedBy   String?
+
+  @@map("appointments")
+}
+
+// ============================================================
+// MÓDULO: OrderTests (UDT-V5)
+// ============================================================
+
+model OrderTest {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  examCode  String
+  examName  String
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
+  @@map("order_tests")
+}
