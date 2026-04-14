@@ -159,6 +159,16 @@ export interface Appointment {
   updatedAt: string;
 }
 
+// ─── Users ────────────────────────────────────────────────────────────────────
+
+export interface User {
+  id: string;
+  email: string;
+  role: UserRole;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ─── Pagination query ─────────────────────────────────────────────────────────
 
 export interface PaginationQuery {
