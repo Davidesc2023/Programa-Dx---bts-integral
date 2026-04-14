@@ -2,6 +2,81 @@
 
 ---
 
+## [2026-04-15T00:00:00Z] — Increment v8 — Full Codebase Audit — Post-Deploy
+
+**Event**: Auditoría completa de todo el proyecto (AI-DLC v8 Post-Deploy). Revisión exhaustiva de cada archivo, módulo y carpeta del repositorio. Vercel build fallaba con "npm run build exited with 1".
+
+**Root cause inicial (Vercel build)**:
+- `tailwindcss`, `postcss`, `autoprefixer` estaban en `devDependencies`
+- Vercel ejecuta `npm install` con `NODE_ENV=production`, omitiendo `devDependencies`
+- PostCSS crasheaba → error en cascada: `Cannot find module 'tailwindcss'` → `Cannot find module '@/components/ui/Card'` → todos los módulos frontend fallaban
+
+**Issues encontrados (5 archivos)**:
+
+### Issue 1 — `frontend/package.json` ❌ → ✅ FIXED
+- **Problema**: `tailwindcss ^3.4.1`, `postcss ^8`, `autoprefixer ^10.0.1` en `devDependencies`
+- **Fix**: Movidos a `dependencies`; `frontend/package-lock.json` regenerado vía Docker (`node:20-alpine`)
+- **Commit**: `67dacf4`
+
+### Issue 2 — `Dockerfile` CMD ❌ → ✅ FIXED
+- **Problema**: CMD contenía `npx prisma migrate resolve --rolled-back 20260413155305_add_consent_module 2>/dev/null || true` — hack de emergencia de una sola vez que quedó en el CMD permanente
+- **Fix**: CMD limpiado a `["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]`
+- **Commit**: `7267d55`
+
+### Issue 3 — `.github/workflows/ci-cd.yml` ❌ → ✅ FIXED
+- **Problema**: `build-frontend` usaba `NEXT_PUBLIC_API_URL: https://placeholder.railway.app` — env var pública que ya no existe después del refactor de proxy server-side
+- **Fix**: Cambiado a `BACKEND_URL: https://placeholder.railway.app` con comentario explicativo
+- **Commit**: `7267d55`
+
+### Issue 4 — `frontend/src/app/layout.tsx` ❌ → ✅ FIXED
+- **Problema**: Root layout tenía `'use client'` — antipatrón Next.js 14. `next/font` en un Client Component no aplica SSR font optimization; `QueryClientProvider` y `Toaster` no deben vivir en el root layout directamente
+- **Fix**: Extraído `providers.tsx` (`'use client'`) con `QueryClientProvider` + `Toaster` usando patrón `useState(() => new QueryClient())`. `layout.tsx` refactorizado a Server Component con `export const metadata: Metadata`
+- **Commit**: `7267d55`
+
+### Issue 5 — `src/modules/results/attachments/attachments.controller.ts` ❌ → ✅ FIXED
+- **Problema**: `interface UploadedFile` local shadowed el decorator `@UploadedFile()` importado de `@nestjs/common`. TypeScript no lo reportaba (mismo nombre, distinto uso), pero era un riesgo de colisión semántica
+- **Fix**: Renombrado `interface UploadedFile` → `interface MulterFile`; anotación actualizada: `@UploadedFile() file: MulterFile`
+- **Commit**: `7267d55`
+
+**Verificación del build**:
+- `docker run --rm -e BACKEND_URL=https://placeholder.railway.app node:20-alpine sh -c "npm ci && npm run build"`
+- Resultado: **17 rutas compiladas, 0 errores TypeScript, exit code 0** ✅
+- Rutas: `/`, `/appointments`, `/appointments/new`, `/consents/[id]`, `/dashboard`, `/login`, `/orders`, `/orders/[id]`, `/orders/new`, `/patients`, `/patients/[id]`, `/patients/new`, `/results`, `/results/[id]`, `/results/[id]/attachments`, `/results/new`, `/users`
+
+**Commits**:
+- `67dacf4` (pushed): tailwindcss/postcss/autoprefixer movidos a dependencies + lockfile regenerado
+- `7267d55` (pushed): Dockerfile CMD cleanup + CI/CD env var fix + layout Server Component refactor + layout.tsx + providers.tsx + attachments controller shadow fix
+
+---
+
+## [2026-04-14T16:00:00Z] — Increment v8 — Production Hotfix — Network Error + Admin Seed
+
+**Event**: Auditoría completa de producción post-despliegue. 2 issues críticos identificados y corregidos.
+
+**Issues encontrados**:
+1. **Network Error** — CSP `connect-src` hardcodeado a `http://localhost:3000` + `NEXT_PUBLIC_API_URL` no configurado en Vercel → browser bloqueaba requests al backend Railway
+2. **No admin user** — seed nunca se ejecutó en Railway PostgreSQL → app inaccesible (login falla)
+
+**Fixes aplicados (commit 388eb0d)**:
+- `frontend/next.config.mjs`: Agregados `rewrites()` que proxean `/api/*` → `${BACKEND_URL}/*` (server-side). CSP `connect-src` cambiado a `'self'` (todos los calls son relativos ahora)
+- `frontend/src/services/api.ts`: baseURL cambiado de `NEXT_PUBLIC_API_URL ?? 'http://localhost:3000'` a `'/api'` (relativo)
+- `src/database/seed.service.ts`: NUEVO — `SeedService` con `OnApplicationBootstrap` que crea admin user desde env vars al iniciar la app (sin ts-node, compilado en dist/)
+- `src/database/prisma.module.ts`: Registrado `SeedService`
+- `frontend/.env.production.example`: Actualizado de `NEXT_PUBLIC_API_URL` a `BACKEND_URL`
+
+**Verificación**:
+- `docker build --target test` → ✅ compilación exitosa
+- `docker run app-dx-test-v9` → **96/96 tests PASS, exit code 0**
+- `docker build --target runner` → ✅ imagen producción construida
+- `git push origin main` → `07d9bde..388eb0d`
+
+**Acción requerida por el usuario**:
+1. Vercel → Settings → Environment Variables → agregar `BACKEND_URL=<railway_url>` → Redeploy
+2. Railway → Variables → `CORS_ORIGIN=<vercel_url>` (opcional con proxy en lugar)
+3. Admin credentials por defecto: `admin@lab.local` / `Admin1234!`
+
+---
+
 ## [2026-04-14T15:00:00Z] — Increment v8 — Build and Test — Complete
 
 **Event**: Build and Test — Deployment Verification ejecutado y completado.
