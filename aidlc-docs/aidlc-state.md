@@ -155,4 +155,4 @@
 - [x] UDT-V9-02: DocumentType CC/TI/RC — Complete (2026-04-16) — Prisma schema, migration SQL, frontend enums/validators/PatientForm
 - [x] UDT-V9-03: PatientPicker component — Complete (2026-04-16) — components/ui/PatientPicker.tsx; combobox con debounce y dropdown
 - [x] UDT-V9-04: Wire PatientPicker en OrderForm + AppointmentForm — Complete (2026-04-16)
-- [ ] Build and Test — PENDING
+- [x] Build and Test — Complete (2026-04-16) — next build: 19 rutas, 0 TS errors, 0 warnings
