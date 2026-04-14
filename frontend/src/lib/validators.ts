@@ -22,7 +22,7 @@ export const patientSchema = z.object({
   lastName: z
     .string({ required_error: 'El apellido es requerido' })
     .min(2, 'Mínimo 2 caracteres'),
-  documentType: z.enum(['DNI', 'PASAPORTE', 'CE', 'NIT'], {
+  documentType: z.enum(['DNI', 'PASAPORTE', 'CE', 'NIT', 'CC', 'TI', 'RC'], {
     required_error: 'Selecciona un tipo de documento',
   }),
   documentNumber: z

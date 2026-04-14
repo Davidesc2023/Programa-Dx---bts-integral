@@ -1,6 +1,5 @@
 'use client';
 
-import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
@@ -10,8 +9,8 @@ import { ResultForm } from '@/modules/results/ResultForm';
 import { useResult, useUpdateResult } from '@/modules/results/useResults';
 import type { ResultInput } from '@/lib/validators';
 
-export default function EditResultPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function EditResultPage({ params }: { params: { id: string } }) {
+  const { id } = params;
   const router = useRouter();
   const { data: result, isLoading } = useResult(id);
   const mutation = useUpdateResult(id);

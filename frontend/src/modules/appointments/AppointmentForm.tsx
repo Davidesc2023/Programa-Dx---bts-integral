@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { appointmentSchema, type AppointmentInput } from '@/lib/validators';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { PatientPicker } from '@/components/ui/PatientPicker';
 
 interface AppointmentFormProps {
   defaultValues?: Partial<AppointmentInput>;
@@ -30,6 +31,7 @@ export function AppointmentForm({
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors, isDirty },
   } = useForm<AppointmentInput>({
     resolver: zodResolver(appointmentSchema),
@@ -56,12 +58,18 @@ export function AppointmentForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <Input
-        label="ID del Paciente *"
-        placeholder="UUID del paciente"
-        {...register('patientId')}
-        error={errors.patientId?.message}
-        disabled={isEdit}
+      <Controller
+        name="patientId"
+        control={control}
+        render={({ field }) => (
+          <PatientPicker
+            label="Paciente *"
+            value={field.value}
+            onChange={field.onChange}
+            error={errors.patientId?.message}
+            disabled={isEdit}
+          />
+        )}
       />
 
       <Input

@@ -4,8 +4,8 @@
 - **Project Name**: Sistema de Solicitud de Laboratorios (APP-DX)
 - **Project Type**: Brownfield (incremento activo)
 - **Start Date**: 2026-04-13
-- **Current Phase**: CONSTRUCTION — Increment v8: Deployment
-- **Current Stage**: COMPLETE — Increment v8 finalizado
+- **Current Phase**: CONSTRUCTION — Increment v9: Flujo Clínico Completo + UX Fixes
+- **Current Stage**: IN PROGRESS
 
 ## Workspace State
 - **Existing Code**: No
@@ -141,3 +141,18 @@
 - [x] UDT-D03: GitHub Actions CI/CD — Complete (2026-04-15)
 - [x] Build and Test — Deployment Verification — Complete (2026-04-14) — Docker runner ✅, 96/96 tests PASS, exit code 0, .dockerignore fix aplicado
 - [x] Post-Deploy Full Codebase Audit — Complete (2026-04-15) — 5 issues found & fixed; build re-verified: 17 routes, 0 TS errors; commits 67dacf4 + 7267d55 pushed to origin/main
+
+### INCEPTION PHASE — Increment v9: Flujo Clínico Completo + UX Fixes
+- [x] Workspace Detection — Complete (2026-04-16) — Brownfield; 4 páginas con use(params) React 19 detectadas; tipos de documento colombianos faltantes; picker de paciente ausente
+- [x] Requirements Analysis — Complete (2026-04-16) — Análisis directo desde codebase
+- [x] User Stories — Complete (2026-04-16) — 10 historias (HU-V9-01 a HU-V9-10) en aidlc-docs/inception/user-stories/v9-stories.md
+- [x] Workflow Planning — Complete (2026-04-16) — 4 UDTs: V9-01 bugfix, V9-02 document-types, V9-03 PatientPicker, V9-04 wire-forms
+- [x] Application Design — Complete (2026-04-16) — PatientPicker combobox, OrderForm/AppointmentForm actualizados
+- [x] Units Generation — Complete (2026-04-16)
+
+### CONSTRUCTION PHASE — Increment v9: Flujo Clínico Completo + UX Fixes
+- [x] UDT-V9-01: Fix use(params) en 4 páginas [id] — Complete (2026-04-16) — patients/edit, orders/[id], results/[id], results/[id]/edit
+- [x] UDT-V9-02: DocumentType CC/TI/RC — Complete (2026-04-16) — Prisma schema, migration SQL, frontend enums/validators/PatientForm
+- [x] UDT-V9-03: PatientPicker component — Complete (2026-04-16) — components/ui/PatientPicker.tsx; combobox con debounce y dropdown
+- [x] UDT-V9-04: Wire PatientPicker en OrderForm + AppointmentForm — Complete (2026-04-16)
+- [ ] Build and Test — PENDING

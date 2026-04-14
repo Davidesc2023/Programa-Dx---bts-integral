@@ -1,6 +1,5 @@
 'use client';
 
-import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
@@ -9,11 +8,11 @@ import { usePatient, useUpdatePatient } from '@/modules/patients/usePatients';
 import type { PatientFormValues } from '@/lib/validators';
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 export default function EditPatientPage({ params }: Props) {
-  const { id } = use(params);
+  const { id } = params;
   const router = useRouter();
   const { data: patient, isLoading, isError } = usePatient(id);
   const mutation = useUpdatePatient(id, () => router.push('/patients'));

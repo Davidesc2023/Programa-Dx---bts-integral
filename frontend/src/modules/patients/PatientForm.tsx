@@ -9,8 +9,11 @@ import { DocumentType } from '@/types/enums';
 import type { Patient } from '@/types/api.types';
 
 const DOCUMENT_TYPE_OPTIONS = [
-  { value: DocumentType.DNI, label: 'DNI' },
+  { value: DocumentType.CC, label: 'Cédula de Ciudadanía' },
+  { value: DocumentType.TI, label: 'Tarjeta de Identidad' },
+  { value: DocumentType.RC, label: 'Registro Civil' },
   { value: DocumentType.CE, label: 'Cédula de Extranjería' },
+  { value: DocumentType.DNI, label: 'DNI' },
   { value: DocumentType.PASAPORTE, label: 'Pasaporte' },
   { value: DocumentType.NIT, label: 'NIT' },
 ];

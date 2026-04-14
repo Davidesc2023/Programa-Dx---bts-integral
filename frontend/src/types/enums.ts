@@ -34,6 +34,9 @@ export enum DocumentType {
   PASAPORTE = 'PASAPORTE',
   CE = 'CE',
   NIT = 'NIT',
+  CC = 'CC',
+  TI = 'TI',
+  RC = 'RC',
 }
 
 export enum Priority {
@@ -90,6 +93,9 @@ export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
   [DocumentType.PASAPORTE]: 'Pasaporte',
   [DocumentType.CE]: 'C.E.',
   [DocumentType.NIT]: 'NIT',
+  [DocumentType.CC]: 'Cédula de Ciudadanía',
+  [DocumentType.TI]: 'Tarjeta de Identidad',
+  [DocumentType.RC]: 'Registro Civil',
 };
 
 export const ROLE_LABELS: Record<UserRole, string> = {
