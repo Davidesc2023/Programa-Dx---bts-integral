@@ -35,11 +35,17 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
+  // Accept comma-separated origins or wildcard from CORS_ORIGIN env var.
+  // Fallback to '*' so the Vercel frontend can reach this API without config.
+  const rawOrigin = process.env.CORS_ORIGIN ?? '*';
+  const corsOrigin: string | string[] =
+    rawOrigin === '*' ? '*' : rawOrigin.split(',').map((o) => o.trim());
+
   app.enableCors({
-    origin: process.env.CORS_ORIGIN ?? 'http://localhost:3001',
+    origin: corsOrigin,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
+    credentials: rawOrigin !== '*',
   });
 
   const port = process.env.PORT ?? 3000;

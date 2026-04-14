@@ -1,10 +1,14 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { clearTokens, getAccessToken } from '@/lib/token';
 
-// All requests go to /api/* which Next.js rewrites proxy to the NestJS backend.
-// This avoids CORS and keeps the backend URL server-side only (no NEXT_PUBLIC_ needed).
+// Call the Railway backend directly from the browser.
+// NEXT_PUBLIC_BACKEND_URL is baked at build time; fallback is the known Railway URL.
+const BACKEND_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL ??
+  'https://programa-dx-bts-integral-production.up.railway.app';
+
 export const api = axios.create({
-  baseURL: '/api',
+  baseURL: BACKEND_URL,
   headers: {
     'Content-Type': 'application/json',
   },
