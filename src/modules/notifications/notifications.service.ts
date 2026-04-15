@@ -22,6 +22,13 @@ interface ResultReadyData {
   doctorName: string;
 }
 
+interface AppointmentScheduledData {
+  appointmentId: string;
+  scheduledAt: Date;
+  patientEmail: string | null | undefined;
+  patientName: string;
+}
+
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
@@ -168,5 +175,37 @@ export class NotificationsService {
     }
 
     await Promise.all(sends);
+  }
+
+  async notifyAppointmentScheduled(data: AppointmentScheduledData): Promise<void> {
+    if (!data.patientEmail) {
+      this.logger.warn(
+        `[NOTIF] Sin email para paciente en cita ${data.appointmentId} — omitiendo notificación de cita`,
+      );
+      return;
+    }
+
+    const formattedDate = new Intl.DateTimeFormat('es-CO', {
+      dateStyle: 'full',
+      timeStyle: 'short',
+      timeZone: 'America/Bogota',
+    }).format(data.scheduledAt);
+
+    const html = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+  <h2 style="color: #2563eb; margin-top: 0;">Cita Agendada</h2>
+  <p>Estimado/a <strong>${data.patientName}</strong>,</p>
+  <p>Se ha agendado una cita de laboratorio para usted.</p>
+  <p><strong>Fecha y hora:</strong> ${formattedDate}</p>
+  <p>Por favor, preséntese puntualmente con su documento de identidad.</p>
+  <hr style="border: none; border-top: 1px solid #e5e7eb;" />
+  <p style="color: #6b7280; font-size: 12px; margin-bottom: 0;">Mensaje automático — Sistema APP-DX. No responder a este correo.</p>
+</div>`.trim();
+
+    await this.sendEmail({
+      to: data.patientEmail,
+      subject: `Cita agendada — ${formattedDate}`,
+      html,
+    });
   }
 }

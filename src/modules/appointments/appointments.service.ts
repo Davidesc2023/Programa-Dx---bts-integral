@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { AppointmentStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { softDelete } from '../../common/helpers/soft-delete.helper';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { FindAppointmentsQueryDto } from './dto/find-appointments-query.dto';
@@ -44,12 +45,15 @@ const TERMINAL_STATUSES: AppointmentStatus[] = [
 
 @Injectable()
 export class AppointmentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   async create(dto: CreateAppointmentDto, createdBy: string) {
     const patient = await this.prisma.patient.findFirst({
       where: { id: dto.patientId, deletedAt: null },
-      select: { id: true },
+      select: { id: true, firstName: true, lastName: true, email: true },
     });
 
     if (!patient) {
@@ -64,7 +68,7 @@ export class AppointmentsService {
       if (!order) throw new NotFoundException('Orden no encontrada');
     }
 
-    return this.prisma.appointment.create({
+    const appointment = await this.prisma.appointment.create({
       data: {
         patientId: dto.patientId,
         orderId: dto.orderId,
@@ -74,6 +78,18 @@ export class AppointmentsService {
       },
       select: APPOINTMENT_SELECT,
     });
+
+    // Dispatch notification — fire-and-forget (no bloquear respuesta)
+    this.notificationsService
+      .notifyAppointmentScheduled({
+        appointmentId: appointment.id,
+        scheduledAt: appointment.scheduledAt,
+        patientEmail: patient!.email,
+        patientName: `${patient!.firstName} ${patient!.lastName}`,
+      })
+      .catch(() => null);
+
+    return appointment;
   }
 
   async findAll(query: FindAppointmentsQueryDto) {
