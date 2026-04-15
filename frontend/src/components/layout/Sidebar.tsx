@@ -30,37 +30,37 @@ const NAV_ITEMS: NavItem[] = [
     label: 'Dashboard',
     href: '/dashboard',
     icon: LayoutDashboard,
-    roles: [UserRole.ADMIN, UserRole.OPERADOR, UserRole.LABORATORIO],
+    roles: [UserRole.ADMIN, UserRole.OPERADOR, UserRole.LABORATORIO, UserRole.MEDICO],
   },
   {
     label: 'Pacientes',
     href: '/patients',
     icon: Users,
-    roles: [UserRole.ADMIN, UserRole.OPERADOR],
+    roles: [UserRole.ADMIN, UserRole.OPERADOR, UserRole.MEDICO],
   },
   {
     label: 'Órdenes',
     href: '/orders',
     icon: ClipboardList,
-    roles: [UserRole.ADMIN, UserRole.OPERADOR, UserRole.LABORATORIO],
+    roles: [UserRole.ADMIN, UserRole.OPERADOR, UserRole.LABORATORIO, UserRole.MEDICO],
   },
   {
     label: 'Consentimientos',
     href: '/consents',
     icon: FileText,
-    roles: [UserRole.ADMIN, UserRole.OPERADOR],
+    roles: [UserRole.ADMIN, UserRole.OPERADOR, UserRole.MEDICO],
   },
   {
     label: 'Resultados',
     href: '/results',
     icon: FlaskConical,
-    roles: [UserRole.ADMIN, UserRole.OPERADOR, UserRole.LABORATORIO],
+    roles: [UserRole.ADMIN, UserRole.OPERADOR, UserRole.LABORATORIO, UserRole.MEDICO],
   },
   {
     label: 'Citas',
     href: '/appointments',
     icon: Calendar,
-    roles: [UserRole.ADMIN, UserRole.OPERADOR],
+    roles: [UserRole.ADMIN, UserRole.OPERADOR, UserRole.MEDICO],
   },
   {
     label: 'Usuarios',
@@ -83,12 +83,21 @@ export function Sidebar() {
   const roleLabel = user?.role ? ROLE_LABELS[user.role] : '';
 
   return (
-    <aside className="flex flex-col w-60 shrink-0 h-screen bg-white border-r border-gray-200 shadow-sm">
+    <aside
+      className="flex flex-col w-60 shrink-0 h-screen border-r"
+      style={{
+        background: '#0A1410',
+        borderColor: 'rgba(176,252,206,0.08)',
+      }}
+    >
       {/* Logo */}
-      <div className="flex items-center gap-2 px-4 py-5 border-b border-gray-100">
+      <div
+        className="flex items-center gap-2 px-4 py-5 border-b"
+        style={{ borderColor: 'rgba(176,252,206,0.08)' }}
+      >
         <Link href="/dashboard" className="flex items-center gap-2">
           <Image src="/logo.png" alt="BTS Integral" width={36} height={36} />
-          <span className="text-sm font-semibold text-gray-800 leading-tight">
+          <span className="text-sm font-semibold leading-tight" style={{ color: '#B0FCCE' }}>
             BTS Integral
           </span>
         </Link>
@@ -106,19 +115,17 @@ export function Sidebar() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={cn(
-                    'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-primary-50 text-primary-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
-                  )}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all"
+                  style={{
+                    background: isActive ? 'rgba(43,255,248,0.1)' : 'transparent',
+                    color: isActive ? '#2BFFF8' : 'rgba(176,252,206,0.6)',
+                    border: isActive ? '1px solid rgba(43,255,248,0.2)' : '1px solid transparent',
+                  }}
                 >
                   <Icon
                     size={18}
-                    className={cn(
-                      'shrink-0',
-                      isActive ? 'text-primary-600' : 'text-gray-400',
-                    )}
+                    className="shrink-0"
+                    style={{ color: isActive ? '#2BFFF8' : 'rgba(176,252,206,0.4)' }}
                   />
                   {item.label}
                 </Link>
@@ -129,21 +136,30 @@ export function Sidebar() {
       </nav>
 
       {/* User footer */}
-      <div className="border-t border-gray-100 p-3">
+      <div
+        className="border-t p-3"
+        style={{ borderColor: 'rgba(176,252,206,0.08)' }}
+      >
         <div className="flex items-center gap-2 px-2 py-2">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-500 text-white text-sm font-semibold shrink-0">
+          <div
+            className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold shrink-0"
+            style={{ background: 'rgba(43,255,248,0.15)', color: '#2BFFF8', border: '1px solid rgba(43,255,248,0.3)' }}
+          >
             {initial}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-gray-900 truncate">
+            <p className="text-xs font-medium truncate" style={{ color: '#B0FCCE' }}>
               {user?.email ?? '—'}
             </p>
-            <p className="text-xs text-gray-400">{roleLabel}</p>
+            <p className="text-xs" style={{ color: 'rgba(176,252,206,0.4)' }}>{roleLabel}</p>
           </div>
           <button
             onClick={logout}
             title="Cerrar sesión"
-            className="p-1 rounded text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+            className="p-1 rounded transition-colors"
+            style={{ color: 'rgba(176,252,206,0.4)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#ff6b6b')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(176,252,206,0.4)')}
           >
             <LogOut size={16} />
           </button>

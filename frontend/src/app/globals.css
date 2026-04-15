@@ -4,9 +4,9 @@
 
 @layer base {
   :root {
-    --color-primary: #1B7A6B;
-    --color-accent: #F5C518;
-    --color-secondary: #4490D9;
+    --color-primary: #007342;
+    --color-accent: #2BFFF8;
+    --color-secondary: #B0FCCE;
   }
 
   * {
@@ -14,6 +14,45 @@
   }
 
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply antialiased;
+    background-color: #060B0A;
+    color: #B0FCCE;
+  }
+
+  /* ── Dark overrides for native form elements ── */
+  input:not([type='checkbox']):not([type='radio']):not([type='submit']),
+  textarea,
+  select {
+    background-color: rgba(176, 252, 206, 0.04) !important;
+    border-color: rgba(176, 252, 206, 0.15) !important;
+    color: #B0FCCE !important;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: rgba(176, 252, 206, 0.3) !important;
+  }
+
+  select option {
+    background-color: #0d1f1a;
+    color: #B0FCCE;
+  }
+
+  /* ── Table defaults ── */
+  table {
+    border-collapse: collapse;
+  }
+
+  thead th {
+    color: rgba(176, 252, 206, 0.5);
+  }
+
+  tbody tr {
+    border-color: rgba(176, 252, 206, 0.06);
+  }
+
+  /* ── Prose dark (consent document preview) ── */
+  .prose {
+    color: rgba(176, 252, 206, 0.8);
   }
 }

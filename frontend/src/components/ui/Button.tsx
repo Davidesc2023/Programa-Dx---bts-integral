@@ -9,15 +9,16 @@ type Size = 'sm' | 'md' | 'lg';
 
 const variantStyles: Record<Variant, string> = {
   primary:
-    'bg-primary-500 text-white hover:bg-primary-600 disabled:bg-primary-300 focus-visible:ring-primary-400',
+    'bg-[#007342] text-white hover:bg-[#005c34] disabled:opacity-40 focus-visible:ring-[#2BFFF8]',
   secondary:
-    'bg-secondary-400 text-white hover:bg-secondary-500 disabled:bg-secondary-200 focus-visible:ring-secondary-300',
+    'bg-[rgba(43,255,248,0.12)] text-[#2BFFF8] border border-[rgba(43,255,248,0.25)] hover:bg-[rgba(43,255,248,0.2)] disabled:opacity-40 focus-visible:ring-[#2BFFF8]',
   danger:
-    'bg-red-600 text-white hover:bg-red-700 disabled:bg-red-300 focus-visible:ring-red-400',
+    'bg-red-700 text-white hover:bg-red-800 disabled:opacity-40 focus-visible:ring-red-500',
   ghost:
-    'bg-transparent text-gray-700 hover:bg-gray-100 disabled:text-gray-400 focus-visible:ring-gray-300',
+    'bg-transparent hover:bg-[rgba(176,252,206,0.08)] disabled:opacity-40 focus-visible:ring-[#B0FCCE]'
+    + ' text-[rgba(176,252,206,0.7)] hover:text-[#B0FCCE]',
   outline:
-    'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:text-gray-400 focus-visible:ring-gray-300',
+    'border border-[rgba(176,252,206,0.2)] hover:border-[#2BFFF8] text-[rgba(176,252,206,0.7)] hover:text-[#2BFFF8] bg-transparent disabled:opacity-40 focus-visible:ring-[#2BFFF8]',
 };
 
 const sizeStyles: Record<Size, string> = {
