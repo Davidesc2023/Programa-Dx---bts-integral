@@ -6,6 +6,17 @@ frontend/node_modules/
 dist/
 frontend/.next/
 frontend/out/
+# Prevent accidental tsc emit artifacts inside frontend/src
+frontend/src/**/*.js
+frontend/src/**/*.js.map
+frontend/src/**/*.d.ts
+# TypeScript incremental build info
+*.tsbuildinfo
+frontend/*.tsbuildinfo
+# Tailwind config artifacts
+frontend/tailwind.config.js
+frontend/tailwind.config.js.map
+frontend/tailwind.config.d.ts
 
 # ─── Environment variables — NEVER commit real secrets ───────────────────────
 .env
