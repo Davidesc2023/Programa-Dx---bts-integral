@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { ChevronLeft, AlertCircle, CheckCircle, XCircle, ChevronDown, ChevronUp, Download } from 'lucide-react';
 import { getPortalConsentForOrder, acceptPortalConsent, rejectPortalConsent } from '@/services/portal.service';
 import type { Consent } from '@/types/api.types';
 import { getApiErrorMessage } from '@/services/api';
@@ -19,6 +19,7 @@ export default function PortalConsentPage({
   const [notes, setNotes] = useState('');
   const [actionLoading, setActionLoading] = useState<'accept' | 'reject' | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [showDocument, setShowDocument] = useState(false);
 
   useEffect(() => {
     getPortalConsentForOrder(orderId)
@@ -93,6 +94,38 @@ export default function PortalConsentPage({
             <p className="text-sm text-gray-600">
               <span className="font-medium">Firmado por:</span> {consent.signedBy}
             </p>
+          )}
+
+          {/* Documento del consentimiento — disponible cuando el médico ha firmado */}
+          {consent.documentHtml && (
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <button
+                onClick={() => setShowDocument((v) => !v)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 text-sm font-medium text-gray-700 transition-colors"
+              >
+                <span>Leer documento de consentimiento</span>
+                {showDocument ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </button>
+              {showDocument && (
+                <div
+                  className="p-4 text-sm prose prose-sm max-w-none max-h-96 overflow-y-auto"
+                  dangerouslySetInnerHTML={{ __html: consent.documentHtml }}
+                />
+              )}
+            </div>
+          )}
+
+          {/* Link de descarga PDF — disponible una vez aceptado */}
+          {consent.documentPdfUrl && (
+            <a
+              href={consent.documentPdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700 font-medium"
+            >
+              <Download size={15} />
+              Descargar PDF del consentimiento firmado
+            </a>
           )}
 
           {/* Resolved message */}

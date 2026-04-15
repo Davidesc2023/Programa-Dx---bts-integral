@@ -1,15 +1,18 @@
 import {
-  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
+import { ConsentsService } from '../consents/consents.service';
 import { RespondConsentPortalDto } from './dto/respond-consent-portal.dto';
 
 @Injectable()
 export class PatientPortalService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly consentsService: ConsentsService,
+  ) {}
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -191,6 +194,12 @@ export class PatientPortalService {
         id: true,
         status: true,
         doctorSignedAt: true,
+        doctorNameSnapshot: true,
+        patientNameSnapshot: true,
+        patientSignedAt: true,
+        accepted: true,
+        documentHtml: true,
+        documentPdfUrl: true,
         patientResponseAt: true,
         notes: true,
         createdAt: true,
@@ -216,41 +225,23 @@ export class PatientPortalService {
   ) {
     const patient = await this.getLinkedPatient(userId);
 
+    // Verify the consent belongs to this patient before delegating
     const consent = await this.prisma.consent.findFirst({
       where: {
         id: consentId,
         order: { patientId: patient.id, deletedAt: null },
       },
-      select: { id: true, status: true, orderId: true },
+      select: { id: true, orderId: true },
     });
 
     if (!consent) throw new NotFoundException('Consentimiento no encontrado');
 
-    if (consent.status !== 'ENVIADO_PACIENTE') {
-      throw new BadRequestException(
-        'Solo se puede responder un consentimiento en estado ENVIADO_PACIENTE',
-      );
-    }
-
-    const newConsentStatus = accept ? 'ACEPTADO' : 'RECHAZADO';
-    const newOrderStatus = accept ? 'ACCEPTED' : 'RECHAZADA';
-
-    await this.prisma.$transaction([
-      this.prisma.consent.update({
-        where: { id: consentId },
-        data: {
-          status: newConsentStatus,
-          patientResponseAt: new Date(),
-          notes: dto.notes,
-        },
-      }),
-      this.prisma.order.update({
-        where: { id: consent.orderId },
-        data: { status: newOrderStatus },
-      }),
-    ]);
-
-    return { consentId, accepted: accept };
+    // Delegate to ConsentsService so PDF generation + R2 upload (v13) run for ACEPTADO
+    return this.consentsService.respond(
+      consent.orderId,
+      { response: accept ? 'ACEPTADO' : 'RECHAZADO', notes: dto.notes },
+      userId,
+    );
   }
 
   // ── Results ───────────────────────────────────────────────────────────────────
