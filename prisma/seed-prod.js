@@ -44,7 +44,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    console.error('Seed error:', e);
-    process.exit(1);
+    // Log the error but do NOT exit with 1 — the main app must always start.
+    console.error('[SEED] Error during seed (non-fatal):', e?.message ?? e);
   })
   .finally(() => prisma.$disconnect());

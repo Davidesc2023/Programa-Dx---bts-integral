@@ -39,4 +39,4 @@ COPY --from=builder /app/dist ./dist
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "npx prisma migrate resolve --rolled-back '20260417100000_add_patient_portal' 2>/dev/null; npx prisma migrate deploy && node prisma/seed-prod.js && node dist/main.js"]
+CMD ["sh", "-c", "npx prisma migrate resolve --rolled-back '20260417100000_add_patient_portal' 2>/dev/null; npx prisma migrate deploy && (node prisma/seed-prod.js || echo '[SEED] seed-prod.js failed — continuing startup') && node dist/main.js"]
