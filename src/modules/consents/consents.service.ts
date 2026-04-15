@@ -7,6 +7,11 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import {
+  buildConsentHtml,
+  PdfService,
+} from '../pdf/pdf.service';
+import { StorageService } from '../storage/storage.service';
 import { CreateConsentDto } from './dto/create-consent.dto';
 import { RespondConsentDto } from './dto/respond-consent.dto';
 import { SignConsentDto } from './dto/sign-consent.dto';
@@ -17,6 +22,12 @@ const CONSENT_SELECT = {
   status: true,
   doctorId: true,
   doctorSignedAt: true,
+  doctorNameSnapshot: true,
+  patientNameSnapshot: true,
+  patientSignedAt: true,
+  accepted: true,
+  documentHtml: true,
+  documentPdfUrl: true,
   patientResponseAt: true,
   notes: true,
   createdAt: true,
@@ -28,6 +39,7 @@ const CONSENT_SELECT = {
       id: true,
       status: true,
       physician: true,
+      createdAt: true,
       patient: {
         select: {
           id: true,
@@ -45,6 +57,8 @@ const CONSENT_SELECT = {
       id: true,
       email: true,
       role: true,
+      firstName: true,
+      lastName: true,
     },
   },
 } as const;
@@ -56,6 +70,8 @@ export class ConsentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly pdfService: PdfService,
+    private readonly storageService: StorageService,
   ) {}
 
   async create(orderId: string, dto: CreateConsentDto, createdBy: string) {
@@ -140,12 +156,71 @@ export class ConsentsService {
       );
     }
 
+    // Fetch doctor details for snapshot + HTML template
+    const doctor = await this.prisma.user.findUnique({
+      where: { id: doctorId },
+      select: {
+        firstName: true,
+        lastName: true,
+        specialty: true,
+        medicalLicense: true,
+      },
+    });
+
+    if (!doctor) {
+      throw new NotFoundException('Médico no encontrado');
+    }
+
+    // Fetch order + patient for HTML template
+    const orderData = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      select: {
+        createdAt: true,
+        patient: {
+          select: {
+            firstName: true,
+            lastName: true,
+            documentType: true,
+            documentNumber: true,
+          },
+        },
+      },
+    });
+
+    if (!orderData) {
+      throw new NotFoundException('Orden no encontrada');
+    }
+
+    const doctorName = [doctor.firstName, doctor.lastName]
+      .filter(Boolean)
+      .join(' ') || 'Médico';
+    const patientName = `${orderData.patient.firstName} ${orderData.patient.lastName}`;
+    const doctorSignedAt = new Date();
+
+    // Build documentHtml at sign time (doctor + patient data both available)
+    // patientSignedAt is a placeholder; it will be updated to true date at respond()
+    const documentHtml = buildConsentHtml({
+      orderId,
+      orderCreatedAt: orderData.createdAt,
+      patientName,
+      patientDocumentType: orderData.patient.documentType,
+      patientDocumentNumber: orderData.patient.documentNumber,
+      doctorName,
+      doctorSpecialty: doctor.specialty,
+      doctorMedicalLicense: doctor.medicalLicense,
+      doctorSignedAt,
+      // placeholder — will be filled in once patient accepts
+      patientSignedAt: doctorSignedAt,
+    });
+
     return this.prisma.consent.update({
       where: { orderId },
       data: {
         status: 'FIRMADO_MEDICO',
         doctorId,
-        doctorSignedAt: new Date(),
+        doctorSignedAt,
+        doctorNameSnapshot: doctorName,
+        documentHtml,
         notes: dto.notes ?? undefined,
         updatedBy: doctorId,
       },
@@ -194,7 +269,14 @@ export class ConsentsService {
   async respond(orderId: string, dto: RespondConsentDto, updatedBy: string) {
     const consent = await this.prisma.consent.findUnique({
       where: { orderId },
-      select: { id: true, status: true, deletedAt: true },
+      select: {
+        id: true,
+        status: true,
+        deletedAt: true,
+        documentHtml: true,
+        doctorNameSnapshot: true,
+        doctorSignedAt: true,
+      },
     });
 
     if (!consent || consent.deletedAt) {
@@ -207,17 +289,75 @@ export class ConsentsService {
       );
     }
 
-    const newConsentStatus =
-      dto.response === 'ACEPTADO' ? 'ACEPTADO' : 'RECHAZADO';
-    const newOrderStatus =
-      dto.response === 'ACEPTADO' ? 'ACCEPTED' : 'RECHAZADA';
+    const isAccepted = dto.response === 'ACEPTADO';
+    const newConsentStatus = isAccepted ? 'ACEPTADO' : 'RECHAZADO';
+    const newOrderStatus = isAccepted ? 'ACCEPTED' : 'RECHAZADA';
+    const patientSignedAt = new Date();
+
+    // Fetch patient name snapshot from order
+    const orderData = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      select: {
+        createdAt: true,
+        patient: {
+          select: {
+            firstName: true,
+            lastName: true,
+            documentType: true,
+            documentNumber: true,
+          },
+        },
+      },
+    });
+
+    const patientName = orderData
+      ? `${orderData.patient.firstName} ${orderData.patient.lastName}`
+      : 'Paciente';
+
+    // Generate PDF and upload to R2 only if accepted
+    let documentPdfUrl: string | null = null;
+
+    if (isAccepted && consent.documentHtml) {
+      try {
+        // Rebuild final HTML with real patientSignedAt timestamp
+        const finalHtml = orderData
+          ? buildConsentHtml({
+              orderId,
+              orderCreatedAt: orderData.createdAt,
+              patientName,
+              patientDocumentType: orderData.patient.documentType,
+              patientDocumentNumber: orderData.patient.documentNumber,
+              doctorName: consent.doctorNameSnapshot ?? 'Médico',
+              doctorSpecialty: null,
+              doctorMedicalLicense: null,
+              doctorSignedAt: consent.doctorSignedAt ?? new Date(),
+              patientSignedAt,
+            })
+          : consent.documentHtml;
+
+        const pdfBuffer = await this.pdfService.generateConsentPdf(finalHtml);
+        const key = `consents/${orderId}/consent-${Date.now()}.pdf`;
+        documentPdfUrl = await this.storageService.uploadBuffer(
+          key,
+          pdfBuffer,
+          'application/pdf',
+        );
+      } catch (err) {
+        // PDF/upload failure must not block the consent acceptance
+        this.logger.error('Error generating/uploading consent PDF', err);
+      }
+    }
 
     const [updated] = await this.prisma.$transaction([
       this.prisma.consent.update({
         where: { orderId },
         data: {
           status: newConsentStatus,
-          patientResponseAt: new Date(),
+          patientResponseAt: patientSignedAt,
+          patientSignedAt,
+          patientNameSnapshot: patientName,
+          accepted: isAccepted,
+          ...(documentPdfUrl ? { documentPdfUrl } : {}),
           updatedBy,
         },
         select: CONSENT_SELECT,
@@ -232,7 +372,7 @@ export class ConsentsService {
       .notifyConsentResponded({
         orderId,
         doctorEmail: updated.doctor?.email ?? null,
-        patientName: `${updated.order.patient.firstName} ${updated.order.patient.lastName}`,
+        patientName,
         response: newConsentStatus as 'ACEPTADO' | 'RECHAZADO',
       })
       .catch((err) =>

@@ -214,14 +214,14 @@
 
 ### CONSTRUCTION PHASE — Increment v12: Notificaciones Reales + Flujo Operativo
 
-- [ ] UDT-V12-01: Resend integration + notifyResultReady — In Progress
-- [ ] UDT-V12-02: Wire notificaciones en OrdersService (COMPLETADA)
-- [ ] UDT-V12-03: Frontend — OrdersInProgress widget + orderTransitions PACIENTE fix
-- [ ] UDT-V12-04: Frontend — Portal nav badges (resultados + consentimientos)
-- [ ] UDT-V12-05: Backend — Unit tests NotificationsService (Resend mock)
+- [x] UDT-V12-01: Resend integration + notifyResultReady — Complete (2026-04-15)
+- [x] UDT-V12-02: Wire notificaciones en OrdersService (COMPLETADA) — Complete (2026-04-15)
+- [x] UDT-V12-03: Frontend — OrdersInProgress widget + orderTransitions PACIENTE fix — Complete (2026-04-15)
+- [x] UDT-V12-04: Frontend — Portal nav badges (resultados + consentimientos) — Complete (2026-04-15)
+- [x] UDT-V12-05: Backend — Unit tests NotificationsService (Resend mock, 12 tests) — Complete (2026-04-15)
 - [ ] Build and Test
 
 ## Current Phase
 
-**Current Phase**: CONSTRUCTION — Increment v12: Notificaciones Reales + Flujo Operativo
-**HEAD**: `ab56133`
+**Current Phase**: CONSTRUCTION — Increment v12 — Build and Test pending
+**HEAD**: `3efbc5a`

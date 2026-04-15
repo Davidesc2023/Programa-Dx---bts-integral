@@ -169,20 +169,26 @@ model Order {
 // ============================================================
 
 model Consent {
-  id                String        @id @default(uuid())
-  orderId           String        @unique
-  order             Order         @relation(fields: [orderId], references: [id])
-  status            ConsentStatus @default(PENDIENTE_FIRMA_MEDICO)
-  doctorId          String?
-  doctor            User?         @relation(fields: [doctorId], references: [id])
-  doctorSignedAt    DateTime?
-  patientResponseAt DateTime?
-  notes             String?
-  deletedAt         DateTime?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-  createdBy         String?
-  updatedBy         String?
+  id                  String        @id @default(uuid())
+  orderId             String        @unique
+  order               Order         @relation(fields: [orderId], references: [id])
+  status              ConsentStatus @default(PENDIENTE_FIRMA_MEDICO)
+  doctorId            String?
+  doctor              User?         @relation(fields: [doctorId], references: [id])
+  doctorSignedAt      DateTime?
+  doctorNameSnapshot  String?       // Snapshot del nombre del médico firmante
+  patientNameSnapshot String?       // Snapshot del nombre del paciente
+  patientSignedAt     DateTime?     // Fecha de aceptación/rechazo del paciente
+  accepted            Boolean?      // true=ACEPTADO, false=RECHAZADO, null=pendiente
+  documentHtml        String?       // HTML del consentimiento generado al firmar
+  documentPdfUrl      String?       // URL del PDF en R2 (solo si accepted=true)
+  patientResponseAt   DateTime?     // Fecha de respuesta del paciente (legacy)
+  notes               String?
+  deletedAt           DateTime?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  createdBy           String?
+  updatedBy           String?
 
   @@map("consents")
 }

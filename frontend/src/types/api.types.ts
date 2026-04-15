@@ -127,10 +127,19 @@ export interface Consent {
   id: string;
   orderId: string;
   status: ConsentStatus;
+  // Legacy compatibility fields (kept for existing UI code)
   signedBy: string | null;
   signedAt: string | null;
   patientResponse: string | null;
   respondedAt: string | null;
+  // v13 — legal fields
+  doctorNameSnapshot: string | null;
+  patientNameSnapshot: string | null;
+  patientSignedAt: string | null;
+  accepted: boolean | null;
+  documentHtml: string | null;
+  documentPdfUrl: string | null;
+  notes: string | null;
   createdAt: string;
   updatedAt: string;
 }
