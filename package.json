@@ -84,7 +84,8 @@
       "^puppeteer-core$": "<rootDir>/__mocks__/puppeteer-core.ts",
       "^@sparticuz/chromium$": "<rootDir>/__mocks__/@sparticuz/chromium.ts",
       "^@aws-sdk/client-s3$": "<rootDir>/__mocks__/@aws-sdk/client-s3.ts",
-      "^@nestjs/swagger$": "<rootDir>/__mocks__/@nestjs/swagger.ts"
+      "^@nestjs/swagger$": "<rootDir>/__mocks__/@nestjs/swagger.ts",
+      "^bcrypt$": "<rootDir>/__mocks__/bcrypt.ts"
     }
   },
   "prisma": {

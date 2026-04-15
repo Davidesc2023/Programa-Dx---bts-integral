@@ -223,5 +223,19 @@
 
 ## Current Phase
 
-**Current Phase**: CONSTRUCTION — Increment v12 — Build and Test pending
-**HEAD**: `3efbc5a`
+**Current Phase**: CONSTRUCTION — Increment v14 — Build and Test COMPLETE
+**HEAD**: `a9992c3`
+
+### INCEPTION PHASE — Increment v14: Bug Fixes + Closure v13 Legal Loop
+
+- [x] Workspace Detection — Complete (2026-04-15) — Brownfield; 4 GAPs confirmados del diagnóstico previo
+- [x] Requirements Analysis — Complete (2026-04-15) — Minimal depth; 4 REQs directos sin preguntas de clarificación
+- [x] Workflow Planning — Complete (2026-04-15) — 4 UDTs: notifications fix, portal select fix, respondConsent→ConsentsService, portal page HTML+PDF
+
+### CONSTRUCTION PHASE — Increment v14: Bug Fixes + Closure v13 Legal Loop
+
+- [x] UDT-V14-01: Fix código duplicado en notifications.service.ts (GAP-01) — Complete (2026-04-15)
+- [x] UDT-V14-02: Fix getConsentForOrder select → campos v13 (GAP-04) — Complete (2026-04-15)
+- [x] UDT-V14-03: Fix respondConsent → delegar a ConsentsService.respond() (GAP-02) — Complete (2026-04-15)
+- [x] UDT-V14-04: Portal consent page → documentHtml colapsable + PDF download link (GAP-03) — Complete (2026-04-15)
+- [x] Build and Test — Complete (2026-04-15) — 0 errores TypeScript; commit a9992c3 pushed to origin/main

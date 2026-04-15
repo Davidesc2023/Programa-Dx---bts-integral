@@ -16,11 +16,16 @@ const mockHost = {
 
 describe('GlobalExceptionFilter', () => {
   let filter: GlobalExceptionFilter;
+  const originalNodeEnv = process.env.NODE_ENV;
 
   beforeEach(() => {
     filter = new GlobalExceptionFilter();
     jest.clearAllMocks();
-    process.env.NODE_ENV = 'development';
+    (process.env as Record<string, string | undefined>).NODE_ENV = 'development';
+  });
+
+  afterAll(() => {
+    (process.env as Record<string, string | undefined>).NODE_ENV = originalNodeEnv;
   });
 
   it('mapea HttpException al status y mensaje correcto', () => {
@@ -70,7 +75,7 @@ describe('GlobalExceptionFilter', () => {
   });
 
   it('no incluye stack trace en producción', () => {
-    process.env.NODE_ENV = 'production';
+    (process.env as Record<string, string | undefined>).NODE_ENV = 'production';
 
     filter.catch(new ConflictException('Conflicto'), mockHost);
 

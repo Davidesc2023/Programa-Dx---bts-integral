@@ -1,8 +1,9 @@
-// Stub for '@aws-sdk/client-s3' — used by ts-jest during test compilation.
+// Stub for '@aws-sdk/client-s3' — used by ts-jest and nest build.
 export class S3Client {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(_config?: unknown) {}
-  send = jest.fn().mockResolvedValue({});
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  send = (..._args: unknown[]): Promise<Record<string, unknown>> => Promise.resolve({});
 }
 export class PutObjectCommand {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

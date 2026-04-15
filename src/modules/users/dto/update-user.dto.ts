@@ -2,10 +2,10 @@ import { IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UpdateUserDto {
   @IsOptional()
-  @IsEnum(['ADMIN', 'OPERADOR', 'LABORATORIO', 'MEDICO'], {
-    message: 'El rol debe ser ADMIN, OPERADOR, LABORATORIO o MEDICO',
+  @IsEnum(['ADMIN', 'OPERADOR', 'LABORATORIO', 'MEDICO', 'PACIENTE'], {
+    message: 'El rol debe ser ADMIN, OPERADOR, LABORATORIO, MEDICO o PACIENTE',
   })
-  role?: 'ADMIN' | 'OPERADOR' | 'LABORATORIO' | 'MEDICO';
+  role?: 'ADMIN' | 'OPERADOR' | 'LABORATORIO' | 'MEDICO' | 'PACIENTE';
 
   @IsOptional()
   @IsString()

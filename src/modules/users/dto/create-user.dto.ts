@@ -17,11 +17,11 @@ export class CreateUserDto {
   @MinLength(8, { message: 'La contraseña debe tener al menos 8 caracteres' })
   password: string;
 
-  @ApiProperty({ enum: ['ADMIN', 'OPERADOR', 'LABORATORIO', 'MEDICO'], example: 'MEDICO' })
-  @IsEnum(['ADMIN', 'OPERADOR', 'LABORATORIO', 'MEDICO'], {
-    message: 'El rol debe ser ADMIN, OPERADOR, LABORATORIO o MEDICO',
+  @ApiProperty({ enum: ['ADMIN', 'OPERADOR', 'LABORATORIO', 'MEDICO', 'PACIENTE'], example: 'MEDICO' })
+  @IsEnum(['ADMIN', 'OPERADOR', 'LABORATORIO', 'MEDICO', 'PACIENTE'], {
+    message: 'El rol debe ser ADMIN, OPERADOR, LABORATORIO, MEDICO o PACIENTE',
   })
-  role: 'ADMIN' | 'OPERADOR' | 'LABORATORIO' | 'MEDICO';
+  role: 'ADMIN' | 'OPERADOR' | 'LABORATORIO' | 'MEDICO' | 'PACIENTE';
 
   @ApiPropertyOptional({ example: 'Carlos' })
   @IsOptional()

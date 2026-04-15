@@ -36,11 +36,15 @@ const mockPrisma = {
   $transaction: jest.fn(),
 };
 
+const mockNotifications = {
+  notifyResultReady: jest.fn().mockResolvedValue(undefined),
+};
+
 describe('OrdersService', () => {
   let service: OrdersService;
 
   beforeEach(() => {
-    service = new OrdersService(mockPrisma as any);
+    service = new OrdersService(mockPrisma as any, mockNotifications as any);
     jest.clearAllMocks();
   });
 

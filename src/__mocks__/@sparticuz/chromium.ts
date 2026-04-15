@@ -1,7 +1,9 @@
-// Stub for '@sparticuz/chromium' — used by ts-jest during test compilation.
+// Stub for '@sparticuz/chromium' — used by ts-jest and nest build.
 const chromium = {
-  executablePath: jest.fn().mockResolvedValue('/usr/bin/chromium'),
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  executablePath: (..._args: unknown[]) => Promise.resolve('/usr/bin/chromium'),
   args: [] as string[],
   defaultViewport: null,
+  headless: true as boolean,
 };
 export default chromium;

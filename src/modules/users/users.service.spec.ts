@@ -122,7 +122,7 @@ describe('UsersService', () => {
     it('filtra por role=MEDICO cuando se especifica', async () => {
       mockPrisma.user.findMany.mockResolvedValue([]);
       mockPrisma.user.count.mockResolvedValue(0);
-      mockPrisma.$transaction.mockImplementation((fns: Array<() => unknown>) => Promise.all(fns.map((f) => f())));
+      mockPrisma.$transaction.mockResolvedValue([[], 0]);
 
       await service.findAll({ role: 'MEDICO', page: 1, limit: 10 });
 
