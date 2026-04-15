@@ -33,6 +33,7 @@ const BY_ROLE: Record<UserRole, TransitionMap> = {
   [UserRole.OPERADOR]: OPERADOR_TRANSITIONS,
   [UserRole.LABORATORIO]: LAB_TRANSITIONS,
   [UserRole.MEDICO]: {},
+  [UserRole.PACIENTE]: {},
 };
 
 export function getAllowedTransitions(

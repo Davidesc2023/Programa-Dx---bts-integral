@@ -3,6 +3,7 @@
 import { useDashboard } from '@/modules/dashboard/useDashboard';
 import { DashboardMetrics } from '@/modules/dashboard/DashboardMetrics';
 import { RecentOrders } from '@/modules/dashboard/RecentOrders';
+import { OrdersInProgress } from '@/modules/dashboard/OrdersInProgress';
 
 export default function DashboardPage() {
   const {
@@ -34,6 +35,7 @@ export default function DashboardPage() {
         completedOrders={completedOrders}
         isLoading={isLoading}
       />
+      <OrdersInProgress />
       <RecentOrders orders={recentOrders} isLoading={isLoading} />
     </div>
   );

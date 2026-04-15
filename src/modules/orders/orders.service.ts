@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { softDelete } from '../../common/helpers/soft-delete.helper';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { FindOrdersQueryDto } from './dto/find-orders-query.dto';
@@ -86,7 +87,10 @@ const ORDER_SELECT = {
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async create(dto: CreateOrderDto, createdBy: string) {
     const patient = await this.prisma.patient.findFirst({
@@ -190,11 +194,57 @@ export class OrdersService {
       );
     }
 
-    return this.prisma.order.update({
+    const updated = await this.prisma.order.update({
       where: { id },
       data: { status: newStatus as OrderStatus, updatedBy },
       select: ORDER_SELECT,
     });
+
+    if (newStatus === 'COMPLETADA') {
+      void this.dispatchResultReadyNotification(id, order);
+    }
+
+    return updated;
+  }
+
+  private async dispatchResultReadyNotification(
+    orderId: string,
+    order: { patient?: { firstName?: string; lastName?: string; documentNumber?: string } | null; doctor?: { email?: string | null; firstName?: string | null; lastName?: string | null } | null },
+  ): Promise<void> {
+    try {
+      // Fetch linked patient user email if exists
+      const patientLink = await this.prisma.patient.findFirst({
+        where: { id: (order as any).patientId, deletedAt: null },
+        select: { userId: true, firstName: true, lastName: true },
+      });
+
+      let patientEmail: string | null = null;
+      if (patientLink?.userId) {
+        const user = await this.prisma.user.findUnique({
+          where: { id: patientLink.userId },
+          select: { email: true },
+        });
+        patientEmail = user?.email ?? null;
+      }
+
+      const patientName = order.patient
+        ? `${order.patient.firstName ?? ''} ${order.patient.lastName ?? ''}`.trim()
+        : 'Paciente';
+
+      const doctorName = order.doctor
+        ? `${order.doctor.firstName ?? ''} ${order.doctor.lastName ?? ''}`.trim()
+        : 'Médico';
+
+      await this.notifications.notifyResultReady({
+        orderId,
+        patientEmail,
+        patientName,
+        doctorEmail: order.doctor?.email ?? null,
+        doctorName,
+      });
+    } catch (err) {
+      // Non-blocking: log and ignore notification errors
+    }
   }
 
   async remove(id: string, deletedBy: string) {

@@ -203,7 +203,25 @@
 - [ ] UDT-V11-09: Unit tests — patient-portal.service.spec.ts
 - [ ] Build and Test
 
+### INCEPTION PHASE — Increment v12: Notificaciones Reales + Flujo Operativo
+
+- [x] Workspace Detection — Complete (2026-04-15) — NotificationsService stub; notifyResultReady() ausente; orderTransitions.ts falta UserRole.PACIENTE; dashboard sin widget "en proceso"; portal sin badges
+- [x] Requirements Analysis — Complete (2026-04-15) — Q1=C (notif+UI), Q2=A (Resend), Q3=C (paciente+médico), Q4=D (detalle+dashboard), Q5=B (badge+email)
+- [x] User Stories — Complete (2026-04-15) — 6 historias HU-V12-01..06 en aidlc-docs/inception/user-stories/v12-stories.md
+- [x] Workflow Planning — Complete (2026-04-15) — 5 UDTs: V12-01 Resend, V12-02 wire orders, V12-03 dashboard widget, V12-04 portal badge, V12-05 tests
+- [x] Application Design — Complete (2026-04-15) — Resend SDK con fallback logger; notifyResultReady con patient.user lookup; OrdersInProgress widget con getAllowedTransitions; portal nav badge usando PortalDashboard
+- [x] Units Generation — Complete (2026-04-15)
+
+### CONSTRUCTION PHASE — Increment v12: Notificaciones Reales + Flujo Operativo
+
+- [ ] UDT-V12-01: Resend integration + notifyResultReady — In Progress
+- [ ] UDT-V12-02: Wire notificaciones en OrdersService (COMPLETADA)
+- [ ] UDT-V12-03: Frontend — OrdersInProgress widget + orderTransitions PACIENTE fix
+- [ ] UDT-V12-04: Frontend — Portal nav badges (resultados + consentimientos)
+- [ ] UDT-V12-05: Backend — Unit tests NotificationsService (Resend mock)
+- [ ] Build and Test
+
 ## Current Phase
 
-**Current Phase**: CONSTRUCTION — Increment v11: Rol PACIENTE + Portal del Paciente — IN PROGRESS
-**HEAD**: `ab67c1f`
+**Current Phase**: CONSTRUCTION — Increment v12: Notificaciones Reales + Flujo Operativo
+**HEAD**: `ab56133`
