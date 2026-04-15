@@ -227,13 +227,19 @@ export function LoginForm() {
                     e.currentTarget.style.border = '1px solid #2BFFF8';
                   e.currentTarget.style.boxShadow = '0 0 0 3px rgba(43,255,248,0.1)';
                 }}
-                onBlur={(e) => {
-                  e.currentTarget.style.border = errors.email
-                    ? '1px solid rgba(248,113,113,0.7)'
-                    : '1px solid rgba(176,252,206,0.18)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-                {...register('email')}
+                {...(() => {
+                  const { onBlur: rhfBlur, ...rest } = register('email');
+                  return {
+                    ...rest,
+                    onBlur: (e: React.FocusEvent<HTMLInputElement>) => {
+                      e.currentTarget.style.border = errors.email
+                        ? '1px solid rgba(248,113,113,0.7)'
+                        : '1px solid rgba(176,252,206,0.18)';
+                      e.currentTarget.style.boxShadow = 'none';
+                      void rhfBlur(e);
+                    },
+                  };
+                })()}
               />
               {errors.email && (
                 <p className="mt-1.5 text-xs text-red-400" role="alert">
@@ -270,13 +276,19 @@ export function LoginForm() {
                     e.currentTarget.style.boxShadow =
                       '0 0 0 3px rgba(43,255,248,0.1)';
                   }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.border = errors.password
-                      ? '1px solid rgba(248,113,113,0.7)'
-                      : '1px solid rgba(176,252,206,0.18)';
-                    e.currentTarget.style.boxShadow = 'none';
-                  }}
-                  {...register('password')}
+                  {...(() => {
+                    const { onBlur: rhfBlur, ...rest } = register('password');
+                    return {
+                      ...rest,
+                      onBlur: (e: React.FocusEvent<HTMLInputElement>) => {
+                        e.currentTarget.style.border = errors.password
+                          ? '1px solid rgba(248,113,113,0.7)'
+                          : '1px solid rgba(176,252,206,0.18)';
+                        e.currentTarget.style.boxShadow = 'none';
+                        void rhfBlur(e);
+                      },
+                    };
+                  })()}
                 />
                 <button
                   type="button"
