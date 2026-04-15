@@ -83,6 +83,14 @@ export async function getPortalResults(): Promise<Result[]> {
   return data.data;
 }
 
+export async function downloadPortalAttachment(resultId: string, attachmentId: string): Promise<Blob> {
+  const { data } = await apiClient.get<Blob>(
+    `/portal/results/${resultId}/attachments/${attachmentId}/download`,
+    { responseType: 'blob' },
+  );
+  return data;
+}
+
 // ─── Appointments ─────────────────────────────────────────────────────────────
 
 export async function getPortalAppointments(): Promise<Appointment[]> {

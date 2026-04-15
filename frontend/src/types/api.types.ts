@@ -163,10 +163,9 @@ export interface Result {
 export interface ResultAttachment {
   id: string;
   resultId: string;
-  fileName: string;
+  originalName: string;
   mimeType: string;
   size: number;
-  path: string;
   createdAt: string;
 }
 

@@ -7,8 +7,11 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Res,
+  StreamableFile,
   UseGuards,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser, ICurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -96,6 +99,18 @@ export class PatientPortalController {
   async getResults(@CurrentUser() user: ICurrentUser) {
     const data = await this.portalService.getResults(user.userId);
     return ResponseDto.of(data, 'Resultados obtenidos', HttpStatus.OK);
+  }
+
+  @Get('results/:resultId/attachments/:attachmentId/download')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Descargar adjunto de resultado del paciente' })
+  async downloadAttachment(
+    @CurrentUser() user: ICurrentUser,
+    @Param('resultId', ParseUUIDPipe) resultId: string,
+    @Param('attachmentId', ParseUUIDPipe) attachmentId: string,
+    @Res({ passthrough: true }) _res: Response,
+  ): Promise<StreamableFile> {
+    return this.portalService.downloadAttachment(user.userId, resultId, attachmentId);
   }
 
   @Get('appointments')

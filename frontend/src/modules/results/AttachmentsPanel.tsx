@@ -57,12 +57,12 @@ export function AttachmentsPanel({ resultId }: AttachmentsPanelProps) {
         <ul className="divide-y divide-gray-100 text-sm">
           {attachments.map((a) => (
             <li key={a.id} className="flex items-center justify-between py-2.5 gap-3">
-              <span className="text-gray-800 truncate flex-1">{a.fileName}</span>
+              <span className="text-gray-800 truncate flex-1">{a.originalName}</span>
               <div className="flex items-center gap-1 shrink-0">
                 <button
                   className="p-1.5 rounded hover:bg-gray-100 text-gray-500 hover:text-primary-600 transition-colors"
                   title="Descargar"
-                  onClick={() => downloadMutation.mutate({ attachId: a.id, filename: a.fileName })}
+                  onClick={() => downloadMutation.mutate({ attachId: a.id, filename: a.originalName })}
                 >
                   <Download size={13} />
                 </button>

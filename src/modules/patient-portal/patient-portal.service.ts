@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../database/prisma.service';
 import { ConsentsService } from '../consents/consents.service';
+import { AttachmentsService } from '../results/attachments/attachments.service';
 import { RespondConsentPortalDto } from './dto/respond-consent-portal.dto';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class PatientPortalService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly consentsService: ConsentsService,
+    private readonly attachmentsService: AttachmentsService,
   ) {}
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -262,6 +264,25 @@ export class PatientPortalService {
         },
       },
     });
+  }
+
+  // ── Attachments ───────────────────────────────────────────────────────────────
+
+  async downloadAttachment(userId: string, resultId: string, attachmentId: string) {
+    const patient = await this.getLinkedPatient(userId);
+
+    const result = await this.prisma.result.findFirst({
+      where: {
+        id: resultId,
+        deletedAt: null,
+        order: { patientId: patient.id, deletedAt: null },
+      },
+      select: { id: true },
+    });
+
+    if (!result) throw new NotFoundException('Resultado no encontrado');
+
+    return this.attachmentsService.download(resultId, attachmentId);
   }
 
   // ── Appointments ──────────────────────────────────────────────────────────────
