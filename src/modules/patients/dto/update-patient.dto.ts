@@ -2,10 +2,10 @@ import { IsDateString, IsEmail, IsEnum, IsOptional, IsString, Matches, MaxLength
 
 export class UpdatePatientDto {
   @IsOptional()
-  @IsEnum(['DNI', 'PASAPORTE', 'CE', 'NIT'], {
-    message: 'El tipo de documento debe ser DNI, PASAPORTE, CE o NIT',
+  @IsEnum(['DNI', 'PASAPORTE', 'CE', 'NIT', 'CC', 'TI', 'RC'], {
+    message: 'El tipo de documento debe ser DNI, PASAPORTE, CE, NIT, CC, TI o RC',
   })
-  documentType?: 'DNI' | 'PASAPORTE' | 'CE' | 'NIT';
+  documentType?: 'DNI' | 'PASAPORTE' | 'CE' | 'NIT' | 'CC' | 'TI' | 'RC';
 
   @IsOptional()
   @IsString()
@@ -35,4 +35,17 @@ export class UpdatePatientDto {
   @IsOptional()
   @IsEmail({}, { message: 'El correo electrónico del paciente no es válido' })
   email?: string;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @IsOptional()
+  @IsString()
+  insurance?: string;
 }
+
