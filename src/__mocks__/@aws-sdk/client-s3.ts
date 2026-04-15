@@ -17,3 +17,7 @@ export class GetObjectCommand {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(_input?: unknown) {}
 }
+export class DeleteObjectCommand {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  constructor(_input?: unknown) {}
+}

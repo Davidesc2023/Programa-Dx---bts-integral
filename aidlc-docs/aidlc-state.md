@@ -223,8 +223,13 @@
 
 ## Current Phase
 
-**Current Phase**: CONSTRUCTION — Increment v14 — Build and Test COMPLETE
-**HEAD**: `a9992c3`
+**Current Phase**: CONSTRUCTION — Increment v11 — Production Fix Applied
+**HEAD**: `c30b825`
+
+**Production Incidents Resolved**:
+- `ignoreDeprecations: "6.0"` en tsconfig.json → rompía `nest build` en Docker (TS 5.x no reconoce ese valor)
+- `ADD CONSTRAINT IF NOT EXISTS` en migration `20260417100000_add_patient_portal` → sintaxis solo válida en PostgreSQL 16+; Railway usa PG 14/15 → migración fallaba → `node dist/main.js` nunca arrancaba → healthcheck fallaba
+- Fix commit: `c30b825` — Railway debería deployar y pasar healthcheck
 
 ### INCEPTION PHASE — Increment v14: Bug Fixes + Closure v13 Legal Loop
 
@@ -239,3 +244,21 @@
 - [x] UDT-V14-03: Fix respondConsent → delegar a ConsentsService.respond() (GAP-02) — Complete (2026-04-15)
 - [x] UDT-V14-04: Portal consent page → documentHtml colapsable + PDF download link (GAP-03) — Complete (2026-04-15)
 - [x] Build and Test — Complete (2026-04-15) — 0 errores TypeScript; commit a9992c3 pushed to origin/main
+
+### INCEPTION PHASE — Increment v16: Consent UI 2-Firmas + R2 Storage
+
+- [x] Workspace Detection — Complete (2026-04-15) — Brownfield; 3 problemas: (1) ConsentPanel sin stepper 2 firmas, (2) diskStorage local no persiste en Railway, (3) emails Resend sin API key
+- [x] Requirements Analysis — Complete (2026-04-15):
+  - R1: ConsentPanel debe mostrar claramente 2 etapas — Firma médica + Respuesta paciente (stepper visual)
+  - R2: consents/page debe tener columnas separadas para cada firma
+  - R3: Adjuntos migrar de disco local a Cloudflare R2 (S3-compatible, 10GB gratis) — @aws-sdk/client-s3 ya instalado, mock ya existe
+  - R4: Emails Resend — ya integrado, solo requiere env vars en Railway (sin cambio de código)
+- [x] Workflow Planning — Complete (2026-04-15) — 3 UDTs: V16-01 Consent UI, V16-02 StorageService R2, V16-03 Attachments migration
+- [x] Units Generation — Complete (2026-04-15)
+
+### CONSTRUCTION PHASE — Increment v16
+
+- [x] UDT-V16-01: ConsentPanel 2-step + consents/page 2 columnas — Complete (2026-04-15)
+- [x] UDT-V16-02: StorageService (src/common/storage/storage.service.ts) — Complete (2026-04-15)
+- [x] UDT-V16-03: AttachmentsService/Controller/Module → R2; spec actualizado — Complete (2026-04-15)
+- [ ] Build and Test

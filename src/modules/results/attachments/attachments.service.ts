@@ -2,20 +2,20 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
   StreamableFile,
 } from '@nestjs/common';
-import { createReadStream, existsSync } from 'fs';
-import { unlink, mkdir } from 'fs/promises';
-import { join } from 'path';
+import { extname } from 'path';
+import { randomUUID } from 'crypto';
 import { PrismaService } from '../../../database/prisma.service';
+import { StorageService } from '../../../common/storage/storage.service';
 
 interface UploadedFile {
   fieldname: string;
   originalname: string;
   mimetype: string;
   size: number;
-  path: string;
-  filename: string;
+  buffer: Buffer;
 }
 
 const ALLOWED_MIME_TYPES = [
@@ -40,24 +40,29 @@ const ATTACHMENT_SELECT = {
 
 @Injectable()
 export class AttachmentsService {
-  private readonly uploadDir = join(process.cwd(), 'uploads');
-
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storage: StorageService,
+  ) {}
 
   async upload(
     resultId: string,
     file: UploadedFile,
     createdBy: string,
   ) {
+    if (!this.storage.enabled) {
+      throw new ServiceUnavailableException(
+        'Almacenamiento no configurado en este entorno. Configure las variables R2_*.',
+      );
+    }
+
     if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
-      await unlink(file.path).catch(() => null);
       throw new BadRequestException(
         'Tipo de archivo no permitido. Solo PDF, JPG, PNG y WEBP.',
       );
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      await unlink(file.path).catch(() => null);
       throw new BadRequestException('El archivo supera el límite de 10 MB.');
     }
 
@@ -67,11 +72,11 @@ export class AttachmentsService {
     });
 
     if (!result) {
-      await unlink(file.path).catch(() => null);
       throw new NotFoundException('Resultado no encontrado');
     }
 
-    const relativePath = join('uploads', file.filename);
+    const key = `results/${resultId}/${randomUUID()}${extname(file.originalname)}`;
+    await this.storage.put(key, file.buffer, file.mimetype);
 
     return this.prisma.resultAttachment.create({
       data: {
@@ -79,7 +84,7 @@ export class AttachmentsService {
         originalName: file.originalname,
         mimeType: file.mimetype,
         size: file.size,
-        filePath: relativePath,
+        filePath: key,
         createdBy,
         updatedBy: createdBy,
       },
@@ -113,13 +118,7 @@ export class AttachmentsService {
       throw new NotFoundException('Adjunto no encontrado');
     }
 
-    const absolutePath = join(process.cwd(), attachment.filePath);
-
-    if (!existsSync(absolutePath)) {
-      throw new NotFoundException('Archivo no encontrado en el servidor');
-    }
-
-    const stream = createReadStream(absolutePath);
+    const stream = await this.storage.getStream(attachment.filePath);
     return new StreamableFile(stream, {
       type: attachment.mimeType,
       disposition: `attachment; filename="${attachment.originalName}"`,
@@ -140,14 +139,8 @@ export class AttachmentsService {
       data: { deletedAt: new Date(), updatedBy: deletedBy },
     });
 
-    // Best-effort physical deletion
-    const absolutePath = join(process.cwd(), attachment.filePath);
-    await unlink(absolutePath).catch(() => null);
+    await this.storage.delete(attachment.filePath);
 
     return { id: attachmentId, deleted: true };
-  }
-
-  async ensureUploadDir(): Promise<void> {
-    await mkdir(this.uploadDir, { recursive: true });
   }
 }
