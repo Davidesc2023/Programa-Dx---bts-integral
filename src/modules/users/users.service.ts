@@ -191,11 +191,29 @@ export class UsersService {
   async update(id: string, dto: UpdateUserDto, updatedBy: string) {
     await this.findOne(id);
 
-    return this.prisma.user.update({
+    const { patientId, ...userFields } = dto;
+
+    const updatedUser = await this.prisma.user.update({
       where: { id },
-      data: { ...dto, updatedBy },
+      data: { ...userFields, updatedBy },
       select: USER_SELECT,
     });
+
+    if (patientId !== undefined) {
+      await this.prisma.$transaction([
+        // Clear previous patient link for this user
+        this.prisma.patient.updateMany({
+          where: { userId: id },
+          data: { userId: null },
+        }),
+        // Link new patient if patientId is not null
+        ...(patientId
+          ? [this.prisma.patient.update({ where: { id: patientId }, data: { userId: id } })]
+          : []),
+      ]);
+    }
+
+    return updatedUser;
   }
 
   async remove(id: string, deletedBy: string) {

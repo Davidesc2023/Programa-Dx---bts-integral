@@ -10,6 +10,7 @@ import { LoginDto } from './dto/login.dto';
 import { LogoutDto } from './dto/logout.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { RegisterDto } from './dto/register.dto';
+import { RegisterPatientDto } from './dto/register-patient.dto';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +18,45 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
   ) {}
+
+  async registerPatient(dto: RegisterPatientDto): Promise<{ id: string; email: string; role: string }> {
+    const existing = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (existing) {
+      throw new ConflictException('El correo ya está registrado');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+    const user = await this.prisma.user.create({
+      data: {
+        email: dto.email,
+        password: hashedPassword,
+        role: 'PACIENTE',
+        documentType: dto.documentType as any,
+        documentNumber: dto.documentNumber,
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+      },
+    });
+
+    // Auto-link: if a Patient with same documentType+documentNumber exists, link it
+    if (dto.documentType && dto.documentNumber) {
+      await this.prisma.patient.updateMany({
+        where: {
+          documentType: dto.documentType as any,
+          documentNumber: dto.documentNumber,
+          userId: null,
+          deletedAt: null,
+        },
+        data: { userId: user.id },
+      });
+    }
+
+    return { id: user.id, email: user.email, role: user.role };
+  }
 
   async register(dto: RegisterDto): Promise<{ id: string; email: string; role: string }> {
     const existing = await this.prisma.user.findUnique({

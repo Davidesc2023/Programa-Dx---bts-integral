@@ -16,7 +16,7 @@ export type CreateUserPayload = {
   medicalLicense?: string;
 };
 
-export type UpdateUserPayload = Partial<CreateUserPayload>;
+export type UpdateUserPayload = Partial<CreateUserPayload> & { patientId?: string | null };
 
 export type UsersQuery = PaginationQuery & {
   role?: UserRole;

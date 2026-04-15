@@ -15,6 +15,7 @@ import { LoginDto } from './dto/login.dto';
 import { LogoutDto } from './dto/logout.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { RegisterDto } from './dto/register.dto';
+import { RegisterPatientDto } from './dto/register-patient.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
 @ApiTags('Auth')
@@ -30,6 +31,14 @@ export class AuthController {
   async register(@Body() dto: RegisterDto) {
     const user = await this.authService.register(dto);
     return ResponseDto.of(user, 'Usuario registrado exitosamente', HttpStatus.CREATED);
+  }
+
+  @Post('register-patient')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Auto-registro de paciente (público)' })
+  async registerPatient(@Body() dto: RegisterPatientDto) {
+    const user = await this.authService.registerPatient(dto);
+    return ResponseDto.of(user, 'Cuenta de paciente creada exitosamente', HttpStatus.CREATED);
   }
 
   @Post('login')

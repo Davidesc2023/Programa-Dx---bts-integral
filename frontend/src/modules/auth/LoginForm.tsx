@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { loginSchema, type LoginFormValues } from '@/lib/validators';
 import { useAuth } from './useAuth';
+import { RegisterPatientForm } from './RegisterPatientForm';
 import { getApiErrorMessage } from '@/services/api';
 import Image from 'next/image';
 
@@ -13,6 +14,7 @@ export function LoginForm() {
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [showRegister, setShowRegister] = useState(false);
 
   const {
     register,
@@ -30,6 +32,15 @@ export function LoginForm() {
       setServerError(getApiErrorMessage(err));
     }
   };
+
+  if (showRegister) {
+    return (
+      <RegisterPatientForm
+        onSuccess={() => setShowRegister(false)}
+        onBack={() => setShowRegister(false)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center px-4">
@@ -144,6 +155,16 @@ export function LoginForm() {
 
         <p className="text-center text-xs text-gray-400 mt-6">
           APP-DX — BTS Integral © 2026
+        </p>
+        <p className="text-center text-xs text-gray-500 mt-2">
+          ¿Eres paciente?{' '}
+          <button
+            type="button"
+            onClick={() => setShowRegister(true)}
+            className="text-primary-600 hover:underline font-medium"
+          >
+            Crear cuenta
+          </button>
         </p>
       </div>
     </div>

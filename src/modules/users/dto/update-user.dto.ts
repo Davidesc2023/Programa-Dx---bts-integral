@@ -41,4 +41,9 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   medicalLicense?: string;
+
+  /** UUID del paciente a vincular al usuario (solo aplica para rol PACIENTE) */
+  @IsOptional()
+  @IsString()
+  patientId?: string | null;
 }

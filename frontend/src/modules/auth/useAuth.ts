@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from './authStore';
 import {
   clearTokens,
+  decodeJwtPayload,
   getAccessToken,
   getRefreshToken,
   isTokenExpired,
@@ -12,6 +13,8 @@ import {
 } from '@/lib/token';
 import { loginRequest, logoutRequest } from '@/services/auth.service';
 import type { LoginPayload } from '@/services/auth.service';
+import type { JwtPayload } from '@/types/api.types';
+import { UserRole } from '@/types/enums';
 
 export function useAuth() {
   const { user, isAuthenticated, setUserFromToken, clearUser } = useAuthStore();
@@ -31,7 +34,10 @@ export function useAuth() {
       const tokens = await loginRequest(payload);
       setTokens(tokens.accessToken, tokens.refreshToken);
       setUserFromToken(tokens.accessToken);
-      router.push('/dashboard');
+      const decoded = decodeJwtPayload<JwtPayload>(tokens.accessToken);
+      const destination =
+        decoded?.role === UserRole.PACIENTE ? '/portal/dashboard' : '/dashboard';
+      router.push(destination);
     },
     [router, setUserFromToken],
   );

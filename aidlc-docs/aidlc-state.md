@@ -4,8 +4,8 @@
 - **Project Name**: Sistema de Solicitud de Laboratorios (APP-DX)
 - **Project Type**: Brownfield (incremento activo)
 - **Start Date**: 2026-04-13
-- **Current Phase**: CONSTRUCTION — Increment v10: Modelo Clínico — COMPLETE
-- **Current Stage**: COMPLETE
+- **Current Phase**: CONSTRUCTION — Increment v11: Rol PACIENTE + Portal del Paciente
+- **Current Stage**: Build and Test pending
 
 ## Workspace State
 - **Existing Code**: No
@@ -179,7 +179,31 @@
 - [x] UDT-V10-09: Unit tests actualizados — Complete (2026-04-14) — users.service.spec.ts con 7 campos nuevos en USER_SELECT_RESULT; tests para specialty update y role filter
 - [x] Build and Test — Complete (2026-04-14) — 0 errores TypeScript (VSCode checker); commits 09cba5e + 8646c1d pushed to origin/main
 
+### INCEPTION PHASE — Increment v11: Rol PACIENTE + Portal del Paciente
+
+- [x] Workspace Detection — Complete (2026-04-14) — Brownfield; Patient y User sin FK; UserRole sin PACIENTE; login redirige siempre a /dashboard
+- [x] Requirements Analysis — Complete (2026-04-14) — 5 preguntas respondidas (Q1=A, Q2=B, Q3=C, Q4=B, Q5=C)
+- [x] User Stories — Complete (2026-04-14) — 8 historias (HU-V11-01 a HU-V11-08) en aidlc-docs/inception/user-stories/v11-stories.md
+- [x] Workflow Planning — Complete (2026-04-14) — 9 UDTs: schema FK, auth register-patient, PatientPortalModule, users link, frontend types, auth redirect, portal layout+pages, UserList link, unit tests
+- [x] Application Design — Complete (2026-04-14) — PatientPortalModule con 10 endpoints; portal layout separado del admin; redirect post-login por rol
+- [x] Units Generation — Complete (2026-04-14)
+
+### CONSTRUCTION PHASE — Increment v11: Rol PACIENTE + Portal del Paciente
+
+- [x] UDT-V11-01: Prisma schema + migration — Complete (2026-04-17) — Patient.userId FK @unique + User.patientProfile relation + UserRole PACIENTE enum value; migration 20260417100000_add_patient_portal
+- [x] UDT-V11-02: Auth — register-patient — Complete (2026-04-17) — RegisterPatientDto + auth.service.registerPatient() con auto-link + POST /auth/register-patient (public); roles.decorator.ts updated
+- [x] UDT-V11-03: PatientPortalModule — Complete (2026-04-17) — PatientPortalController (9 endpoints GET/POST /portal/*) + PatientPortalService (10 methods) + RespondConsentPortalDto + PatientPortalModule; registered in AppModule
+- [x] UDT-V11-04: UsersService — Complete (2026-04-17) — patientId? field in UpdateUserDto + update() handles patient link via $transaction (clear old + set new)
+- [x] UDT-V11-05: Frontend types + services — Complete (2026-04-17) — UserRole.PACIENTE + ROLE_LABELS + User.patientId + Patient.userId + PortalDashboard interface + portal.service.ts (10 functions) + auth.service.ts registerPatientRequest()
+- [x] UDT-V11-06: Auth redirect + RegisterPatientForm — Complete (2026-04-17) — useAuth.ts redirects PACIENTE → /portal/dashboard; RegisterPatientForm.tsx (zod validation, 6 fields); LoginForm.tsx toggle to register
+- [x] UDT-V11-07: Portal layout + pages — Complete (2026-04-17) — (portal)/layout.tsx (guard: PACIENTE only); portal/dashboard, portal/orders, portal/orders/[orderId], portal/orders/[orderId]/consent, portal/results, portal/appointments
+- [x] UDT-V11-08: UserList patient link — Complete (2026-04-17) — ROLE_BADGE PACIENTE + ROLE_LABELS PACIENTE + UpdateUserPayload patientId + EditUserForm patientId input (shown when role=PACIENTE)
+- [x] UDT-V11-09: Unit tests — Complete (2026-04-17) — patient-portal.service.spec.ts: getMe, getDashboard, getOrders, respondConsent accept/reject/notFound/forbidden, getResults, getAppointments
+- [ ] Build and Test
+- [ ] UDT-V11-09: Unit tests — patient-portal.service.spec.ts
+- [ ] Build and Test
+
 ## Current Phase
 
-**Current Phase**: CONSTRUCTION — Increment v10: Modelo Clínico — COMPLETE
-**HEAD**: `8646c1d`
+**Current Phase**: CONSTRUCTION — Increment v11: Rol PACIENTE + Portal del Paciente — IN PROGRESS
+**HEAD**: `ab67c1f`

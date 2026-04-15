@@ -19,6 +19,7 @@ const ROLE_BADGE: Record<UserRole, string> = {
   [UserRole.OPERADOR]: 'bg-blue-100 text-blue-700',
   [UserRole.LABORATORIO]: 'bg-emerald-100 text-emerald-700',
   [UserRole.MEDICO]: 'bg-amber-100 text-amber-700',
+  [UserRole.PACIENTE]: 'bg-teal-100 text-teal-700',
 };
 
 function RoleBadge({ role }: { role: UserRole }) {
@@ -188,6 +189,7 @@ function EditUserForm({ user, onClose }: EditFormProps) {
   const [phone, setPhone] = useState(user.phone ?? '');
   const [specialty, setSpecialty] = useState(user.specialty ?? '');
   const [medicalLicense, setMedicalLicense] = useState(user.medicalLicense ?? '');
+  const [patientId, setPatientId] = useState(user.patientId ?? '');
 
   const mutation = useUpdateUser(user.id, onClose);
 
@@ -202,10 +204,14 @@ function EditUserForm({ user, onClose }: EditFormProps) {
       medicalLicense: role === UserRole.MEDICO ? (medicalLicense || undefined) : undefined,
     };
     if (password) payload.password = password;
+    if (role === UserRole.PACIENTE) {
+      payload.patientId = patientId || null;
+    }
     mutation.mutate(payload);
   }
 
   const isMedico = role === UserRole.MEDICO;
+  const isPaciente = role === UserRole.PACIENTE;
 
   return (
     <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
@@ -282,6 +288,21 @@ function EditUserForm({ user, onClose }: EditFormProps) {
               placeholder="Ej. RM-12345"
             />
           </div>
+        </div>
+      )}
+      {isPaciente && (
+        <div className="border-t pt-3">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            ID del paciente vinculado{' '}
+            <span className="text-xs font-normal text-gray-400">(UUID — dejar vacío para desvincular)</span>
+          </label>
+          <input
+            type="text"
+            value={patientId}
+            onChange={(e) => setPatientId(e.target.value)}
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+          />
         </div>
       )}
       <div>

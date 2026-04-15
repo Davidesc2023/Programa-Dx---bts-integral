@@ -80,6 +80,16 @@ export interface Patient {
   updatedAt: string;
   createdBy: string | null;
   updatedBy: string | null;
+  userId?: string | null;
+}
+
+// ─── Portal Dashboard ─────────────────────────────────────────────────────────
+
+export interface PortalDashboard {
+  activeOrders: number;
+  pendingConsents: number;
+  availableResults: number;
+  nextAppointment: Appointment | null;
 }
 
 // ─── Orders ───────────────────────────────────────────────────────────────────
@@ -177,6 +187,7 @@ export interface User {
   phone: string | null;
   specialty: string | null;
   medicalLicense: string | null;
+  patientId?: string | null;
   createdAt: string;
   updatedAt: string;
 }

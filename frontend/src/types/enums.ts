@@ -7,6 +7,7 @@ export enum UserRole {
   OPERADOR = 'OPERADOR',
   LABORATORIO = 'LABORATORIO',
   MEDICO = 'MEDICO',
+  PACIENTE = 'PACIENTE',
 }
 
 export enum OrderStatus {
@@ -103,4 +104,5 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   [UserRole.OPERADOR]: 'Operador',
   [UserRole.LABORATORIO]: 'Laboratorio',
   [UserRole.MEDICO]: 'Médico',
+  [UserRole.PACIENTE]: 'Paciente',
 };

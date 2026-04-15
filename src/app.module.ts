@@ -10,6 +10,7 @@ import { ResultsModule } from './modules/results/results.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { ConsentsModule } from './modules/consents/consents.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { PatientPortalModule } from './modules/patient-portal/patient-portal.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -23,6 +24,7 @@ import { AppController } from './app.controller';
     AppointmentsModule,
     ConsentsModule,
     NotificationsModule,
+    PatientPortalModule,
   ],
   controllers: [AppController],
   providers: [
