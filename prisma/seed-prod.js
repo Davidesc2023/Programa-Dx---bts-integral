@@ -14,18 +14,14 @@ async function main() {
   const existing = await prisma.user.findUnique({ where: { email: adminEmail } });
 
   if (existing) {
-    // Fix: if password was stored as plain text (does not start with bcrypt prefix)
-    if (!existing.password.startsWith('$2')) {
-      console.log('⚠️  Admin password is plain text — hashing it now...');
-      const hashed = await bcrypt.hash(existing.password, 10);
-      await prisma.user.update({
-        where: { id: existing.id },
-        data: { password: hashed },
-      });
-      console.log('✅ Admin password hashed successfully');
-    } else {
-      console.log(`Admin already exists with hashed password: ${adminEmail}`);
-    }
+    // Always re-hash and sync the password from env var on every deploy.
+    // This guarantees the admin password matches SEED_ADMIN_PASSWORD after any redeploy.
+    const hashed = await bcrypt.hash(adminPassword, 10);
+    await prisma.user.update({
+      where: { id: existing.id },
+      data: { password: hashed },
+    });
+    console.log(`✅ Admin password synced: ${adminEmail}`);
     return;
   }
 
