@@ -4,55 +4,70 @@
 
 @layer base {
   :root {
-    --color-primary: #007342;
-    --color-accent: #2BFFF8;
-    --color-secondary: #B0FCCE;
+    --color-primary: #16a34a;
+    --color-accent:  #4ade80;
+    --color-muted:   #94a3b8;
   }
 
-  * {
-    box-sizing: border-box;
-  }
+  * { box-sizing: border-box; }
 
   body {
     @apply antialiased;
-    background-color: #060B0A;
-    color: #B0FCCE;
+    background-color: #0b0e13;
+    color: #e2e8f0;
   }
 
-  /* ── Dark overrides for native form elements ── */
+  /* ── Native form elements ── */
   input:not([type='checkbox']):not([type='radio']):not([type='submit']),
   textarea,
   select {
-    background-color: rgba(176, 252, 206, 0.04) !important;
-    border-color: rgba(176, 252, 206, 0.15) !important;
-    color: #B0FCCE !important;
+    background-color: #1a1f2b !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
   }
-
   input::placeholder,
   textarea::placeholder {
-    color: rgba(176, 252, 206, 0.3) !important;
+    color: rgba(255, 255, 255, 0.25) !important;
   }
-
   select option {
-    background-color: #0d1f1a;
-    color: #B0FCCE;
-  }
-
-  /* ── Table defaults ── */
-  table {
-    border-collapse: collapse;
-  }
-
-  thead th {
-    color: rgba(176, 252, 206, 0.5);
-  }
-
-  tbody tr {
-    border-color: rgba(176, 252, 206, 0.06);
-  }
-
-  /* ── Prose dark (consent document preview) ── */
-  .prose {
-    color: rgba(176, 252, 206, 0.8);
+    background-color: #1a1f2b;
+    color: #e2e8f0;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   DARK-MODE COERCIONS
+   Override Tailwind "light" utility classes so every component
+   that hasn't been touched yet renders correctly on dark bg.
+   ───────────────────────────────────────────────────────────── */
+
+/* Backgrounds */
+.bg-white       { background-color: #141820 !important; }
+.bg-gray-50     { background-color: #1a1f2b !important; }
+.bg-gray-100    { background-color: #1e2433 !important; }
+
+/* Text */
+.text-gray-900  { color: #f1f5f9 !important; }
+.text-gray-800  { color: #e2e8f0 !important; }
+.text-gray-700  { color: #cbd5e1 !important; }
+.text-gray-600  { color: #94a3b8 !important; }
+.text-gray-500  { color: #64748b !important; }
+.text-gray-400  { color: #475569 !important; }
+
+/* Borders */
+.border-gray-100 { border-color: rgba(255, 255, 255, 0.06) !important; }
+.border-gray-200 { border-color: rgba(255, 255, 255, 0.08) !important; }
+.border-gray-300 { border-color: rgba(255, 255, 255, 0.12) !important; }
+
+/* Dividers */
+.divide-gray-50 > * + *  { border-color: rgba(255, 255, 255, 0.05) !important; }
+.divide-gray-100 > * + * { border-color: rgba(255, 255, 255, 0.06) !important; }
+
+/* Hovers */
+.hover\:bg-gray-50:hover  { background-color: rgba(255, 255, 255, 0.03) !important; }
+.hover\:bg-gray-100:hover { background-color: rgba(255, 255, 255, 0.06) !important; }
+.hover\:text-gray-900:hover { color: #f1f5f9 !important; }
+
+/* Prose (consent doc preview) */
+.prose { color: #cbd5e1; }
+.prose h1, .prose h2, .prose h3 { color: #e2e8f0; }

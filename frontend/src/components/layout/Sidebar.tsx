@@ -85,19 +85,16 @@ export function Sidebar() {
   return (
     <aside
       className="flex flex-col w-60 shrink-0 h-screen border-r"
-      style={{
-        background: '#0A1410',
-        borderColor: 'rgba(176,252,206,0.08)',
-      }}
+      style={{ background: '#0f1319', borderColor: 'rgba(255,255,255,0.07)' }}
     >
       {/* Logo */}
       <div
         className="flex items-center gap-2 px-4 py-5 border-b"
-        style={{ borderColor: 'rgba(176,252,206,0.08)' }}
+        style={{ borderColor: 'rgba(255,255,255,0.07)' }}
       >
         <Link href="/dashboard" className="flex items-center gap-2">
           <Image src="/logo.png" alt="BTS Integral" width={36} height={36} />
-          <span className="text-sm font-semibold leading-tight" style={{ color: '#B0FCCE' }}>
+          <span className="text-sm font-semibold" style={{ color: '#e2e8f0' }}>
             BTS Integral
           </span>
         </Link>
@@ -105,7 +102,7 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
-        <ul className="space-y-1">
+        <ul className="space-y-0.5">
           {visibleItems.map((item) => {
             const isActive =
               pathname === item.href || pathname.startsWith(item.href + '/');
@@ -115,17 +112,16 @@ export function Sidebar() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all"
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all"
                   style={{
-                    background: isActive ? 'rgba(43,255,248,0.1)' : 'transparent',
-                    color: isActive ? '#2BFFF8' : 'rgba(176,252,206,0.6)',
-                    border: isActive ? '1px solid rgba(43,255,248,0.2)' : '1px solid transparent',
+                    background: isActive ? 'rgba(74,222,128,0.1)' : 'transparent',
+                    color: isActive ? '#4ade80' : 'rgba(255,255,255,0.5)',
                   }}
                 >
                   <Icon
-                    size={18}
+                    size={17}
                     className="shrink-0"
-                    style={{ color: isActive ? '#2BFFF8' : 'rgba(176,252,206,0.4)' }}
+                    style={{ color: isActive ? '#4ade80' : 'rgba(255,255,255,0.35)' }}
                   />
                   {item.label}
                 </Link>
@@ -138,30 +134,30 @@ export function Sidebar() {
       {/* User footer */}
       <div
         className="border-t p-3"
-        style={{ borderColor: 'rgba(176,252,206,0.08)' }}
+        style={{ borderColor: 'rgba(255,255,255,0.07)' }}
       >
-        <div className="flex items-center gap-2 px-2 py-2">
+        <div className="flex items-center gap-2 px-1 py-1.5">
           <div
             className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold shrink-0"
-            style={{ background: 'rgba(43,255,248,0.15)', color: '#2BFFF8', border: '1px solid rgba(43,255,248,0.3)' }}
+            style={{ background: 'rgba(74,222,128,0.15)', color: '#4ade80' }}
           >
             {initial}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium truncate" style={{ color: '#B0FCCE' }}>
+            <p className="text-xs font-medium truncate" style={{ color: '#e2e8f0' }}>
               {user?.email ?? '—'}
             </p>
-            <p className="text-xs" style={{ color: 'rgba(176,252,206,0.4)' }}>{roleLabel}</p>
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>{roleLabel}</p>
           </div>
           <button
             onClick={logout}
             title="Cerrar sesión"
-            className="p-1 rounded transition-colors"
-            style={{ color: 'rgba(176,252,206,0.4)' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#ff6b6b')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(176,252,206,0.4)')}
+            className="p-1.5 rounded transition-colors"
+            style={{ color: 'rgba(255,255,255,0.35)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = '#f87171')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
           >
-            <LogOut size={16} />
+            <LogOut size={15} />
           </button>
         </div>
       </div>

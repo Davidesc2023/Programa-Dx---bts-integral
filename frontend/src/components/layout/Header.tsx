@@ -35,34 +35,34 @@ export function Header({ onMenuToggle }: HeaderProps) {
   return (
     <header
       className="flex items-center justify-between h-14 px-6 shrink-0 border-b"
-      style={{ background: '#0A1410', borderColor: 'rgba(176,252,206,0.08)' }}
+      style={{ background: '#0f1319', borderColor: 'rgba(255,255,255,0.07)' }}
     >
       <div className="flex items-center gap-3">
         {onMenuToggle && (
           <button
             onClick={onMenuToggle}
             className="p-1.5 rounded transition-colors lg:hidden"
-            style={{ color: 'rgba(176,252,206,0.5)' }}
+            style={{ color: 'rgba(255,255,255,0.4)' }}
             aria-label="Menú"
           >
             <Menu size={18} />
           </button>
         )}
-        <h1 className="text-base font-semibold" style={{ color: '#B0FCCE' }}>
+        <h1 className="text-base font-semibold" style={{ color: '#e2e8f0' }}>
           {getPageTitle(pathname)}
         </h1>
       </div>
 
       <div className="flex items-center gap-3">
-        <span className="text-sm hidden sm:block" style={{ color: 'rgba(176,252,206,0.5)' }}>
+        <span className="text-sm hidden sm:block" style={{ color: 'rgba(255,255,255,0.4)' }}>
           {user?.email}
         </span>
         <button
           onClick={logout}
-          className="flex items-center gap-1.5 text-sm px-2.5 py-1.5 rounded transition-colors"
-          style={{ color: 'rgba(176,252,206,0.5)' }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = '#ff6b6b'; e.currentTarget.style.background = 'rgba(255,107,107,0.1)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(176,252,206,0.5)'; e.currentTarget.style.background = 'transparent'; }}
+          className="flex items-center gap-1.5 text-sm px-2.5 py-1.5 rounded transition-all"
+          style={{ color: 'rgba(255,255,255,0.4)' }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.background = 'rgba(248,113,113,0.08)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; e.currentTarget.style.background = 'transparent'; }}
         >
           <LogOut size={15} />
           <span className="hidden sm:inline">Salir</span>

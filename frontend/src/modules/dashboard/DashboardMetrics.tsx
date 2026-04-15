@@ -3,26 +3,28 @@
 import { Users, ClipboardList, Activity, CheckCircle2 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { CardSkeleton } from '@/components/ui/LoadingSkeleton';
-import { cn } from '@/lib/cn';
 
 interface MetricCardProps {
   title: string;
   value: number;
   icon: React.ElementType;
-  colorClass: string;
-  bgClass: string;
+  iconColor: string;
+  iconBg: string;
 }
 
-function MetricCard({ title, value, icon: Icon, colorClass, bgClass }: MetricCardProps) {
+function MetricCard({ title, value, icon: Icon, iconColor, iconBg }: MetricCardProps) {
   return (
     <Card padding="md">
       <div className="flex items-center gap-4">
-        <div className={cn('p-3 rounded-xl', bgClass)}>
-          <Icon size={22} className={colorClass} />
+        <div
+          className="p-3 rounded-xl shrink-0"
+          style={{ background: iconBg }}
+        >
+          <Icon size={22} style={{ color: iconColor }} />
         </div>
         <div>
-          <p className="text-sm text-gray-500">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 tabular-nums">
+          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>{title}</p>
+          <p className="text-2xl font-bold tabular-nums" style={{ color: '#e2e8f0' }}>
             {value.toLocaleString('es-CO')}
           </p>
         </div>
@@ -61,29 +63,29 @@ export function DashboardMetrics({
       title: 'Pacientes registrados',
       value: totalPatients,
       icon: Users,
-      colorClass: 'text-primary-600',
-      bgClass: 'bg-primary-50',
+      iconColor: '#4ade80',
+      iconBg: 'rgba(74,222,128,0.1)',
     },
     {
       title: 'Órdenes pendientes',
       value: pendingOrders,
       icon: ClipboardList,
-      colorClass: 'text-amber-600',
-      bgClass: 'bg-amber-50',
+      iconColor: '#fbbf24',
+      iconBg: 'rgba(251,191,36,0.1)',
     },
     {
       title: 'En proceso',
       value: activeOrders,
       icon: Activity,
-      colorClass: 'text-secondary-500',
-      bgClass: 'bg-secondary-50',
+      iconColor: '#38bdf8',
+      iconBg: 'rgba(56,189,248,0.1)',
     },
     {
       title: 'Completadas',
       value: completedOrders,
       icon: CheckCircle2,
-      colorClass: 'text-emerald-600',
-      bgClass: 'bg-emerald-50',
+      iconColor: '#34d399',
+      iconBg: 'rgba(52,211,153,0.1)',
     },
   ];
 

@@ -7,7 +7,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   return (
-    <div className="flex h-screen" style={{ background: '#060B0A' }}>
+    <div className="flex h-screen" style={{ background: '#0b0e13' }}>
       <Sidebar />
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         <Header />
