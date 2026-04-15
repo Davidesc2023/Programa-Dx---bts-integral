@@ -2,6 +2,7 @@ import { ConflictException, NotFoundException } from '@nestjs/common';
 import { AppointmentStatus } from '@prisma/client';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../../database/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { AppointmentsService } from './appointments.service';
 
 const mockPrisma = {
@@ -17,6 +18,10 @@ const mockPrisma = {
   $transaction: jest.fn(),
 };
 
+const mockNotifications = {
+  notifyAppointmentScheduled: jest.fn().mockResolvedValue(undefined),
+};
+
 describe('AppointmentsService', () => {
   let service: AppointmentsService;
 
@@ -25,6 +30,7 @@ describe('AppointmentsService', () => {
       providers: [
         AppointmentsService,
         { provide: PrismaService, useValue: mockPrisma },
+        { provide: NotificationsService, useValue: mockNotifications },
       ],
     }).compile();
 

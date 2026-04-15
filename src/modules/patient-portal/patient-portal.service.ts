@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../../database/prisma.service';
 import { ConsentsService } from '../consents/consents.service';
 import { AttachmentsService } from '../results/attachments/attachments.service';
+import { PatientResponse } from '../consents/dto/respond-consent.dto';
 import { RespondConsentPortalDto } from './dto/respond-consent-portal.dto';
 
 @Injectable()
@@ -130,8 +131,7 @@ export class PatientPortalService {
           select: { id: true, firstName: true, lastName: true, specialty: true },
         },
         tests: {
-          where: { deletedAt: null },
-          select: { id: true, testName: true, testCode: true },
+          select: { id: true, examName: true, examCode: true },
         },
         consent: { select: { id: true, status: true } },
         _count: { select: { results: true } },
@@ -159,8 +159,7 @@ export class PatientPortalService {
           },
         },
         tests: {
-          where: { deletedAt: null },
-          select: { id: true, testName: true, testCode: true, notes: true },
+          select: { id: true, examName: true, examCode: true, notes: true },
         },
         consent: {
           select: {
@@ -209,7 +208,7 @@ export class PatientPortalService {
           select: {
             id: true, status: true, diagnosis: true,
             doctor: { select: { firstName: true, lastName: true, specialty: true } },
-            tests: { where: { deletedAt: null }, select: { testName: true, testCode: true } },
+            tests: { select: { examName: true, examCode: true } },
           },
         },
       },
@@ -241,7 +240,7 @@ export class PatientPortalService {
     // Delegate to ConsentsService so PDF generation + R2 upload (v13) run for ACEPTADO
     return this.consentsService.respond(
       consent.orderId,
-      { response: accept ? 'ACEPTADO' : 'RECHAZADO', notes: dto.notes },
+      { response: accept ? PatientResponse.ACEPTADO : PatientResponse.RECHAZADO, notes: dto.notes } as never,
       userId,
     );
   }

@@ -72,13 +72,20 @@
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)s$": ["ts-jest", { "diagnostics": { "ignoreCodes": ["TS2307"] } }]
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^resend$": "<rootDir>/__mocks__/resend.ts",
+      "^puppeteer-core$": "<rootDir>/__mocks__/puppeteer-core.ts",
+      "^@sparticuz/chromium$": "<rootDir>/__mocks__/@sparticuz/chromium.ts",
+      "^@aws-sdk/client-s3$": "<rootDir>/__mocks__/@aws-sdk/client-s3.ts",
+      "^@nestjs/swagger$": "<rootDir>/__mocks__/@nestjs/swagger.ts"
+    }
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"

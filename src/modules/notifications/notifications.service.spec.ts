@@ -227,7 +227,6 @@ describe('NotificationsService', () => {
       );
     });
   });
-});
 
 
   // ─── notifyConsentSentToPatient() ─────────────────────────────────
@@ -307,6 +306,43 @@ describe('NotificationsService', () => {
       expect(warnSpy).toHaveBeenCalledWith(
         expect.stringContaining('Sin email de médico'),
       );
+    });
+  });
+
+  // ─── notifyAppointmentScheduled() ───────────────────────────────────
+  describe('notifyAppointmentScheduled()', () => {
+    const scheduledAt = new Date('2026-06-15T10:00:00Z');
+
+    it('registra warn y no envía cuando no hay email del paciente', async () => {
+      await service.notifyAppointmentScheduled({
+        appointmentId: 'apt-uuid-1',
+        scheduledAt,
+        patientEmail: null,
+        patientName: 'Juan Pérez',
+      });
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Sin email para paciente'));
+      expect(logSpy).not.toHaveBeenCalled();
+    });
+
+    it('registra log cuando el paciente tiene email', async () => {
+      await service.notifyAppointmentScheduled({
+        appointmentId: 'apt-uuid-1',
+        scheduledAt,
+        patientEmail: 'paciente@test.com',
+        patientName: 'Juan Pérez',
+      });
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('paciente@test.com'));
+    });
+
+    it('retorna void sin lanzar excepciones', async () => {
+      await expect(
+        service.notifyAppointmentScheduled({
+          appointmentId: 'apt-uuid-1',
+          scheduledAt,
+          patientEmail: 'paciente@test.com',
+          patientName: 'Juan Pérez',
+        }),
+      ).resolves.toBeUndefined();
     });
   });
 });

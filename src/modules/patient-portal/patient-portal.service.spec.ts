@@ -41,13 +41,20 @@ const mockPrisma = {
   $transaction: jest.fn(),
 };
 
+const mockConsents = {
+  respond: jest.fn(),
+};
+const mockAttachments = {
+  download: jest.fn(),
+};
+
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
 describe('PatientPortalService', () => {
   let service: PatientPortalService;
 
   beforeEach(() => {
-    service = new PatientPortalService(mockPrisma as any);
+    service = new PatientPortalService(mockPrisma as any, mockConsents as any, mockAttachments as any);
     jest.clearAllMocks();
   });
 
@@ -140,21 +147,30 @@ describe('PatientPortalService', () => {
       mockPrisma.patient.findFirst.mockResolvedValue(mockPatient);
       mockPrisma.consent.findFirst.mockResolvedValue(mockConsent);
       const updatedConsent = { ...mockConsent, status: 'ACEPTADO' };
-      mockPrisma.$transaction.mockResolvedValue([updatedConsent, {}]);
+      mockConsents.respond.mockResolvedValue(updatedConsent);
 
       const result = await service.respondConsent(USER_ID, CONSENT_ID, true, {});
       expect(result).toEqual(updatedConsent);
-      expect(mockPrisma.$transaction).toHaveBeenCalled();
+      expect(mockConsents.respond).toHaveBeenCalledWith(
+        ORDER_ID,
+        { response: 'ACEPTADO', notes: undefined },
+        USER_ID,
+      );
     });
 
     it('rechaza el consentimiento y actualiza el estado de la orden', async () => {
       mockPrisma.patient.findFirst.mockResolvedValue(mockPatient);
       mockPrisma.consent.findFirst.mockResolvedValue(mockConsent);
       const updatedConsent = { ...mockConsent, status: 'RECHAZADO' };
-      mockPrisma.$transaction.mockResolvedValue([updatedConsent, {}]);
+      mockConsents.respond.mockResolvedValue(updatedConsent);
 
       const result = await service.respondConsent(USER_ID, CONSENT_ID, false, { notes: 'No estoy de acuerdo' });
       expect(result).toEqual(updatedConsent);
+      expect(mockConsents.respond).toHaveBeenCalledWith(
+        ORDER_ID,
+        { response: 'RECHAZADO', notes: 'No estoy de acuerdo' },
+        USER_ID,
+      );
     });
 
     it('lanza NotFoundException si el consentimiento no existe o no pertenece al paciente', async () => {
