@@ -31,7 +31,7 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
-  @Roles('ADMIN', 'OPERADOR')
+  @Roles('ADMIN', 'OPERADOR', 'MEDICO')
   async create(
     @Body() dto: CreateOrderDto,
     @CurrentUser() currentUser: ICurrentUser,
@@ -41,7 +41,7 @@ export class OrdersController {
   }
 
   @Get()
-  @Roles('ADMIN', 'OPERADOR', 'LABORATORIO')
+  @Roles('ADMIN', 'OPERADOR', 'LABORATORIO', 'MEDICO')
   async findAll(@Query() query: FindOrdersQueryDto) {
     const { orders, total } = await this.ordersService.findAll(query);
     return PaginatedResponseDto.of(
@@ -55,14 +55,14 @@ export class OrdersController {
   }
 
   @Get(':id')
-  @Roles('ADMIN', 'OPERADOR', 'LABORATORIO')
+  @Roles('ADMIN', 'OPERADOR', 'LABORATORIO', 'MEDICO')
   async findOne(@Param('id') id: string) {
     const order = await this.ordersService.findOne(id);
     return ResponseDto.of(order, 'Orden obtenida exitosamente', HttpStatus.OK);
   }
 
   @Patch(':id')
-  @Roles('ADMIN', 'OPERADOR')
+  @Roles('ADMIN', 'OPERADOR', 'MEDICO')
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateOrderDto,
@@ -73,7 +73,7 @@ export class OrdersController {
   }
 
   @Patch(':id/status')
-  @Roles('ADMIN', 'OPERADOR', 'LABORATORIO')
+  @Roles('ADMIN', 'OPERADOR', 'LABORATORIO', 'MEDICO')
   async updateStatus(
     @Param('id') id: string,
     @Body() dto: UpdateOrderStatusDto,
@@ -82,7 +82,7 @@ export class OrdersController {
     const order = await this.ordersService.updateStatus(
       id,
       dto.status,
-      currentUser.role as 'ADMIN' | 'OPERADOR' | 'LABORATORIO',
+      currentUser.role as 'ADMIN' | 'OPERADOR' | 'LABORATORIO' | 'MEDICO',
       currentUser.userId,
     );
     return ResponseDto.of(order, 'Estado de orden actualizado exitosamente', HttpStatus.OK);

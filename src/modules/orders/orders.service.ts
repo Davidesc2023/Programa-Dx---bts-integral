@@ -28,16 +28,16 @@ type UserRole = 'ADMIN' | 'OPERADOR' | 'LABORATORIO' | 'MEDICO';
 // Mapa de transiciones válidas: estado_actual → { estado_destino: roles_permitidos[] }
 const TRANSITIONS: Record<string, Record<string, UserRole[]>> = {
   PENDIENTE: {
-    CANCELADA: ['OPERADOR', 'ADMIN'],
+    CANCELADA: ['OPERADOR', 'ADMIN', 'MEDICO'],
   },
   // CONSENT_PENDING y ACCEPTED son gestionados por el módulo de Consentimiento
   ACCEPTED: {
     SCHEDULED: ['OPERADOR', 'LABORATORIO', 'ADMIN'],
-    CANCELADA: ['OPERADOR', 'ADMIN'],
+    CANCELADA: ['OPERADOR', 'ADMIN', 'MEDICO'],
   },
   SCHEDULED: {
     MUESTRA_RECOLECTADA: ['LABORATORIO', 'ADMIN'],
-    CANCELADA: ['OPERADOR', 'ADMIN'],
+    CANCELADA: ['OPERADOR', 'ADMIN', 'MEDICO'],
   },
   MUESTRA_RECOLECTADA: {
     EN_ANALISIS: ['LABORATORIO', 'ADMIN'],

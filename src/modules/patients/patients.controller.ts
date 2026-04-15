@@ -40,7 +40,7 @@ export class PatientsController {
   }
 
   @Get()
-  @Roles('ADMIN', 'OPERADOR')
+  @Roles('ADMIN', 'OPERADOR', 'MEDICO')
   async findAll(@Query() query: FindPatientsQueryDto) {
     const { patients, total } = await this.patientsService.findAll(query);
     return PaginatedResponseDto.of(
@@ -54,7 +54,7 @@ export class PatientsController {
   }
 
   @Get(':id')
-  @Roles('ADMIN', 'OPERADOR', 'LABORATORIO')
+  @Roles('ADMIN', 'OPERADOR', 'LABORATORIO', 'MEDICO')
   async findOne(@Param('id') id: string) {
     const patient = await this.patientsService.findOne(id);
     return ResponseDto.of(patient, 'Paciente obtenido exitosamente', HttpStatus.OK);

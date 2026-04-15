@@ -28,11 +28,17 @@ const LAB_TRANSITIONS: TransitionMap = {
   [OrderStatus.EN_ANALISIS]: [OrderStatus.COMPLETADA],
 };
 
+const MEDICO_TRANSITIONS: TransitionMap = {
+  [OrderStatus.PENDIENTE]: [OrderStatus.CANCELADA],
+  [OrderStatus.ACCEPTED]: [OrderStatus.CANCELADA],
+  [OrderStatus.SCHEDULED]: [OrderStatus.CANCELADA],
+};
+
 const BY_ROLE: Record<UserRole, TransitionMap> = {
   [UserRole.ADMIN]: ADMIN_TRANSITIONS,
   [UserRole.OPERADOR]: OPERADOR_TRANSITIONS,
   [UserRole.LABORATORIO]: LAB_TRANSITIONS,
-  [UserRole.MEDICO]: {},
+  [UserRole.MEDICO]: MEDICO_TRANSITIONS,
   [UserRole.PACIENTE]: {},
 };
 

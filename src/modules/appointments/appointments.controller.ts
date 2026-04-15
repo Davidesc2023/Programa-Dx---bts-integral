@@ -42,14 +42,14 @@ export class AppointmentsController {
   }
 
   @Get()
-  @Roles('ADMIN', 'OPERADOR', 'LABORATORIO')
+  @Roles('ADMIN', 'OPERADOR', 'LABORATORIO', 'MEDICO')
   async findAll(@Query() query: FindAppointmentsQueryDto) {
     const { appointments, total } = await this.appointmentsService.findAll(query);
     return PaginatedResponseDto.of(appointments, total, query.page, query.limit, 'Citas obtenidas', HttpStatus.OK);
   }
 
   @Get(':id')
-  @Roles('ADMIN', 'OPERADOR', 'LABORATORIO')
+  @Roles('ADMIN', 'OPERADOR', 'LABORATORIO', 'MEDICO')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const appointment = await this.appointmentsService.findOne(id);
     return ResponseDto.of(appointment, 'Cita obtenida', HttpStatus.OK);

@@ -32,7 +32,7 @@ export class ResultsController {
   constructor(private readonly resultsService: ResultsService) {}
 
   @Post()
-  @Roles('ADMIN', 'LABORATORIO')
+  @Roles('ADMIN', 'LABORATORIO', 'MEDICO')
   async create(
     @Body() dto: CreateResultDto,
     @CurrentUser() user: ICurrentUser,
@@ -42,21 +42,21 @@ export class ResultsController {
   }
 
   @Get()
-  @Roles('ADMIN', 'OPERADOR', 'LABORATORIO')
+  @Roles('ADMIN', 'OPERADOR', 'LABORATORIO', 'MEDICO')
   async findAll(@Query() query: FindResultsQueryDto) {
     const { results, total } = await this.resultsService.findAll(query);
     return PaginatedResponseDto.of(results, total, query.page, query.limit, 'Resultados obtenidos', HttpStatus.OK);
   }
 
   @Get(':id')
-  @Roles('ADMIN', 'OPERADOR', 'LABORATORIO')
+  @Roles('ADMIN', 'OPERADOR', 'LABORATORIO', 'MEDICO')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.resultsService.findOne(id);
     return ResponseDto.of(result, 'Resultado obtenido', HttpStatus.OK);
   }
 
   @Patch(':id')
-  @Roles('ADMIN', 'LABORATORIO')
+  @Roles('ADMIN', 'LABORATORIO', 'MEDICO')
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateResultDto,
