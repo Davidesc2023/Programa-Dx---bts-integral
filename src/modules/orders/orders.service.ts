@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -219,12 +220,12 @@ export class OrdersService {
 
   private async dispatchResultReadyNotification(
     orderId: string,
-    order: { patient?: { firstName?: string; lastName?: string; documentNumber?: string } | null; doctor?: { email?: string | null; firstName?: string | null; lastName?: string | null } | null },
+    order: { patientId?: string | null; patient?: { firstName?: string; lastName?: string; documentNumber?: string } | null; doctor?: { email?: string | null; firstName?: string | null; lastName?: string | null } | null },
   ): Promise<void> {
     try {
       // Fetch linked patient user email if exists
       const patientLink = await this.prisma.patient.findFirst({
-        where: { id: (order as any).patientId, deletedAt: null },
+        where: { id: order.patientId ?? undefined, deletedAt: null },
         select: { userId: true, firstName: true, lastName: true },
       });
 
@@ -254,6 +255,7 @@ export class OrdersService {
       });
     } catch (err) {
       // Non-blocking: log and ignore notification errors
+      Logger.warn(`Notification failed for order ${orderId}: ${String(err)}`, 'OrdersService');
     }
   }
 

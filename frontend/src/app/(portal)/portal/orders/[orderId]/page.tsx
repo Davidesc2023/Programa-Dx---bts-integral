@@ -23,7 +23,7 @@ export default function PortalOrderDetailPage({
       .catch((e) => setError(getApiErrorMessage(e)));
   }, [orderId]);
 
-  const consent = (order as any)?.consent;
+  const consent = order?.consent;
   const consentPending =
     consent?.status === ConsentStatus.ENVIADO_PACIENTE ||
     consent?.status === ConsentStatus.FIRMADO_MEDICO;

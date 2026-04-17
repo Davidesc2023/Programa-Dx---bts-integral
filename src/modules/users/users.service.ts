@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { Prisma } from '@prisma/client';
+import { Prisma, DocumentType, UserRole } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { softDelete } from '../../common/helpers/soft-delete.helper';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -50,7 +50,7 @@ export class UsersService {
         role: dto.role,
         firstName: dto.firstName,
         lastName: dto.lastName,
-        documentType: dto.documentType as any,
+        documentType: dto.documentType as DocumentType,
         documentNumber: dto.documentNumber,
         phone: dto.phone,
         specialty: dto.specialty,
@@ -66,7 +66,7 @@ export class UsersService {
     const skip = (page - 1) * limit;
 
     const where: Prisma.UserWhereInput = { deletedAt: null };
-    if (role) where.role = role as any;
+    if (role) where.role = role as UserRole;
     if (search) {
       where.OR = [
         { email: { contains: search, mode: 'insensitive' } },
@@ -113,7 +113,7 @@ export class UsersService {
     }
     if (userFields.firstName !== undefined) data.firstName = userFields.firstName;
     if (userFields.lastName !== undefined) data.lastName = userFields.lastName;
-    if (userFields.documentType !== undefined) data.documentType = userFields.documentType as any;
+    if (userFields.documentType !== undefined) data.documentType = userFields.documentType as DocumentType;
     if (userFields.documentNumber !== undefined) data.documentNumber = userFields.documentNumber;
     if (userFields.phone !== undefined) data.phone = userFields.phone;
     if (userFields.specialty !== undefined) data.specialty = userFields.specialty;

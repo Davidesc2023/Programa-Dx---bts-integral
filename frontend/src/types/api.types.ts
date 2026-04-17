@@ -112,6 +112,7 @@ export interface Order {
   createdBy: string | null;
   updatedBy: string | null;
   tests?: OrderTest[];
+  consent?: Consent;
 }
 
 export interface OrderTest {

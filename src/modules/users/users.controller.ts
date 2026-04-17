@@ -5,6 +5,7 @@ import {
   Get,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -50,14 +51,14 @@ export class UsersController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const user = await this.usersService.findOne(id);
     return ResponseDto.of(user, 'Usuario obtenido exitosamente', HttpStatus.OK);
   }
 
   @Patch(':id')
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateUserDto,
     @CurrentUser() currentUser: ICurrentUser,
   ) {
@@ -66,7 +67,7 @@ export class UsersController {
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string, @CurrentUser() currentUser: ICurrentUser) {
+  async remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() currentUser: ICurrentUser) {
     await this.usersService.remove(id, currentUser.userId);
     return ResponseDto.of(null, 'Usuario eliminado exitosamente', HttpStatus.OK);
   }

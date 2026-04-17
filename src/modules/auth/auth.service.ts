@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { DocumentType } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { LogoutDto } from './dto/logout.dto';
@@ -35,7 +36,7 @@ export class AuthService {
         email: dto.email,
         password: hashedPassword,
         role: 'PACIENTE',
-        documentType: dto.documentType as any,
+        documentType: dto.documentType as DocumentType,
         documentNumber: dto.documentNumber,
         firstName: dto.firstName,
         lastName: dto.lastName,
@@ -46,7 +47,7 @@ export class AuthService {
     if (dto.documentType && dto.documentNumber) {
       await this.prisma.patient.updateMany({
         where: {
-          documentType: dto.documentType as any,
+          documentType: dto.documentType as DocumentType,
           documentNumber: dto.documentNumber,
           userId: null,
           deletedAt: null,

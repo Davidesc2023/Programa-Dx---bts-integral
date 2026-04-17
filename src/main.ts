@@ -1,4 +1,4 @@
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
@@ -7,24 +7,28 @@ import { AppModule } from './app.module';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
 
-  // Swagger setup (before helmet so assets load correctly)
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('Lab Request API')
-    .setDescription('Sistema de Gestión de Solicitudes de Laboratorio')
-    .setVersion('1.0')
-    .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
-      'access-token',
-    )
-    .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup('api/docs', app, document, {
-    swaggerOptions: { persistAuthorization: true },
-  });
+  const isProd = process.env.NODE_ENV === 'production';
+
+  // Swagger setup — disabled in production to reduce attack surface
+  if (!isProd) {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('Lab Request API')
+      .setDescription('Sistema de Gestión de Solicitudes de Laboratorio')
+      .setVersion('1.0')
+      .addBearerAuth(
+        { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+        'access-token',
+      )
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('api/docs', app, document, {
+      swaggerOptions: { persistAuthorization: true },
+    });
+  }
 
   // Helmet with CSP disabled only for Swagger UI compatibility on internal API
   app.use(
-    helmet({ contentSecurityPolicy: false }),
+    helmet({ contentSecurityPolicy: isProd }),
   );
 
   app.useGlobalPipes(
@@ -50,6 +54,7 @@ async function bootstrap(): Promise<void> {
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
+  Logger.log(`Application running on port ${port} [${process.env.NODE_ENV ?? 'development'}]`, 'Bootstrap');
 }
 
 bootstrap();

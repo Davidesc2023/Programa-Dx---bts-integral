@@ -107,9 +107,11 @@ export default function PortalConsentPage({
                 {showDocument ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </button>
               {showDocument && (
-                <div
-                  className="p-4 text-sm prose prose-sm max-w-none max-h-96 overflow-y-auto"
-                  dangerouslySetInnerHTML={{ __html: consent.documentHtml }}
+                <iframe
+                  srcDoc={consent.documentHtml}
+                  sandbox="allow-same-origin"
+                  className="w-full h-96 border-0"
+                  title="Documento de consentimiento"
                 />
               )}
             </div>

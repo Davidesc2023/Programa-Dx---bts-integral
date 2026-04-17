@@ -5,6 +5,7 @@ import {
   Get,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Query,
@@ -55,7 +56,7 @@ export class PatientsController {
 
   @Get(':id')
   @Roles('ADMIN', 'OPERADOR', 'LABORATORIO', 'MEDICO')
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const patient = await this.patientsService.findOne(id);
     return ResponseDto.of(patient, 'Paciente obtenido exitosamente', HttpStatus.OK);
   }
@@ -63,7 +64,7 @@ export class PatientsController {
   @Patch(':id')
   @Roles('ADMIN', 'OPERADOR')
   async update(
-    @Param('id') id: string,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdatePatientDto,
     @CurrentUser() currentUser: ICurrentUser,
   ) {
@@ -73,7 +74,7 @@ export class PatientsController {
 
   @Delete(':id')
   @Roles('ADMIN', 'OPERADOR')
-  async remove(@Param('id') id: string, @CurrentUser() currentUser: ICurrentUser) {
+  async remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() currentUser: ICurrentUser) {
     await this.patientsService.remove(id, currentUser.userId);
     return ResponseDto.of(null, 'Paciente eliminado exitosamente', HttpStatus.OK);
   }
