@@ -1,6 +1,7 @@
 'use client';
 
 import { useDashboard } from '@/modules/dashboard/useDashboard';
+import { DashboardHero } from '@/modules/dashboard/DashboardHero';
 import { DashboardMetrics } from '@/modules/dashboard/DashboardMetrics';
 import { RecentOrders } from '@/modules/dashboard/RecentOrders';
 import { OrdersInProgress } from '@/modules/dashboard/OrdersInProgress';
@@ -19,7 +20,7 @@ export default function DashboardPage() {
   if (isError) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-sm text-red-500">
+        <p className="text-sm text-error">
           Error al cargar el dashboard. Verifique la conexión con el servidor.
         </p>
       </div>
@@ -27,7 +28,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      <DashboardHero
+        pendingOrders={pendingOrders}
+        totalPatients={totalPatients}
+        isLoading={isLoading}
+      />
       <DashboardMetrics
         totalPatients={totalPatients}
         pendingOrders={pendingOrders}

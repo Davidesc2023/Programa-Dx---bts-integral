@@ -25,14 +25,21 @@ const NEXT_STATUSES: Partial<Record<AppointmentStatus, AppointmentStatus[]>> = {
   [AppointmentStatus.CONFIRMADA]: [AppointmentStatus.COMPLETADA, AppointmentStatus.CANCELADA],
 };
 
-function formatDate(iso: string): string {
-  return new Intl.DateTimeFormat('es-CO', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(new Date(iso));
+function formatDate(iso: string | null | undefined): string {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '—';
+    return new Intl.DateTimeFormat('es-CO', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(d);
+  } catch {
+    return '—';
+  }
 }
 
 // Extracted outside AppointmentList to avoid React hooks-in-inline-component crash
@@ -125,7 +132,7 @@ export function AppointmentList() {
                   <tr key={a.id} className="border-t border-surface-container-high hover:bg-surface-container-low transition-colors">
                     <td className="py-3 px-4 text-sm text-on-surface">{formatDate(a.scheduledAt)}</td>
                     <td className="py-3 px-4 text-sm text-outline font-mono">
-                      {a.patientId.slice(0, 8)}…
+                      {a.patientId ? `${a.patientId.slice(0, 8)}…` : '—'}
                     </td>
                     <td className="py-3 px-4">
                       <Badge variant={STATUS_BADGE[a.status as AppointmentStatus]}>

@@ -1,35 +1,82 @@
 'use client';
 
-import { Users, ClipboardList, Activity, CheckCircle2 } from 'lucide-react';
-import { Card } from '@/components/ui/Card';
-import { CardSkeleton } from '@/components/ui/LoadingSkeleton';
+import { ClipboardList, Activity, CheckCircle2 } from 'lucide-react';
 
 interface MetricCardProps {
   title: string;
   value: number;
-  icon: React.ElementType;
-  iconColor: string;
+  delta: string;
+  borderColor: string;
   iconBg: string;
+  iconColor: string;
+  icon: React.ElementType;
+  progress: number;
+  isLoading: boolean;
 }
 
-function MetricCard({ title, value, icon: Icon, iconColor, iconBg }: MetricCardProps) {
+function MetricCard({
+  title,
+  value,
+  delta,
+  borderColor,
+  iconBg,
+  iconColor,
+  icon: Icon,
+  progress,
+  isLoading,
+}: MetricCardProps) {
   return (
-    <Card padding="md">
-      <div className="flex items-center gap-4">
-        <div
-          className="p-3 rounded-xl shrink-0"
-          style={{ background: iconBg }}
+    <div
+      className="rounded-2xl p-6 border-l-4"
+      style={{
+        background: '#ffffff',
+        borderLeftColor: borderColor,
+        boxShadow: '0px 8px 24px rgba(25,28,29,0.06)',
+      }}
+    >
+      <div className="flex justify-between items-start mb-4">
+        <span
+          className="text-xs font-black tracking-widest uppercase"
+          style={{ color: '#3e4946' }}
         >
-          <Icon size={22} style={{ color: iconColor }} />
-        </div>
-        <div>
-          <p className="text-sm" style={{ color: '#6e7976' }}>{title}</p>
-          <p className="text-2xl font-bold tabular-nums" style={{ color: '#191c1d' }}>
-            {value.toLocaleString('es-CO')}
-          </p>
+          {title}
+        </span>
+        <div
+          className="p-2 rounded-lg"
+          style={{ background: iconBg, color: iconColor }}
+        >
+          <Icon size={20} />
         </div>
       </div>
-    </Card>
+
+      <div className="flex items-baseline gap-2 mb-4">
+        {isLoading ? (
+          <div
+            className="h-10 w-16 rounded-lg animate-pulse"
+            style={{ background: '#e6e8e9' }}
+          />
+        ) : (
+          <>
+            <span
+              className="text-4xl font-black tabular-nums"
+              style={{ color: '#191c1d', fontFamily: 'Manrope, sans-serif' }}
+            >
+              {value.toLocaleString('es-CO')}
+            </span>
+            <span className="text-xs font-bold" style={{ color: iconColor }}>
+              {delta}
+            </span>
+          </>
+        )}
+      </div>
+
+      <div className="w-full h-1 rounded-full" style={{ background: '#e6e8e9' }}>
+        <div
+          className="h-full rounded-full transition-all duration-700"
+          style={{ width: `${Math.min(Math.max(progress, 5), 100)}%`, background: borderColor }}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -42,58 +89,48 @@ interface DashboardMetricsProps {
 }
 
 export function DashboardMetrics({
-  totalPatients,
   pendingOrders,
   activeOrders,
   completedOrders,
   isLoading,
 }: DashboardMetricsProps) {
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <CardSkeleton key={i} />
-        ))}
-      </div>
-    );
-  }
-
-  const metrics: MetricCardProps[] = [
-    {
-      title: 'Pacientes registrados',
-      value: totalPatients,
-      icon: Users,
-      iconColor: '#1B7A6B',
-      iconBg: 'rgba(27,122,107,0.10)',
-    },
-    {
-      title: 'Órdenes pendientes',
-      value: pendingOrders,
-      icon: ClipboardList,
-      iconColor: '#745b00',
-      iconBg: 'rgba(208,166,0,0.12)',
-    },
-    {
-      title: 'En proceso',
-      value: activeOrders,
-      icon: Activity,
-      iconColor: '#0061a3',
-      iconBg: 'rgba(0,97,163,0.10)',
-    },
-    {
-      title: 'Completadas',
-      value: completedOrders,
-      icon: CheckCircle2,
-      iconColor: '#006053',
-      iconBg: 'rgba(0,96,83,0.10)',
-    },
-  ];
+  const total = Math.max(pendingOrders + activeOrders + completedOrders, 1);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-      {metrics.map((m) => (
-        <MetricCard key={m.title} {...m} />
-      ))}
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+      <MetricCard
+        title="Pendientes"
+        value={pendingOrders}
+        delta="+hoy"
+        borderColor="#F5C518"
+        iconBg="rgba(208,166,0,0.12)"
+        iconColor="#584400"
+        icon={ClipboardList}
+        progress={(pendingOrders / total) * 100}
+        isLoading={isLoading}
+      />
+      <MetricCard
+        title="En Proceso"
+        value={activeOrders}
+        delta="Activo"
+        borderColor="#4490D9"
+        iconBg="rgba(0,97,163,0.10)"
+        iconColor="#0061a3"
+        icon={Activity}
+        progress={(activeOrders / total) * 100}
+        isLoading={isLoading}
+      />
+      <MetricCard
+        title="Completadas"
+        value={completedOrders}
+        delta="↑ Mes"
+        borderColor="#1B7A6B"
+        iconBg="rgba(27,122,107,0.10)"
+        iconColor="#006053"
+        icon={CheckCircle2}
+        progress={(completedOrders / total) * 100}
+        isLoading={isLoading}
+      />
     </div>
   );
 }
