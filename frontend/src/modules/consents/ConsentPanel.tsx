@@ -40,11 +40,11 @@ function getPatientStep(status: ConsentStatus): StepState {
 }
 
 const STEP_STYLES: Record<StepState, { border: string; bg: string; iconColor: string; label: string }> = {
-  done:     { border: 'rgba(74,222,128,0.35)',  bg: 'rgba(74,222,128,0.07)',  iconColor: '#4ade80', label: 'Firmado' },
-  active:   { border: 'rgba(250,204,21,0.4)',   bg: 'rgba(250,204,21,0.06)',  iconColor: '#facc15', label: 'Pendiente' },
-  waiting:  { border: 'rgba(255,255,255,0.08)', bg: 'transparent',            iconColor: 'rgba(255,255,255,0.2)', label: 'En espera' },
-  accepted: { border: 'rgba(74,222,128,0.35)',  bg: 'rgba(74,222,128,0.07)', iconColor: '#4ade80', label: 'Aceptado' },
-  rejected: { border: 'rgba(239,68,68,0.4)',    bg: 'rgba(239,68,68,0.06)',  iconColor: '#f87171', label: 'Rechazado' },
+  done:     { border: 'rgba(27,122,107,0.30)',  bg: 'rgba(27,122,107,0.08)',  iconColor: '#1B7A6B', label: 'Firmado' },
+  active:   { border: 'rgba(208,166,0,0.35)',   bg: 'rgba(208,166,0,0.08)',   iconColor: '#745b00', label: 'Pendiente' },
+  waiting:  { border: '#e6e8e9',                bg: '#f2f4f4',                iconColor: '#bec9c5', label: 'En espera' },
+  accepted: { border: 'rgba(27,122,107,0.30)',  bg: 'rgba(27,122,107,0.08)', iconColor: '#1B7A6B', label: 'Aceptado' },
+  rejected: { border: 'rgba(186,26,26,0.30)',   bg: 'rgba(186,26,26,0.08)', iconColor: '#ba1a1a', label: 'Rechazado' },
 };
 
 function StepIcon({ state }: { state: StepState }) {
@@ -115,7 +115,7 @@ export function ConsentPanel({ orderId }: ConsentPanelProps) {
         {isLoading ? (
           <div className="mt-4"><LoadingSkeleton rows={3} /></div>
         ) : isError || !consent ? (
-          <div className="mt-4 flex items-center gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          <div className="mt-4 flex items-center gap-2 text-sm" style={{ color: '#6e7976' }}>
             <FileText size={16} /><span>Sin consentimiento registrado.</span>
           </div>
         ) : (
@@ -132,7 +132,7 @@ export function ConsentPanel({ orderId }: ConsentPanelProps) {
                     <div className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
                       style={{ background: doctorStyle.border, color: '#fff' }}>1</div>
                     <span className="text-xs font-semibold uppercase tracking-wide"
-                      style={{ color: 'rgba(255,255,255,0.5)' }}>Firma médica</span>
+                      style={{ color: '#6e7976' }}>Firma médica</span>
                   </div>
                   <StepIcon state={doctorState} />
                 </div>
@@ -140,12 +140,12 @@ export function ConsentPanel({ orderId }: ConsentPanelProps) {
                   {doctorStyle.label}
                 </p>
                 {(consent.doctorNameSnapshot || consent.signedBy) && (
-                  <div className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                  <div className="flex items-center gap-1.5 text-xs" style={{ color: '#3e4946' }}>
                     <User size={12} />{consent.doctorNameSnapshot ?? consent.signedBy}
                   </div>
                 )}
                 {consent.signedAt && (
-                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>{formatDate(consent.signedAt)}</p>
+                  <p className="text-xs" style={{ color: '#6e7976' }}>{formatDate(consent.signedAt)}</p>
                 )}
               </div>
 
@@ -157,7 +157,7 @@ export function ConsentPanel({ orderId }: ConsentPanelProps) {
                     <div className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
                       style={{ background: patientStyle.border, color: '#fff' }}>2</div>
                     <span className="text-xs font-semibold uppercase tracking-wide"
-                      style={{ color: 'rgba(255,255,255,0.5)' }}>Respuesta paciente</span>
+                      style={{ color: '#6e7976' }}>Respuesta paciente</span>
                   </div>
                   <StepIcon state={patientState} />
                 </div>
@@ -169,12 +169,12 @@ export function ConsentPanel({ orderId }: ConsentPanelProps) {
                     : patientStyle.label}
                 </p>
                 {consent.patientNameSnapshot && (
-                  <div className="flex items-center gap-1.5 text-xs" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                  <div className="flex items-center gap-1.5 text-xs" style={{ color: '#3e4946' }}>
                     <UserCheck size={12} />{consent.patientNameSnapshot}
                   </div>
                 )}
                 {(consent.patientSignedAt ?? consent.respondedAt) && (
-                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                  <p className="text-xs" style={{ color: '#6e7976' }}>
                     {formatDate(consent.patientSignedAt ?? consent.respondedAt)}
                   </p>
                 )}
@@ -183,16 +183,16 @@ export function ConsentPanel({ orderId }: ConsentPanelProps) {
 
             {/* ── Documento colapsable ── */}
             {consent.documentHtml && (
-              <div className="rounded-lg overflow-hidden border" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+              <div className="rounded-lg overflow-hidden border" style={{ borderColor: '#e6e8e9' }}>
                 <button type="button" onClick={() => setShowDocument((v) => !v)}
                   className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium transition-colors"
-                  style={{ background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.6)' }}>
+                  style={{ background: '#f2f4f4', color: '#3e4946' }}>
                   <span className="flex items-center gap-2"><FileText size={14} />Documento de consentimiento</span>
                   {showDocument ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                 </button>
                 {showDocument && (
                   <div className="p-4 max-h-96 overflow-y-auto text-sm prose prose-sm max-w-none"
-                    style={{ background: 'rgba(255,255,255,0.02)', color: 'rgba(255,255,255,0.7)' }}
+                    style={{ background: '#f8fafa', color: '#191c1d' }}
                     // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted HTML from backend template
                     dangerouslySetInnerHTML={{ __html: consent.documentHtml }}
                   />
@@ -204,7 +204,7 @@ export function ConsentPanel({ orderId }: ConsentPanelProps) {
             {consent.documentPdfUrl && (
               <a href={consent.documentPdfUrl} target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-sm font-medium underline underline-offset-2"
-                style={{ color: '#4ade80' }}>
+                style={{ color: '#1B7A6B' }}>
                 <Download size={14} />Descargar PDF firmado
               </a>
             )}
@@ -212,8 +212,8 @@ export function ConsentPanel({ orderId }: ConsentPanelProps) {
             {/* Notas de firma */}
             {canSign && (
               <div className="space-y-1">
-                <label className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.7)' }}>
-                  Notas de firma <span style={{ color: 'rgba(255,255,255,0.35)' }} className="font-normal">(opcional)</span>
+                <label className="text-sm font-medium" style={{ color: '#3e4946' }}>
+                  Notas de firma <span style={{ color: '#6e7976' }} className="font-normal">(opcional)</span>
                 </label>
                 <textarea rows={2} value={signNotes} onChange={(e) => setSignNotes(e.target.value)}
                   className="w-full text-sm rounded-lg px-3 py-2 focus:outline-none resize-none"

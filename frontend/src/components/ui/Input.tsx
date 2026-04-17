@@ -19,10 +19,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="text-sm font-medium text-gray-700"
+            className="text-sm font-medium"
+            style={{ color: '#3e4946', fontFamily: 'Inter, sans-serif' }}
           >
             {label}
-            {props.required && <span className="text-red-500 ml-1">*</span>}
+            {props.required && <span className="ml-1" style={{ color: '#ba1a1a' }}>*</span>}
           </label>
         )}
 
@@ -30,27 +31,31 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           id={inputId}
           ref={ref}
           className={cn(
-            'w-full px-3 py-2 border rounded-lg text-sm',
-            'focus:outline-none focus:ring-2 transition-colors',
-            'disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed',
-            'placeholder:text-gray-400',
+            'w-full px-3.5 py-2.5 rounded-xl text-sm transition-all duration-150',
+            'focus:outline-none focus:ring-2',
+            'disabled:opacity-50 disabled:cursor-not-allowed',
             error
-              ? 'border-red-400 focus:ring-red-300 focus:border-red-400'
-              : 'border-gray-300 focus:ring-primary-200 focus:border-primary-500',
+              ? 'focus:ring-[rgba(186,26,26,0.25)] focus:border-[#ba1a1a]'
+              : 'focus:ring-[rgba(27,122,107,0.20)] focus:border-[#1B7A6B]',
             className,
           )}
+          style={{
+            background: '#f2f4f4',
+            border: `1px solid ${error ? '#ba1a1a' : '#bec9c5'}`,
+            color: '#191c1d',
+          }}
           aria-invalid={!!error}
           aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
           {...props}
         />
 
         {error && (
-          <p id={`${inputId}-error`} role="alert" className="text-xs text-red-600">
+          <p id={`${inputId}-error`} role="alert" className="text-xs" style={{ color: '#ba1a1a' }}>
             {error}
           </p>
         )}
         {!error && hint && (
-          <p id={`${inputId}-hint`} className="text-xs text-gray-500">
+          <p id={`${inputId}-hint`} className="text-xs" style={{ color: '#6e7976' }}>
             {hint}
           </p>
         )}

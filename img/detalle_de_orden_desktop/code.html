@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#191c1d",
+                        "on-primary-fixed-variant": "#005045",
+                        "on-tertiary-fixed": "#241a00",
+                        "on-error-container": "#93000a",
+                        "surface": "#f8fafa",
+                        "tertiary-fixed": "#ffe08b",
+                        "surface-variant": "#e1e3e3",
+                        "secondary": "#0061a3",
+                        "surface-container-highest": "#e1e3e3",
+                        "on-primary-container": "#b0ffed",
+                        "tertiary": "#745b00",
+                        "secondary-container": "#6ab2fe",
+                        "on-surface": "#191c1d",
+                        "surface-dim": "#d8dada",
+                        "primary-container": "#1b7a6b",
+                        "on-surface-variant": "#3e4946",
+                        "error-container": "#ffdad6",
+                        "surface-container": "#eceeee",
+                        "secondary-fixed-dim": "#9ecaff",
+                        "on-tertiary-container": "#4f3d00",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#bec9c5",
+                        "surface-container-high": "#e6e8e9",
+                        "on-error": "#ffffff",
+                        "background": "#f8fafa",
+                        "surface-bright": "#f8fafa",
+                        "inverse-surface": "#2e3131",
+                        "inverse-primary": "#81d6c4",
+                        "surface-tint": "#006b5d",
+                        "on-secondary-fixed": "#001d36",
+                        "on-tertiary-fixed-variant": "#584400",
+                        "secondary-fixed": "#d1e4ff",
+                        "tertiary-container": "#d0a600",
+                        "on-secondary-container": "#004474",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#f0c110",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#00497c",
+                        "primary-fixed-dim": "#81d6c4",
+                        "outline": "#6e7976",
+                        "inverse-on-surface": "#eff1f1",
+                        "surface-container-low": "#f2f4f4",
+                        "primary-fixed": "#9df2e0",
+                        "primary": "#006053",
+                        "on-primary-fixed": "#00201b",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.75rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+        .glass-panel {
+            backdrop-filter: blur(16px);
+            background: rgba(255, 255, 255, 0.7);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xl docked full-width top-0 z-40 bg-surface_container_low shadow-sm shadow-xl shadow-teal-900/5 dark:shadow-none flex justify-between items-center w-full px-8 h-20 fixed">
+<div class="flex items-center gap-4">
+<span class="text-2xl font-black tracking-tighter text-teal-800 dark:text-teal-400">APP-DX</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 px-4 py-2 text-slate-500 dark:text-slate-400 font-medium hover:bg-teal-50 dark:hover:bg-teal-900/30 transition-all rounded-xl cursor-pointer">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="text-right hidden sm:block">
+<p class="text-sm font-bold text-teal-800 dark:text-teal-400">Carlos Méndez</p>
+<p class="text-xs text-slate-500">Paciente ID: 9921</p>
+</div>
+<img alt="Avatar del paciente" class="w-10 h-10 rounded-full border-2 border-primary/20" data-alt="Close-up professional portrait of a man in his 40s with a kind expression against a soft-focus office background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkHoycm0OPlMD6bkTVIiJV7j7pnIjP63P5bUXtYsQaiVqPrNi4cCejTdgQH6-W4BGLtIU1sChjoEzZxcII7I0HRtFAkPRkHC3JVEDxk992fZ5PFDIZnhDqPtlOCWCZWWZTogndfZCPyDa7m5VHpMjYAPSmXbnzm33xg7q39jz4hB9YVQMS3-CsIHD9oGrMUIR-7qTTTL25CoBr6sZmXKUSKe0ZZrr86V0S16Pl5UTXGcOqZO6F0X4Nx5CXqo90vt4TXjnXiDgC0jyE"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-72 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl bg-slate-50 dark:bg-slate-950 shadow-[24px_0_48px_-12px_rgba(0,0,0,0.05)] flex flex-col p-6 gap-y-4 pt-24 hidden md:flex z-30">
+<div class="mb-8 px-2">
+<h2 class="text-xl font-extrabold text-teal-800 dark:text-teal-400">Clinical Sanctuary</h2>
+<p class="text-xs text-slate-500 uppercase tracking-widest mt-1">Gestión Centralizada</p>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-4 p-3 text-slate-500 dark:text-slate-400 hover:text-teal-700 hover:translate-x-1 transition-transform duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+<span class="font-manrope font-semibold text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 p-3 text-slate-500 dark:text-slate-400 hover:text-teal-700 hover:translate-x-1 transition-transform duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="biotech">biotech</span>
+<span class="font-manrope font-semibold text-sm">Resultados</span>
+</a>
+<a class="flex items-center gap-4 p-3 text-teal-800 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 rounded-xl hover:translate-x-1 transition-transform duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-manrope font-semibold text-sm">Órdenes</span>
+</a>
+<a class="flex items-center gap-4 p-3 text-slate-500 dark:text-slate-400 hover:text-teal-700 hover:translate-x-1 transition-transform duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-manrope font-semibold text-sm">Perfil</span>
+</a>
+</nav>
+<div class="mt-auto p-4 rounded-2xl bg-primary-container/10 border border-primary/10">
+<p class="text-xs font-semibold text-primary mb-2">¿Necesitas ayuda?</p>
+<button class="w-full py-2 bg-primary text-white text-xs font-bold rounded-xl active:scale-95 transition-all">Nueva Consulta</button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:pl-72 pt-24 min-h-screen">
+<div class="max-w-6xl mx-auto p-8">
+<!-- Hero Header Section -->
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-12">
+<div class="space-y-2">
+<div class="flex items-center gap-3 mb-4">
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-bold">ORD-4821</span>
+<span class="text-outline text-sm font-medium">Emitida el 24 de Octubre, 2023</span>
+</div>
+<h1 class="text-4xl md:text-5xl font-black tracking-tight text-on-surface">Detalle de Orden Médica</h1>
+<div class="flex items-center gap-4 pt-2">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container-high border-2 border-white shadow-sm">
+<img alt="Médico tratante" class="w-full h-full object-cover" data-alt="Professional portrait of a male doctor in his late 50s wearing a white clinical coat and a stethoscope" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhfjru0TimV8zP3FN_rfGUst1YzDDCllMSI3GX-iaWku4LIO-dlkobiLv2FscQnzlh7l1FRojQ9SClvdUUDL_D09p8BL1PwCF7eOcVV9IThm0LAvlRHHyTFPdMDHUpbjyW3OTNBLDRxN_kwJb8YF_ilFN1e9ziv3BsB98ebQxOd1Hy7uCMrhG0i5ivoRPE3DixAIjpR5dYtTe14XcFBjqUwW4cRNbc4FHu2JuxWYAbV6GkJ1aFimd8X1FbgJk8MLhCk4ijGI3GGJ5s"/>
+</div>
+<div>
+<p class="text-sm font-semibold text-primary">Dr. Alejandro Vivas</p>
+<p class="text-xs text-on-surface-variant font-medium">Medicina Interna • Clínica Santa Fe</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row gap-4">
+<button class="flex items-center justify-center gap-2 px-8 py-4 bg-primary text-on-primary rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">download</span>
+                        Descargar Orden Completa (PDF)
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Main Service Area (Left 2/3) -->
+<div class="lg:col-span-2 space-y-8">
+<!-- Progress Timeline Card -->
+<section class="bg-surface-container-lowest rounded-3xl p-8 shadow-sm">
+<h3 class="text-lg font-bold mb-8 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">timeline</span>
+                            Progreso del Servicio
+                        </h3>
+<div class="relative flex justify-between items-start">
+<!-- Progress Line Background -->
+<div class="absolute top-5 left-0 w-full h-[2px] bg-surface-container-high z-0"></div>
+<div class="absolute top-5 left-0 w-[66%] h-[2px] bg-primary z-0"></div>
+<!-- Steps -->
+<div class="relative z-10 flex flex-col items-center text-center max-w-[80px]">
+<div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<p class="text-[10px] font-bold uppercase tracking-wider text-primary">Emitida</p>
+<p class="text-[9px] text-outline-variant mt-1">24 Oct</p>
+</div>
+<div class="relative z-10 flex flex-col items-center text-center max-w-[80px]">
+<div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<p class="text-[10px] font-bold uppercase tracking-wider text-primary">Muestra Tomada</p>
+<p class="text-[9px] text-outline-variant mt-1">25 Oct</p>
+</div>
+<div class="relative z-10 flex flex-col items-center text-center max-w-[80px]">
+<div class="w-12 h-12 rounded-full bg-white border-4 border-primary text-primary flex items-center justify-center mb-3 -mt-1 shadow-md">
+<span class="material-symbols-outlined animate-pulse">biotech</span>
+</div>
+<p class="text-[10px] font-bold uppercase tracking-wider text-on-surface">En Proceso</p>
+<p class="text-[9px] text-primary mt-1 font-semibold">Hoy</p>
+</div>
+<div class="relative z-10 flex flex-col items-center text-center max-w-[80px]">
+<div class="w-10 h-10 rounded-full bg-surface-container-high text-outline flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-sm">flag</span>
+</div>
+<p class="text-[10px] font-bold uppercase tracking-wider text-outline">Finalizado</p>
+<p class="text-[9px] text-outline-variant mt-1">Est. 27 Oct</p>
+</div>
+</div>
+</section>
+<!-- Exam List Card -->
+<section class="bg-surface-container-lowest rounded-3xl overflow-hidden shadow-sm">
+<div class="p-8 border-b border-surface-container-low">
+<h3 class="text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">magnification_small</span>
+                                Exámenes Solicitados
+                            </h3>
+</div>
+<div class="divide-y divide-surface-container-low">
+<!-- Item 1 -->
+<div class="p-6 hover:bg-surface-container-low transition-colors group">
+<div class="flex justify-between items-start gap-4">
+<div class="flex-1">
+<h4 class="font-bold text-on-surface text-base group-hover:text-primary transition-colors">Hemograma Completo IV</h4>
+<p class="text-sm text-on-surface-variant mt-1 leading-relaxed">Estudio detallado de glóbulos rojos, blancos y plaquetas para evaluar salud general y detectar anemia o infecciones.</p>
+</div>
+<div class="flex flex-col items-end gap-3">
+<span class="bg-primary-container/20 text-primary-container px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter">Completado</span>
+<button class="text-primary text-xs font-bold flex items-center gap-1">
+                                            Ver Resultado <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="p-6 hover:bg-surface-container-low transition-colors group">
+<div class="flex justify-between items-start gap-4">
+<div class="flex-1">
+<h4 class="font-bold text-on-surface text-base group-hover:text-primary transition-colors">Perfil Lipídico</h4>
+<p class="text-sm text-on-surface-variant mt-1 leading-relaxed">Medición de colesterol total, LDL, HDL y triglicéridos. Requiere ayuno mínimo de 12 horas.</p>
+</div>
+<div class="flex flex-col items-end gap-3">
+<span class="bg-secondary-container/20 text-on-secondary-container px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter">En Proceso</span>
+<span class="text-xs text-outline italic">Actualización: Hace 2h</span>
+</div>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="p-6 hover:bg-surface-container-low transition-colors group">
+<div class="flex justify-between items-start gap-4">
+<div class="flex-1">
+<h4 class="font-bold text-on-surface text-base group-hover:text-primary transition-colors">Glicemia Pre y Post</h4>
+<p class="text-sm text-on-surface-variant mt-1 leading-relaxed">Monitoreo de niveles de glucosa en sangre antes y después de carga de carbohidratos.</p>
+</div>
+<div class="flex flex-col items-end gap-3">
+<span class="bg-tertiary-container/20 text-on-tertiary-container px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter">Pendiente</span>
+<span class="text-xs text-outline italic">Esperando Toma</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Sidebar Support Panel (Right 1/3) -->
+<div class="space-y-8">
+<!-- Patient Quick Info -->
+<div class="bg-surface-container-high rounded-3xl p-8 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 transition-transform group-hover:scale-150 duration-500"></div>
+<h3 class="text-sm font-bold uppercase tracking-widest text-on-surface-variant mb-6">Información de Seguridad</h3>
+<div class="space-y-4 relative z-10">
+<div>
+<p class="text-[10px] text-outline font-bold uppercase">Requisito de Ayuno</p>
+<p class="text-sm font-semibold">Mínimo 12 horas - Agua permitida.</p>
+</div>
+<div>
+<p class="text-[10px] text-outline font-bold uppercase">Ubicación de Toma</p>
+<p class="text-sm font-semibold">Sede Principal - Módulo A</p>
+</div>
+<div class="pt-4 flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-xs font-medium text-on-surface-variant">Orden verificada por Seguros Salud Total</span>
+</div>
+</div>
+</div>
+<!-- Support Card -->
+<div class="bg-white rounded-3xl p-8 shadow-xl shadow-slate-200/50 border border-slate-100">
+<div class="flex items-center gap-4 mb-6">
+<div class="w-12 h-12 bg-teal-50 rounded-2xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">support_agent</span>
+</div>
+<div>
+<h3 class="font-bold text-on-surface">Soporte APP-DX</h3>
+<p class="text-xs text-outline">Disponible 24/7</p>
+</div>
+</div>
+<p class="text-sm text-on-surface-variant mb-6 leading-relaxed">
+                            Si tienes dudas sobre la preparación para tus exámenes o necesitas reagendar tu cita.
+                        </p>
+<div class="space-y-3">
+<a class="flex items-center gap-3 p-3 bg-surface rounded-xl hover:bg-teal-50 transition-colors group" href="tel:0800DXHELP">
+<span class="material-symbols-outlined text-primary text-xl">call</span>
+<span class="text-sm font-bold text-on-surface group-hover:text-primary transition-colors">0-800-DX-HELP</span>
+</a>
+<a class="flex items-center gap-3 p-3 bg-surface rounded-xl hover:bg-teal-50 transition-colors group" href="mailto:soporte@app-dx.com">
+<span class="material-symbols-outlined text-primary text-xl">mail</span>
+<span class="text-sm font-bold text-on-surface group-hover:text-primary transition-colors">soporte@app-dx.com</span>
+</a>
+</div>
+<button class="w-full mt-8 py-3 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-white transition-all active:scale-95">
+                            Chat en Vivo
+                        </button>
+</div>
+<!-- Map Location (Decorative) -->
+<div class="rounded-3xl h-48 w-full bg-surface-container-low overflow-hidden relative group">
+<img alt="Mapa de ubicación" class="w-full h-full object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-700" data-alt="Abstract minimalist topographic map illustration with subtle teal and grey contour lines on a clean white background" data-location="Bogotá" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSdA0OMvLAMfi1zsRqkHLczAmOlX7IYWmgmKM5gP-uqEJYUNHmR9d_lfQIZw8bEGnHhGyrA-lvnxO4znRNDfVUWGN5O27vxFneHvWyhON73tjkCOngtKU0PA0Oa8n_N3QlFYxd_F5A0f6pJA7wGdzmw6fmvGuHkqjXZV1aIVwZ9mOqlojqqB0t8TVn37dve0MmWD_z_Gn6E0EIdGfwsLwG4-__hPuHPFVl2G6LTGxzJO3YEnWYuIrRY1A1Q9SF-m-jev19M6bwBOOx"/>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<div class="bg-primary p-2 rounded-full shadow-lg">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">location_on</span>
+</div>
+</div>
+<div class="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-md p-3 rounded-xl border border-white/20">
+<p class="text-[10px] font-bold text-primary uppercase">Sede Laboratorio</p>
+<p class="text-xs font-semibold">Calle 100 #15-32, Bogotá</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Contextual FAB (Mobile Only) -->
+<button class="md:hidden fixed bottom-8 right-8 w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center z-50 active:scale-90 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">chat</span>
+</button>
+</body></html>

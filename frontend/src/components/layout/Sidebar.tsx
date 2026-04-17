@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import Image from 'next/image';
 import Link from 'next/link';
@@ -12,6 +12,7 @@ import {
   Calendar,
   UserCog,
   LogOut,
+  PlusCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useAuthStore } from '@/modules/auth/authStore';
@@ -27,7 +28,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   {
-    label: 'Dashboard',
+    label: 'Panel Principal',
     href: '/dashboard',
     icon: LayoutDashboard,
     roles: [UserRole.ADMIN, UserRole.OPERADOR, UserRole.LABORATORIO, UserRole.MEDICO],
@@ -39,7 +40,7 @@ const NAV_ITEMS: NavItem[] = [
     roles: [UserRole.ADMIN, UserRole.OPERADOR, UserRole.MEDICO],
   },
   {
-    label: 'Órdenes',
+    label: 'Ordenes Medicas',
     href: '/orders',
     icon: ClipboardList,
     roles: [UserRole.ADMIN, UserRole.OPERADOR, UserRole.LABORATORIO, UserRole.MEDICO],
@@ -82,80 +83,108 @@ export function Sidebar() {
   const initial = user?.email?.charAt(0).toUpperCase() ?? '?';
   const roleLabel = user?.role ? ROLE_LABELS[user.role] : '';
 
+  const canCreateOrder =
+    user?.role &&
+    [UserRole.ADMIN, UserRole.OPERADOR, UserRole.MEDICO].includes(user.role);
+
   return (
     <aside
-      className="flex flex-col w-60 shrink-0 h-screen border-r"
-      style={{ background: '#0f1319', borderColor: 'rgba(255,255,255,0.07)' }}
+      className="flex flex-col w-72 shrink-0 h-screen border-r"
+      style={{
+        fontFamily: 'Manrope, sans-serif',
+        background: '#ffffff',
+        borderColor: '#e6e8e9',
+        boxShadow: '8px 0px 24px rgba(25,28,29,0.05)',
+      }}
     >
-      {/* Logo */}
-      <div
-        className="flex items-center gap-2 px-4 py-5 border-b"
-        style={{ borderColor: 'rgba(255,255,255,0.07)' }}
-      >
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <Image src="/logo.png" alt="BTS Integral" width={36} height={36} />
-          <span className="text-sm font-semibold" style={{ color: '#e2e8f0' }}>
-            BTS Integral
-          </span>
+      {/* Brand Header */}
+      <div className="flex items-center gap-3 px-6 py-6 border-b" style={{ borderColor: '#e6e8e9' }}>
+        <Link href="/dashboard" className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-white"
+            style={{ background: '#1B7A6B' }}
+          >
+            <Image src="/logo.png" alt="BTS Integral" width={24} height={24} className="object-contain" />
+          </div>
+          <div>
+            <h1 className="font-black text-lg leading-tight" style={{ color: '#1B7A6B', fontFamily: 'Manrope, sans-serif' }}>
+              BTS Integral
+            </h1>
+            <p className="text-xs font-medium" style={{ color: '#3e4946' }}>
+              Portal del Especialista
+            </p>
+          </div>
         </Link>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto">
-        <ul className="space-y-0.5">
-          {visibleItems.map((item) => {
-            const isActive =
-              pathname === item.href || pathname.startsWith(item.href + '/');
-            const Icon = item.icon;
+      <nav className="flex-1 px-4 py-5 space-y-0.5 overflow-y-auto">
+        {visibleItems.map((item) => {
+          const isActive =
+            pathname === item.href || pathname.startsWith(item.href + '/');
+          const Icon = item.icon;
 
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all"
-                  style={{
-                    background: isActive ? 'rgba(74,222,128,0.1)' : 'transparent',
-                    color: isActive ? '#4ade80' : 'rgba(255,255,255,0.5)',
-                  }}
-                >
-                  <Icon
-                    size={17}
-                    className="shrink-0"
-                    style={{ color: isActive ? '#4ade80' : 'rgba(255,255,255,0.35)' }}
-                  />
-                  {item.label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200',
+              )}
+              style={
+                isActive
+                  ? { background: 'rgba(27,122,107,0.10)', color: '#1B7A6B' }
+                  : { color: '#3e4946' }
+              }
+            >
+              <Icon
+                size={18}
+                className="shrink-0"
+                style={{ color: isActive ? '#1B7A6B' : '#6e7976' }}
+              />
+              {item.label}
+            </Link>
+          );
+        })}
       </nav>
 
-      {/* User footer */}
-      <div
-        className="border-t p-3"
-        style={{ borderColor: 'rgba(255,255,255,0.07)' }}
-      >
-        <div className="flex items-center gap-2 px-1 py-1.5">
+      {/* CTA Nueva Orden */}
+      {canCreateOrder && (
+        <div className="px-4 pb-4">
+          <Link
+            href="/orders/new"
+            className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-sm text-white transition-all hover:opacity-90"
+            style={{
+              background: '#1B7A6B',
+              boxShadow: '0 4px 14px rgba(27,122,107,0.25)',
+            }}
+          >
+            <PlusCircle size={18} />
+            Nueva Orden
+          </Link>
+        </div>
+      )}
+
+      {/* User Footer */}
+      <div className="border-t px-4 py-4" style={{ borderColor: '#e6e8e9' }}>
+        <div className="flex items-center gap-3 px-2 py-2">
           <div
-            className="flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold shrink-0"
-            style={{ background: 'rgba(74,222,128,0.15)', color: '#4ade80' }}
+            className="flex items-center justify-center w-9 h-9 rounded-full text-sm font-bold shrink-0"
+            style={{ background: 'rgba(27,122,107,0.12)', color: '#1B7A6B' }}
           >
             {initial}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium truncate" style={{ color: '#e2e8f0' }}>
-              {user?.email ?? '—'}
+            <p className="text-xs font-semibold truncate" style={{ color: '#191c1d' }}>
+              {user?.email ?? '---'}
             </p>
-            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>{roleLabel}</p>
+            <p className="text-xs" style={{ color: '#6e7976' }}>{roleLabel}</p>
           </div>
           <button
             onClick={logout}
-            title="Cerrar sesión"
-            className="p-1.5 rounded transition-colors"
-            style={{ color: 'rgba(255,255,255,0.35)' }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = '#f87171')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.35)')}
+            title="Cerrar sesion"
+            className="p-1.5 rounded-lg transition-colors"
+            style={{ color: '#6e7976' }}
           >
             <LogOut size={15} />
           </button>

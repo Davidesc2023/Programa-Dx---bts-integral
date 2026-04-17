@@ -1,24 +1,22 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { LogOut, Menu } from 'lucide-react';
+import { Bell, Menu } from 'lucide-react';
 import { useAuthStore } from '@/modules/auth/authStore';
-import { useAuth } from '@/modules/auth/useAuth';
 
 const PAGE_TITLES: Record<string, string> = {
-  '/dashboard': 'Dashboard',
-  '/patients': 'Pacientes',
-  '/orders': 'Órdenes',
-  '/consents': 'Consentimientos',
-  '/results': 'Resultados',
+  '/dashboard':    'Panel de Control',
+  '/patients':     'Pacientes',
+  '/orders':       'Órdenes Médicas',
+  '/consents':     'Consentimientos',
+  '/results':      'Resultados',
   '/appointments': 'Citas',
-  '/users': 'Usuarios',
+  '/users':        'Usuarios',
 };
 
 function getPageTitle(pathname: string): string {
   const exactMatch = PAGE_TITLES[pathname];
   if (exactMatch) return exactMatch;
-
   const segment = '/' + pathname.split('/')[1];
   return PAGE_TITLES[segment] ?? 'BTS Integral';
 }
@@ -30,43 +28,73 @@ interface HeaderProps {
 export function Header({ onMenuToggle }: HeaderProps) {
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
-  const { logout } = useAuth();
+
+  const initial = user?.email?.charAt(0).toUpperCase() ?? '?';
 
   return (
     <header
-      className="flex items-center justify-between h-14 px-6 shrink-0 border-b"
-      style={{ background: '#0f1319', borderColor: 'rgba(255,255,255,0.07)' }}
+      className="sticky top-0 z-40 flex items-center justify-between w-full px-8 py-4 shrink-0 border-b"
+      style={{
+        background: 'rgba(248,250,250,0.85)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        borderColor: '#e6e8e9',
+        boxShadow: '0px 4px 20px rgba(25,28,29,0.04)',
+      }}
     >
+      {/* Left — page title */}
       <div className="flex items-center gap-3">
         {onMenuToggle && (
           <button
             onClick={onMenuToggle}
-            className="p-1.5 rounded transition-colors lg:hidden"
-            style={{ color: 'rgba(255,255,255,0.4)' }}
+            className="p-2 rounded-lg lg:hidden"
+            style={{ color: '#6e7976' }}
             aria-label="Menú"
           >
             <Menu size={18} />
           </button>
         )}
-        <h1 className="text-base font-semibold" style={{ color: '#e2e8f0' }}>
+        <span
+          className="font-semibold tracking-tight text-xl"
+          style={{ fontFamily: 'Manrope, sans-serif', color: '#191c1d' }}
+        >
           {getPageTitle(pathname)}
-        </h1>
+        </span>
       </div>
 
-      <div className="flex items-center gap-3">
-        <span className="text-sm hidden sm:block" style={{ color: 'rgba(255,255,255,0.4)' }}>
-          {user?.email}
-        </span>
-        <button
-          onClick={logout}
-          className="flex items-center gap-1.5 text-sm px-2.5 py-1.5 rounded transition-all"
-          style={{ color: 'rgba(255,255,255,0.4)' }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.background = 'rgba(248,113,113,0.08)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; e.currentTarget.style.background = 'transparent'; }}
-        >
-          <LogOut size={15} />
-          <span className="hidden sm:inline">Salir</span>
-        </button>
+      {/* Right — notifications + user */}
+      <div className="flex items-center gap-5">
+        {/* Bell */}
+        <div className="relative">
+          <button
+            className="p-2 rounded-full transition-colors hover:bg-teal-50"
+            style={{ color: '#3e4946' }}
+            aria-label="Notificaciones"
+          >
+            <Bell size={18} />
+          </button>
+        </div>
+
+        {/* Divider */}
+        <div className="h-6 w-px" style={{ background: '#e6e8e9' }} />
+
+        {/* User info */}
+        <div className="flex items-center gap-3">
+          <div className="text-right hidden sm:block">
+            <p className="text-sm font-semibold leading-tight" style={{ color: '#191c1d', fontFamily: 'Manrope, sans-serif' }}>
+              {user?.email ?? '—'}
+            </p>
+            <p className="text-xs" style={{ color: '#6e7976' }}>
+              Portal Clínico
+            </p>
+          </div>
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ring-2 ring-white"
+            style={{ background: 'rgba(27,122,107,0.15)', color: '#1B7A6B' }}
+          >
+            {initial}
+          </div>
+        </div>
       </div>
     </header>
   );

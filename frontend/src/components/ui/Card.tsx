@@ -18,13 +18,14 @@ export function Card({ children, className, padding = 'md' }: CardProps) {
   return (
     <div
       className={cn(
-        'rounded-xl border shadow-sm',
+        'rounded-2xl border',
         paddingMap[padding],
         className,
       )}
       style={{
-        background: '#141820',
-        borderColor: 'rgba(255,255,255,0.07)',
+        background: '#ffffff',
+        borderColor: '#e6e8e9',
+        boxShadow: '0px 8px 24px rgba(25,28,29,0.06)',
       }}
     >
       {children}
@@ -41,11 +42,16 @@ interface CardHeaderProps {
 
 export function CardHeader({ title, description, action, className }: CardHeaderProps) {
   return (
-    <div className={cn('flex items-start justify-between gap-4 mb-4', className)}>
+    <div className={cn('flex items-start justify-between gap-4 mb-5', className)}>
       <div>
-        <h3 className="text-base font-semibold" style={{ color: '#e2e8f0' }}>{title}</h3>
+        <h3
+          className="text-base font-bold"
+          style={{ color: '#191c1d', fontFamily: 'Manrope, sans-serif' }}
+        >
+          {title}
+        </h3>
         {description && (
-          <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{description}</p>
+          <p className="text-sm mt-0.5" style={{ color: '#6e7976' }}>{description}</p>
         )}
       </div>
       {action && <div className="shrink-0">{action}</div>}

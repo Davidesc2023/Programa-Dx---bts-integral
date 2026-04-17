@@ -9,15 +9,15 @@ type Size = 'sm' | 'md' | 'lg';
 
 const variantStyles: Record<Variant, string> = {
   primary:
-    'bg-[#16a34a] text-white hover:bg-[#15803d] disabled:opacity-40 focus-visible:ring-[#4ade80]',
+    'bg-[#1B7A6B] text-white hover:bg-[#006053] disabled:opacity-40 focus-visible:ring-[#1B7A6B]/30 shadow-sm',
   secondary:
-    'bg-[rgba(74,222,128,0.1)] text-[#4ade80] border border-[rgba(74,222,128,0.2)] hover:bg-[rgba(74,222,128,0.18)] disabled:opacity-40 focus-visible:ring-[#4ade80]',
+    'bg-[rgba(27,122,107,0.08)] text-[#1B7A6B] border border-[rgba(27,122,107,0.2)] hover:bg-[rgba(27,122,107,0.14)] disabled:opacity-40 focus-visible:ring-[#1B7A6B]/20',
   danger:
-    'bg-red-700 text-white hover:bg-red-800 disabled:opacity-40 focus-visible:ring-red-500',
+    'bg-[#ba1a1a] text-white hover:bg-[#93000a] disabled:opacity-40 focus-visible:ring-red-400',
   ghost:
-    'bg-transparent text-[rgba(255,255,255,0.5)] hover:bg-[rgba(255,255,255,0.06)] hover:text-[#e2e8f0] disabled:opacity-40 focus-visible:ring-[rgba(255,255,255,0.3)]',
+    'bg-transparent text-[#3e4946] hover:bg-[#f2f4f4] hover:text-[#191c1d] disabled:opacity-40 focus-visible:ring-[#bec9c5]',
   outline:
-    'border border-[rgba(255,255,255,0.12)] text-[rgba(255,255,255,0.6)] hover:border-[rgba(255,255,255,0.25)] hover:text-[#e2e8f0] bg-transparent disabled:opacity-40 focus-visible:ring-[rgba(255,255,255,0.3)]',
+    'border border-[#bec9c5] text-[#3e4946] hover:border-[#1B7A6B] hover:text-[#1B7A6B] bg-transparent disabled:opacity-40 focus-visible:ring-[#1B7A6B]/20',
 };
 
 const sizeStyles: Record<Size, string> = {

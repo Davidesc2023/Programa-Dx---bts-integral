@@ -2,6 +2,107 @@
 
 ---
 
+## [2026-04-17T00:00:00Z] — UI Design Migration — Clinical Light Theme (Material Design 3)
+
+**Trigger**: Revisión de recursos de diseño en `img/` — 20+ archivos HTML de referencia muestran un sistema de diseño clínico claro (MD3) completamente diferente al dark-theme hacker existente.
+
+**Metodología**: AI-DLC — Diseño primero, implementación después. Se auditaron todos los HTML en `img/` para extraer el sistema de tokens de color completo, tipografía y patrones de componentes antes de tocar código.
+
+---
+
+### Sistema de Diseño Extraído (Material Design 3 — Teal Clinical)
+
+| Token | Valor | Uso |
+|---|---|---|
+| `primary` | `#006053` | Color principal de marca |
+| `primary-container` | `#1B7A6B` | Botones, activos, acentos primarios |
+| `on-primary` | `#ffffff` | Texto sobre teal |
+| `secondary` | `#0061a3` | Info, estados de espera |
+| `tertiary` | `#745b00` | Advertencias, pendientes |
+| `surface` | `#f8fafa` | Fondo general de la app |
+| `surface-container-low` | `#f2f4f4` | Fondos de inputs, campos |
+| `surface-container-high` | `#e6e8e9` | Bordes, separadores |
+| `on-surface` | `#191c1d` | Texto principal |
+| `on-surface-variant` | `#3e4946` | Texto secundario, labels |
+| `outline` | `#6e7976` | Texto terciario, hints |
+| `outline-variant` | `#bec9c5` | Bordes de inputs |
+| `error` | `#ba1a1a` | Errores, rechazos |
+
+**Tipografía**:
+- `Manrope` (400–800): headings, brand, botones
+- `Inter` (400–600): body, labels, inputs, UI general
+
+---
+
+### Archivos Modificados
+
+| Archivo | Estado | Descripción del cambio |
+|---|---|---|
+| `frontend/tailwind.config.ts` | ✅ Completado | Tokens M3 completos como claves flat, fuentes Manrope+Inter, sombras clínicas |
+| `frontend/src/app/globals.css` | ✅ Completado | Eliminado dark mode, body `#f8fafa`, inputs claros, focus teal, fuentes Google |
+| `frontend/src/components/layout/Sidebar.tsx` | ✅ Completado | Fondo blanco, activo teal `#1B7A6B`, logo, CTA "Nueva Orden", footer de usuario |
+| `frontend/src/components/layout/Header.tsx` | ✅ Completado | Frosted glass `rgba(248,250,250,0.85)`, título de página, campana, avatar |
+| `frontend/src/components/layout/AppLayout.tsx` | ✅ Completado | Eliminado `background: '#0b0e13'`, ahora `#f8fafa` |
+| `frontend/src/modules/auth/LoginForm.tsx` | ✅ Completado | Split-panel: izq teal gradient + SVG decorativo, der form blanco limpio |
+| `frontend/src/components/ui/Card.tsx` | ✅ Completado | `#ffffff` bg, `#e6e8e9` border, sombra clínica suave |
+| `frontend/src/components/ui/Button.tsx` | ✅ Completado | Primary `#1B7A6B`, secondary teal tinted, ghost/outline light |
+| `frontend/src/components/ui/Input.tsx` | ✅ Completado | `#f2f4f4` bg, `#bec9c5` border, focus ring teal, labels `#3e4946` |
+| `frontend/src/components/ui/Badge.tsx` | ✅ Completado | Todos los variants usan colores M3 clínicos (teal, azul, amarillo, rojo) |
+| `frontend/src/modules/dashboard/DashboardMetrics.tsx` | ✅ Completado | Iconos y valores con colores M3, texto `#191c1d`/`#6e7976` |
+| `frontend/src/modules/consents/ConsentPanel.tsx` | ✅ Completado | STEP_STYLES actualizados a M3 clinical, bordes y fondos claros |
+| `frontend/src/app/(protected)/consents/page.tsx` | ✅ Completado | Todos los `rgba(255,255,255,...)` y colores dark reemplazados por M3 |
+
+---
+
+### Patrones de Componentes Implementados
+
+**Sidebar**:
+- Ancho `w-72`, fondo `#ffffff`, borde `#e6e8e9`
+- Nav activo: `rgba(27,122,107,0.10)` fondo + `#1B7A6B` texto + borde izquierdo 2px
+- Logo en rounded-xl teal con "BTS Integral" / "Portal del Especialista"
+- CTA "Nueva Orden" visible para roles ADMIN/OPERADOR/MEDICO
+
+**Header**:
+- Sticky frosted glass con `backdrop-blur-xl`
+- Título de la página activa a la izquierda
+- Campana de notificaciones + avatar del usuario a la derecha
+
+**LoginForm**:
+- Panel izquierdo (45%): gradiente teal `#1B7A6B → #004540`, SVG decorativo de círculos concéntricos
+- Panel derecho (55%): fondo blanco, form limpio, inputs `#f2f4f4`, botón teal con sombra
+
+**Cards**:
+- `border-radius: 16px`, fondo `#ffffff`, sombra `0px 8px 24px rgba(25,28,29,0.06)`
+- `CardHeader` con título Manrope bold `#191c1d`, descripción `#6e7976`
+
+---
+
+### Antes vs Después
+
+| Aspecto | Antes | Después |
+|---|---|---|
+| Tema general | Dark hacker (`#060B0A`, `#0b0e13`) | Light clínico (`#f8fafa`, `#ffffff`) |
+| Color primario | Verde neón (`#16a34a`, `#4ade80`) | Teal clínico (`#1B7A6B`, `#006053`) |
+| Tipografía | Sin definir (sistema) | Manrope + Inter (Google Fonts) |
+| Cards | `#141820`, borde oscuro | `#ffffff`, sombra clínica suave |
+| Inputs | Dark con borde verde neón | `#f2f4f4`, borde gris, focus teal |
+| Sidebar | Dark con verde neón | Blanco con activo teal |
+| Login | Gradiente verde hacker + red de nodos cyan | Split teal clínico + form blanco |
+| Badges/Status | Verde neón / amarillo brillante | Teal/azul/amarillo oscuro M3 |
+
+---
+
+### Decisiones de Diseño
+
+1. **Se mantuvo Lucide React** como librería de iconos (las referencias usan Material Symbols, pero Lucide es compatible funcional y evita migración de dependencias).
+2. **Los estilos inline** se conservaron donde el componente tiene lógica de color dinámica (ej. STEP_STYLES en ConsentPanel). Para colores estáticos se migró a clases Tailwind cuando fue posible.
+3. **El panel izquierdo del LoginForm** usa `rgba(255,255,255,...)` intencionalmente — es overlay blanco sobre fondo teal, no dark theme.
+4. **No se tocó el backend** ni la lógica de negocio — solo presentación.
+
+---
+
+
+
 ## [2026-04-14T00:00:00Z] — Increment v10 — Modelo Clínico — Build and Test — Complete
 
 **Event**: Increment v10 completado y pushado a `origin/main`. Commits `09cba5e` y `8646c1d`.

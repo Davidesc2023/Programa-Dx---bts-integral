@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Resultados y Documentos - LabNexus</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#9df2e0",
+                        "surface": "#f8fafa",
+                        "on-primary-fixed": "#00201b",
+                        "on-secondary-fixed": "#001d36",
+                        "secondary-fixed": "#d1e4ff",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#f8fafa",
+                        "tertiary": "#745b00",
+                        "on-surface": "#191c1d",
+                        "surface-container-low": "#f2f4f4",
+                        "tertiary-fixed": "#ffe08b",
+                        "surface-tint": "#006b5d",
+                        "secondary-container": "#6ab2fe",
+                        "outline": "#6e7976",
+                        "on-tertiary-fixed": "#241a00",
+                        "secondary-fixed-dim": "#9ecaff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#eceeee",
+                        "primary-container": "#1b7a6b",
+                        "outline-variant": "#bec9c5",
+                        "primary-fixed-dim": "#81d6c4",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-container": "#4f3d00",
+                        "inverse-on-surface": "#eff1f1",
+                        "secondary": "#0061a3",
+                        "surface-variant": "#e1e3e3",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#f0c110",
+                        "on-primary-fixed-variant": "#005045",
+                        "tertiary-container": "#d0a600",
+                        "on-background": "#191c1d",
+                        "inverse-primary": "#81d6c4",
+                        "on-secondary-fixed-variant": "#00497c",
+                        "on-tertiary-fixed-variant": "#584400",
+                        "on-primary-container": "#b0ffed",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#e1e3e3",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "background": "#f8fafa",
+                        "on-secondary-container": "#004474",
+                        "primary": "#006053",
+                        "inverse-surface": "#2e3131",
+                        "surface-container-high": "#e6e8e9",
+                        "surface-dim": "#d8dada",
+                        "on-surface-variant": "#3e4946"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.75rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+        .glass-panel {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface">
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md shadow-[0_8px_24px_rgba(25,28,29,0.04)]">
+<div class="flex items-center gap-4">
+<span class="text-xl font-extrabold text-teal-800 dark:text-teal-400 tracking-tighter">LabNexus</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="material-symbols-outlined text-slate-500 hover:bg-teal-50/50 p-2 rounded-full transition-all active:scale-95">notifications</button>
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden border border-outline-variant/20">
+<img class="w-full h-full object-cover" data-alt="professional portrait of a female doctor in a white clinical coat with a soft neutral studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKvdj70UiV8MZgiova3Pum6qSllZmVPu-pR2JJMjuq3NovNFJNAcVKDv1s7qCCh0w7BOZiXmFfePqBFjBJOlteVE9AgHFBQ8BwIUIRx7ep53Pk5NuUIwJOMaqac6Gl97nqitiUHA1es63aYfZqabvzOnv8AwuiQkEvbiY54RjhFMtDWrsPJin9IBeve3KgbMi1ajDgLVX0ga4elgGJSEkppT-ejFPhUwlFv1DVdWm1647h_nMDfdUALAYRIZOvMlYJunCbc2-5TNqc"/>
+</div>
+</div>
+</header>
+<div class="flex pt-16 min-h-screen">
+<aside class="hidden md:flex flex-col h-[calc(100vh-4rem)] w-72 sticky top-16 py-8 border-r border-slate-100 bg-slate-50 overflow-y-auto">
+<div class="px-8 mb-8">
+<p class="text-sm font-bold text-teal-700">Dr. Elena Vance</p>
+<p class="text-xs text-slate-500">Chief Pathologist</p>
+</div>
+<nav class="flex flex-col flex-grow">
+<a class="flex items-center gap-4 px-8 py-4 text-slate-500 hover:text-teal-600 hover:bg-white/50 transition-all" href="#">
+<span class="material-symbols-outlined">biotech</span>
+<span class="font-['Manrope'] text-sm">Orders</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-4 text-slate-500 hover:text-teal-600 hover:bg-white/50 transition-all" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-['Manrope'] text-sm">Patients</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-4 text-slate-500 hover:text-teal-600 hover:bg-white/50 transition-all" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+<span class="font-['Manrope'] text-sm">Calendar</span>
+</a>
+<a class="flex items-center gap-4 px-8 py-4 text-slate-500 hover:text-teal-600 hover:bg-white/50 transition-all" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-['Manrope'] text-sm">Analytics</span>
+</a>
+</nav>
+</aside>
+<main class="flex-grow p-6 md:p-12 max-w-7xl mx-auto w-full mb-20 md:mb-0">
+<header class="mb-10">
+<div class="flex items-center gap-2 text-primary mb-2">
+<span class="material-symbols-outlined text-sm">arrow_back</span>
+<span class="text-xs font-semibold tracking-wider uppercase">Volver a Órdenes</span>
+</div>
+<h1 class="text-4xl font-extrabold tracking-tight text-on-surface">Resultados y Documentos</h1>
+<p class="text-on-surface-variant mt-2 max-w-2xl">Gestione los expedientes clínicos del paciente y visualice el progreso de las pruebas diagnósticas en tiempo real.</p>
+</header>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+<section class="lg:col-span-2 space-y-8">
+<div class="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_8px_24px_rgba(25,28,29,0.04)] border border-outline-variant/10">
+<h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">cloud_upload</span>
+                            Carga de Documentos
+                        </h2>
+<div class="border-2 border-dashed border-outline-variant/50 rounded-2xl p-12 flex flex-col items-center justify-center bg-surface-container-low/30 hover:bg-primary-fixed/10 transition-colors cursor-pointer group">
+<div class="w-16 h-16 bg-primary-fixed flex items-center justify-center rounded-full mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary text-3xl">upload_file</span>
+</div>
+<p class="text-lg font-semibold text-on-surface">Arrastra y suelta tus archivos aquí</p>
+<p class="text-sm text-on-surface-variant mt-1">Soporta PDF, PNG, JPG hasta 25MB</p>
+<button class="mt-6 px-6 py-2.5 bg-primary text-white rounded-xl font-semibold shadow-md hover:shadow-lg active:scale-95 transition-all">Seleccionar Archivo</button>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_8px_24px_rgba(25,28,29,0.04)] border border-outline-variant/10">
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-xl font-bold">Archivos Clínicos</h2>
+<span class="text-sm font-medium text-on-surface-variant">4 Archivos totales</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-4 rounded-2xl bg-surface hover:bg-surface-container transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-error-container/30 flex items-center justify-center rounded-xl text-error">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Analítica_Sanguínea_Completa.pdf</p>
+<p class="text-xs text-on-surface-variant">2.4 MB • Subido hoy a las 10:45 AM</p>
+</div>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container-highest text-on-surface rounded-lg text-sm font-bold hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined text-lg">download</span>
+                                    Descargar
+                                </button>
+</div>
+<div class="flex items-center justify-between p-4 rounded-2xl bg-surface hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-secondary-container/20 flex items-center justify-center rounded-xl text-secondary">
+<span class="material-symbols-outlined">image</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Radiografía_Torax_Lateral.jpg</p>
+<p class="text-xs text-on-surface-variant">5.1 MB • Subido ayer</p>
+</div>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container-highest text-on-surface rounded-lg text-sm font-bold hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined text-lg">download</span>
+                                    Descargar
+                                </button>
+</div>
+<div class="flex items-center justify-between p-4 rounded-2xl bg-surface hover:bg-surface-container transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-primary-container/20 flex items-center justify-center rounded-xl text-primary">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Informe_Patologia_V1.docx</p>
+<p class="text-xs text-on-surface-variant">842 KB • 12 Oct 2023</p>
+</div>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container-highest text-on-surface rounded-lg text-sm font-bold hover:bg-primary hover:text-white transition-all">
+<span class="material-symbols-outlined text-lg">download</span>
+                                    Descargar
+                                </button>
+</div>
+</div>
+</div>
+</section>
+<aside class="space-y-8">
+<div class="bg-surface-container-lowest rounded-3xl p-8 shadow-[0_8px_24px_rgba(25,28,29,0.04)] border border-outline-variant/10">
+<h2 class="text-xl font-bold mb-6">Estado de la Orden</h2>
+<div class="relative pl-8 space-y-8 before:content-[''] before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-100">
+<div class="relative">
+<div class="absolute -left-[27px] top-1 w-[14px] h-[14px] rounded-full bg-primary ring-4 ring-primary-fixed"></div>
+<div class="flex items-center gap-3 mb-1">
+<span class="px-2.5 py-0.5 bg-primary-container text-on-primary-container text-[10px] font-bold uppercase rounded-full">Completado</span>
+<span class="text-xs text-on-surface-variant">Hoy, 09:30</span>
+</div>
+<p class="text-sm font-bold text-on-surface">Resultados Publicados</p>
+<p class="text-xs text-on-surface-variant mt-1">El informe final ha sido verificado y cargado al sistema.</p>
+</div>
+<div class="relative">
+<div class="absolute -left-[27px] top-1 w-[14px] h-[14px] rounded-full bg-primary"></div>
+<div class="flex items-center gap-3 mb-1">
+<span class="px-2.5 py-0.5 bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase rounded-full">En Proceso</span>
+<span class="text-xs text-on-surface-variant">Ayer, 14:15</span>
+</div>
+<p class="text-sm font-bold text-on-surface">Análisis de Muestra</p>
+<p class="text-xs text-on-surface-variant mt-1">Procesamiento en laboratorio central sector A.</p>
+</div>
+<div class="relative opacity-60">
+<div class="absolute -left-[27px] top-1 w-[14px] h-[14px] rounded-full bg-slate-300"></div>
+<div class="flex items-center gap-3 mb-1">
+<span class="px-2.5 py-0.5 bg-slate-200 text-slate-500 text-[10px] font-bold uppercase rounded-full">Recibido</span>
+<span class="text-xs text-on-surface-variant">12 Oct, 08:00</span>
+</div>
+<p class="text-sm font-bold text-on-surface">Muestra Recolectada</p>
+</div>
+</div>
+</div>
+<div class="bg-primary text-white rounded-3xl p-8 relative overflow-hidden">
+<div class="relative z-10">
+<h3 class="text-xl font-bold mb-2">¿Necesitas ayuda técnica?</h3>
+<p class="text-sm text-primary-fixed mb-6 opacity-90">Nuestro equipo de soporte está disponible 24/7 para consultas sobre expedientes.</p>
+<button class="w-full py-3 bg-white text-primary rounded-xl font-bold hover:bg-primary-fixed transition-colors">Contactar Soporte</button>
+</div>
+<div class="absolute -right-8 -bottom-8 w-32 h-32 bg-primary-container rounded-full opacity-20"></div>
+<div class="absolute right-4 top-4 opacity-10">
+<span class="material-symbols-outlined text-6xl" style="font-variation-settings: 'FILL' 1;">medical_services</span>
+</div>
+</div>
+</aside>
+</div>
+</main>
+</div>
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe pt-2 bg-white/90 backdrop-blur-lg shadow-[0_-4px_20px_rgba(0,0,0,0.03)] rounded-t-2xl">
+<a class="flex flex-col items-center justify-center text-slate-400 px-4 py-1 hover:text-teal-600 transition-transform active:scale-90" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 px-4 py-1 hover:text-teal-600 transition-transform active:scale-90" href="#">
+<span class="material-symbols-outlined">biotech</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider mt-1">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 px-4 py-1 hover:text-teal-600 transition-transform active:scale-90" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider mt-1">Patients</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-teal-50 text-teal-700 rounded-xl px-4 py-1 transition-transform active:scale-90" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider mt-1">Results</span>
+</a>
+</nav>
+</body></html>

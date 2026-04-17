@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed": "#9df2e0",
+                    "surface": "#f8fafa",
+                    "on-primary-fixed": "#00201b",
+                    "on-secondary-fixed": "#001d36",
+                    "secondary-fixed": "#d1e4ff",
+                    "error-container": "#ffdad6",
+                    "surface-bright": "#f8fafa",
+                    "tertiary": "#745b00",
+                    "on-surface": "#191c1d",
+                    "surface-container-low": "#f2f4f4",
+                    "tertiary-fixed": "#ffe08b",
+                    "surface-tint": "#006b5d",
+                    "secondary-container": "#6ab2fe",
+                    "outline": "#6e7976",
+                    "on-tertiary-fixed": "#241a00",
+                    "secondary-fixed-dim": "#9ecaff",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container": "#eceeee",
+                    "primary-container": "#1b7a6b",
+                    "outline-variant": "#bec9c5",
+                    "primary-fixed-dim": "#81d6c4",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-container": "#4f3d00",
+                    "inverse-on-surface": "#eff1f1",
+                    "secondary": "#0061a3",
+                    "surface-variant": "#e1e3e3",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-fixed-dim": "#f0c110",
+                    "on-primary-fixed-variant": "#005045",
+                    "tertiary-container": "#d0a600",
+                    "on-background": "#191c1d",
+                    "inverse-primary": "#81d6c4",
+                    "on-secondary-fixed-variant": "#00497c",
+                    "on-tertiary-fixed-variant": "#584400",
+                    "on-primary-container": "#b0ffed",
+                    "on-primary": "#ffffff",
+                    "surface-container-highest": "#e1e3e3",
+                    "on-error": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "background": "#f8fafa",
+                    "on-secondary-container": "#004474",
+                    "primary": "#006053",
+                    "inverse-surface": "#2e3131",
+                    "surface-container-high": "#e6e8e9",
+                    "surface-dim": "#d8dada",
+                    "on-surface-variant": "#3e4946"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.75rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        h1, h2, h3 {
+            font-family: 'Manrope', sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md shadow-[0_8px_24px_rgba(25,28,29,0.04)]">
+<div class="flex items-center gap-3">
+<span class="text-xl font-extrabold text-teal-800 dark:text-teal-400 tracking-tighter">LabNexus</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-teal-50/50 transition-all active:scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden border border-outline-variant/20">
+<img alt="Doctor Profile" class="w-full h-full object-cover" data-alt="professional portrait of a confident male doctor in a white clinical coat smiling gently with a clean laboratory background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdKHcM3y2PVlP1bC1h8DULqbpqAQWvTFPDbxVzw0kKoxjZRsvt9YFLg_7Jych_OHtxDcBQp5SfMiqQj8vxV1uscXjsed5zLmCZrw03itOqN2ry91WGSJz0RLng1iVtogzqppGFEaM-njSc_EMX3OZYnZeYgUALGlYuTaRnF7oCOUO9UB0TulUsXY6NxVZb9P54gNDaT2HqK1sGcmEYpLEKmaSitYChKFywxGAc8QHgnIUcjr3f-JBLWNLS_WTQeUYD3Rat2zgnrzpD"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex items-center justify-center p-6 pt-24 pb-12">
+<div class="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+<!-- Left Column: Visual/Illustration -->
+<div class="lg:col-span-5 order-2 lg:order-1 flex justify-center">
+<div class="relative w-full max-w-sm aspect-square">
+<!-- Decorative Background Shapes -->
+<div class="absolute inset-0 bg-primary/5 rounded-full blur-3xl scale-110"></div>
+<div class="absolute -top-4 -right-4 w-24 h-24 bg-secondary/10 rounded-full blur-2xl"></div>
+<!-- Main Content Card (Glassmorphism) -->
+<div class="relative h-full w-full glass-card rounded-[2rem] shadow-2xl shadow-primary/10 flex flex-col items-center justify-center p-8 border border-white/40">
+<div class="w-32 h-32 rounded-3xl bg-primary-fixed flex items-center justify-center mb-8 shadow-inner">
+<span class="material-symbols-outlined text-primary text-6xl" style="font-variation-settings: 'wght' 300;">clinical_notes</span>
+</div>
+<!-- Status Badge -->
+<div class="bg-tertiary-container/20 text-on-tertiary-container px-4 py-1.5 rounded-full flex items-center gap-2 mb-4">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+<span class="text-[10px] font-bold tracking-widest uppercase font-label">PENDIENTE_APROBACION</span>
+</div>
+<!-- Mini Verification Stepper Visual -->
+<div class="w-full space-y-3 mt-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<div class="h-1.5 flex-grow bg-primary/20 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-full"></div>
+</div>
+<span class="text-[10px] text-on-surface-variant font-medium">Registro</span>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-sm">radio_button_checked</span>
+<div class="h-1.5 flex-grow bg-primary/10 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-1/3"></div>
+</div>
+<span class="text-[10px] text-on-surface font-bold">Validación</span>
+</div>
+<div class="flex items-center gap-3 opacity-40">
+<span class="material-symbols-outlined text-slate-400 text-sm">circle</span>
+<div class="h-1.5 flex-grow bg-slate-200 rounded-full"></div>
+<span class="text-[10px] text-on-surface-variant font-medium">Activación</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Copy & Actions -->
+<div class="lg:col-span-7 order-1 lg:order-2 text-center lg:text-left space-y-8">
+<div class="space-y-4">
+<h1 class="text-4xl md:text-5xl font-extrabold text-on-surface tracking-tight leading-tight">
+                        Tu cuenta está en <span class="text-primary">revisión</span>
+</h1>
+<p class="text-lg text-on-surface-variant max-w-xl leading-relaxed font-body">
+                        Nuestro equipo administrativo está validando tus credenciales. Recibirás una notificación por email una vez aprobada.
+                    </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="p-6 rounded-2xl bg-surface-container-low border-white/50 border flex flex-col gap-2">
+<span class="material-symbols-outlined text-secondary text-2xl" data-icon="verified_user">verified_user</span>
+<h3 class="font-bold text-on-surface">Validación de Cédula</h3>
+<p class="text-xs text-on-surface-variant leading-snug">Confirmamos tu identidad profesional ante los organismos locales de salud.</p>
+</div>
+<div class="p-6 rounded-2xl bg-surface-container-low border-white/50 border flex flex-col gap-2">
+<span class="material-symbols-outlined text-secondary text-2xl" data-icon="mark_email_unread">mark_email_unread</span>
+<h3 class="font-bold text-on-surface">Notificación en camino</h3>
+<p class="text-xs text-on-surface-variant leading-snug">Te enviaremos un correo electrónico apenas puedas comenzar a solicitar estudios.</p>
+</div>
+</div>
+<div class="pt-4">
+<button class="inline-flex items-center justify-center px-8 py-4 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-0.5 active:scale-95 group">
+<span>Volver al inicio</span>
+<span class="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<div class="pt-8 flex items-center justify-center lg:justify-start gap-6 opacity-60">
+<div class="flex -space-x-3">
+<img alt="Support agent 1" class="w-10 h-10 rounded-full border-2 border-white" data-alt="portrait of a female clinical administrator in professional attire with soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJbEhDZnGZiScaVUSs7E1ZAqQLcWamPbpuTcgM71W5-yx3Xskvl0ifFIoLCINjJFZhdh-UIrbdV8s3gKFXMdzet9I1mhvsBRneyPN4sDbLpDBxtJ-oLwoSmIPMrXV8VKqNBIibs54IXpgQjh76X1uBODY34utkrVzdJ3Cc2Ij3lQ1h3eOokMjg4H1MyGZ1-fmnKRl2tEtmgwqNXwI9dAokqJnFvwAPF_IL5NUkF8gcxXQi8qfpICR3w-bdEVKmXcb5Cp6yqKUJMhxw"/>
+<img alt="Support agent 2" class="w-10 h-10 rounded-full border-2 border-white" data-alt="close-up of a smiling male medical laboratory technician wearing a white lab coat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBzaJDBc_lyKqpajoz-0pBZxnFcJdo3Gd29wlM-RLqWxbcm7DsHUPj_ppO45tIUVVxVO9vC0GjTpI_i_nf1pNzHCO0wkM8mw50C9cg6QOWWSoEnQNxN-okEUONpW3Phh0yyGBPlfTMiH8C07Ab5jMREoub2eMiFHiOmD-4ExsVYc2vA32Ug6k4_tp3Y8MFScKWda3OLHLZv2DLxCDA5yDXtmIUjVYIYLvgu5Rozjw2zqaYT5P8luOc7LmuoNGKrqAYg7jVhfrmR_duM"/>
+<div class="w-10 h-10 rounded-full border-2 border-white bg-surface-container-high flex items-center justify-center text-[10px] font-bold text-on-surface-variant">+24</div>
+</div>
+<p class="text-xs font-medium text-on-surface-variant">Nuestro equipo de soporte está en línea <br/> para ayudarte con tu proceso.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Navigation Shell (Suppressed for focused Transactional State but technically available for branding) -->
+<!-- We omit BottomNavBar here as per "Shell Visibility & Relevance" rule for focused screens -->
+<footer class="p-8 text-center opacity-40">
+<p class="text-[10px] font-medium tracking-widest uppercase font-label text-on-surface-variant">© 2024 LabNexus Clinical Network. Todos los derechos reservados.</p>
+</footer>
+</body></html>

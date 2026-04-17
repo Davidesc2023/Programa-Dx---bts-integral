@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-background": "#191c1d",
+                    "on-primary-fixed-variant": "#005045",
+                    "on-tertiary-fixed": "#241a00",
+                    "on-error-container": "#93000a",
+                    "surface": "#f8fafa",
+                    "tertiary-fixed": "#ffe08b",
+                    "surface-variant": "#e1e3e3",
+                    "secondary": "#0061a3",
+                    "surface-container-highest": "#e1e3e3",
+                    "on-primary-container": "#b0ffed",
+                    "tertiary": "#745b00",
+                    "secondary-container": "#6ab2fe",
+                    "on-surface": "#191c1d",
+                    "surface-dim": "#d8dada",
+                    "primary-container": "#1b7a6b",
+                    "on-surface-variant": "#3e4946",
+                    "error-container": "#ffdad6",
+                    "surface-container": "#eceeee",
+                    "secondary-fixed-dim": "#9ecaff",
+                    "on-tertiary-container": "#4f3d00",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "outline-variant": "#bec9c5",
+                    "surface-container-high": "#e6e8e9",
+                    "on-error": "#ffffff",
+                    "background": "#f8fafa",
+                    "surface-bright": "#f8fafa",
+                    "inverse-surface": "#2e3131",
+                    "inverse-primary": "#81d6c4",
+                    "surface-tint": "#006b5d",
+                    "on-secondary-fixed": "#001d36",
+                    "on-tertiary-fixed-variant": "#584400",
+                    "secondary-fixed": "#d1e4ff",
+                    "tertiary-container": "#d0a600",
+                    "on-secondary-container": "#004474",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed-dim": "#f0c110",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-fixed-variant": "#00497c",
+                    "primary-fixed-dim": "#81d6c4",
+                    "outline": "#6e7976",
+                    "inverse-on-surface": "#eff1f1",
+                    "surface-container-low": "#f2f4f4",
+                    "primary-fixed": "#9df2e0",
+                    "primary": "#006053",
+                    "on-primary-fixed": "#00201b",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.75rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface min-h-screen">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-72 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl text-teal-800 dark:text-teal-400 font-manrope font-semibold text-sm flex flex-col p-6 gap-y-4 shadow-[24px_0_48px_-12px_rgba(0,0,0,0.05)] z-50">
+<div class="mb-8 px-2">
+<h1 class="text-xl font-extrabold text-teal-800 dark:text-teal-400">APP-DX</h1>
+<p class="text-[10px] uppercase tracking-[0.2em] opacity-60">Clinical Sanctuary</p>
+</div>
+<nav class="flex flex-col gap-2">
+<a class="flex items-center gap-3 p-3 text-teal-800 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 rounded-xl cursor-pointer active:opacity-80 transition-transform duration-300">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-slate-500 dark:text-slate-400 hover:text-teal-700 hover:translate-x-1 transition-transform duration-300 cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="biotech">biotech</span>
+<span>Resultados</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-slate-500 dark:text-slate-400 hover:text-teal-700 hover:translate-x-1 transition-transform duration-300 cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span>Órdenes</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-slate-500 dark:text-slate-400 hover:text-teal-700 hover:translate-x-1 transition-transform duration-300 cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span>Perfil</span>
+</a>
+</nav>
+<div class="mt-auto">
+<button class="w-full bg-primary-container text-on-primary-container py-4 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-teal-900/10 hover:brightness-110 transition-all active:scale-95">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                Nueva Consulta
+            </button>
+</div>
+</aside>
+<main class="ml-72 p-10 max-w-[1400px]">
+<!-- Header Section -->
+<header class="flex justify-between items-center mb-12">
+<div>
+<h2 class="font-headline text-4xl font-extrabold tracking-tight text-on-surface mb-1">Hola, Alejandro</h2>
+<p class="text-on-surface-variant font-medium">Bienvenido a tu santuario clínico. Tienes 2 acciones pendientes.</p>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-3 bg-white shadow-sm rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="h-12 w-12 rounded-full overflow-hidden shadow-md ring-2 ring-white">
+<img alt="Avatar del paciente" data-alt="close up portrait of a young hispanic man with a friendly expression and short dark hair in a professional setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDK0qw7vrNRK9eR_wRxdG7X1OhWA6XX2vzkotMZe_2LXiP3gBea5dUGGo3FS4a7etiWLxJllCRbB7D2kxu98X3iHVLkZL65djaIYNa1A1vRW23PeAftA92DhFFCLMyMOwwetVPZZjPHPqL8TguoXoZon1wvp6Z--ratUMn6ohIXNNgljLn_B8WxHG6GUx271vjhWS0Bwol64UsnuArk6BhVoPMSFn1ge2r0yTF4zZM2-DGZvZV_QrS-gtaRpyhL-XqWYxCyWn5Nm_T-"/>
+</div>
+</div>
+</header>
+<!-- Bento Layout -->
+<div class="grid grid-cols-12 gap-8">
+<!-- Active Order Tracking (Primary Focus) -->
+<section class="col-span-12 lg:col-span-8 bg-surface-container-lowest rounded-3xl p-8 shadow-[0px_8px_24px_rgba(25,28,29,0.04)] flex flex-col gap-8">
+<div class="flex justify-between items-start">
+<div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-secondary mb-2 block">Orden en curso</span>
+<h3 class="font-headline text-2xl font-bold">Perfil Lipídico &amp; Hemoglobina</h3>
+</div>
+<div class="px-4 py-1.5 bg-secondary-container/20 text-on-secondary-container rounded-full text-xs font-bold">
+                        ID: #DX-99201
+                    </div>
+</div>
+<!-- Custom Timeline -->
+<div class="relative py-4">
+<div class="absolute top-1/2 left-0 w-full h-[2px] bg-surface-container -translate-y-1/2"></div>
+<div class="absolute top-1/2 left-0 w-2/3 h-[2px] bg-primary-container -translate-y-1/2 transition-all duration-700"></div>
+<div class="relative flex justify-between">
+<!-- Step 1: Recolección -->
+<div class="flex flex-col items-center gap-3">
+<div class="z-10 w-10 h-10 rounded-full bg-primary-container text-white flex items-center justify-center shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-sm" data-icon="check" data-weight="fill" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="text-xs font-bold text-on-surface">Recolección</span>
+</div>
+<!-- Step 2: Procesamiento -->
+<div class="flex flex-col items-center gap-3">
+<div class="z-10 w-10 h-10 rounded-full bg-primary-container text-white flex items-center justify-center shadow-lg shadow-primary/20 ring-4 ring-primary-container/10">
+<span class="material-symbols-outlined text-sm" data-icon="biotech">biotech</span>
+</div>
+<span class="text-xs font-bold text-on-surface">Procesamiento</span>
+</div>
+<!-- Step 3: Validación -->
+<div class="flex flex-col items-center gap-3">
+<div class="z-10 w-10 h-10 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="rule">rule</span>
+</div>
+<span class="text-xs font-medium text-on-surface-variant">Validación</span>
+</div>
+<!-- Step 4: Entrega -->
+<div class="flex flex-col items-center gap-3">
+<div class="z-10 w-10 h-10 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="assignment_turned_in">assignment_turned_in</span>
+</div>
+<span class="text-xs font-medium text-on-surface-variant">Entrega</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-2xl flex items-center justify-between">
+<div class="flex gap-4 items-center">
+<div class="p-3 bg-white rounded-xl shadow-sm text-secondary">
+<span class="material-symbols-outlined" data-icon="info">info</span>
+</div>
+<p class="text-sm text-on-surface-variant max-w-sm">Tus muestras están siendo analizadas por nuestro equipo senior. Tiempo estimado: <strong>4 horas</strong>.</p>
+</div>
+<button class="px-6 py-2.5 text-sm font-bold text-primary hover:bg-primary/5 transition-colors rounded-xl">Ver detalles</button>
+</div>
+</section>
+<!-- Quick Actions -->
+<section class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+<div class="bg-primary-container text-white p-8 rounded-3xl shadow-xl shadow-teal-900/10 relative overflow-hidden group">
+<div class="absolute -right-12 -top-12 w-48 h-48 bg-white/10 rounded-full blur-3xl group-hover:scale-110 transition-transform"></div>
+<div class="relative z-10 flex flex-col h-full justify-between">
+<div>
+<h4 class="font-headline text-2xl font-bold mb-2">Agendar Cita</h4>
+<p class="text-on-primary-container text-sm leading-relaxed mb-6 opacity-90">Programar toma de muestras a domicilio o presencial.</p>
+</div>
+<button class="bg-white text-primary py-3 px-6 rounded-xl font-bold flex items-center justify-center gap-2 w-max active:scale-95 transition-all">
+                            Nueva Cita
+                            <span class="material-symbols-outlined text-sm" data-icon="calendar_month">calendar_month</span>
+</button>
+</div>
+</div>
+<div class="bg-tertiary-container text-on-tertiary-container p-8 rounded-3xl shadow-xl shadow-tertiary/5 relative overflow-hidden flex flex-col justify-between">
+<div>
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined" data-icon="ink_pen">ink_pen</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Documentos Pendientes</span>
+</div>
+<h4 class="font-headline text-lg font-bold mb-1">Consentimiento de Telemedicina</h4>
+<p class="text-xs opacity-80 mb-6">Falta tu firma digital para proceder.</p>
+</div>
+<button class="bg-on-tertiary-container text-tertiary-container py-3 px-6 rounded-xl font-bold text-sm w-full active:scale-95 transition-all">
+                        Firmar Documento
+                    </button>
+</div>
+</section>
+<!-- Recent Results -->
+<section class="col-span-12 lg:col-span-7">
+<div class="flex justify-between items-end mb-6">
+<h3 class="font-headline text-2xl font-bold">Resultados Recientes</h3>
+<button class="text-primary font-bold text-sm hover:underline">Ver Historial</button>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Result Card 1 -->
+<div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-primary flex items-center justify-between hover:translate-x-1 transition-transform">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 bg-primary-container/10 text-primary rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="bloodtype">bloodtype</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Química Sanguínea (6 elementos)</p>
+<p class="text-xs text-on-surface-variant">12 de Octubre, 2023 • Dr. Ricardo Santos</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-3 py-1 bg-primary-container/10 text-primary rounded-full text-[10px] font-bold">NORMAL</span>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="download">download</span>
+</button>
+</div>
+</div>
+<!-- Result Card 2 -->
+<div class="bg-white p-5 rounded-2xl shadow-sm border-l-4 border-tertiary flex items-center justify-between hover:translate-x-1 transition-transform">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 bg-tertiary-container/10 text-tertiary rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="ecg">ecg</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Electrocardiograma Reposo</p>
+<p class="text-xs text-on-surface-variant">05 de Octubre, 2023 • Cardiocenter</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-3 py-1 bg-tertiary-container/10 text-tertiary rounded-full text-[10px] font-bold">REVISAR</span>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="download">download</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Health Tips (Sanctuary Style) -->
+<section class="col-span-12 lg:col-span-5 bg-surface-container-high rounded-3xl p-8 flex flex-col gap-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-sm" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<h3 class="font-headline text-lg font-bold">Consejos de Salud</h3>
+</div>
+<div class="space-y-6">
+<div class="flex gap-4 group">
+<div class="h-20 w-20 shrink-0 rounded-2xl overflow-hidden shadow-sm">
+<img alt="Salud preventiva" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="serene morning sunlight hitting a glass of water and a small plant on a white desk" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhblKZvDJvJS2UGcDt5l4U2gY_1faUcDkapLibnojncCdYDcUNEM-bDvBiY8zfTewy9_JcbUTQ3SjiJfu-EcVEJImDTZ4iwj11ZxBumf-N0eqMFf8jXsAgL_2NqR7BSQPP_HZ_68gPaLOXtQtrRXTSs2bFm--X8uUB8QcNbtOV7ZXug43Gc5n4dW8ebyXz9V6fLlmMpFrbbsll9S1lsyYExKLjYa9s0WNZ2p0-OoqN6mSeEbGvp_bygecRiwXZB_M85kMoEkrSlz0Y"/>
+</div>
+<div>
+<h5 class="text-sm font-bold mb-1 leading-snug">Hidratación y sus efectos en tus resultados</h5>
+<p class="text-xs text-on-surface-variant leading-relaxed">Asegúrate de beber 2L de agua antes de tu próximo perfil lipídico...</p>
+</div>
+</div>
+<div class="flex gap-4 group">
+<div class="h-20 w-20 shrink-0 rounded-2xl overflow-hidden shadow-sm">
+<img alt="Nutrición clínica" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="vibrant healthy vegetable salad bowl with avocado and chickpeas on a textured white surface" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3OOipqEc6XTw574LhEdAJuyFupVQnPASHaZOjQlKTykwgsJy8YAdQr0f0GNiyO6wq9ha3KLliXTglCkH4zsEMFO-i2SvwlGhUo0SeKlFrEkvluK7qRLCnzI4hPnVZDtb6pfYB4ETw7kMRQSZVx7C72H0nV1eU8W9TUGsJXkDys4FNmIxx6GQvn1mLIYlmCpnUSPIg-6aqZLzYpzPiCDyJJlVI9YdLYzN9m3qJ7AvWnxMgwd2v6pfp50lGy8rGXc8F09pRyCmLjlR5"/>
+</div>
+<div>
+<h5 class="text-sm font-bold mb-1 leading-snug">Reduciendo el sodio en tu dieta diaria</h5>
+<p class="text-xs text-on-surface-variant leading-relaxed">Pequeños cambios pueden mejorar tus niveles de presión arterial significativamente...</p>
+</div>
+</div>
+</div>
+<button class="mt-2 w-full py-3 bg-white/50 text-on-surface font-bold text-xs rounded-xl hover:bg-white transition-colors">
+                    Explorar todos los consejos
+                </button>
+</section>
+</div>
+</main>
+<!-- Bottom Margin for flow -->
+<div class="h-20"></div>
+</body></html>

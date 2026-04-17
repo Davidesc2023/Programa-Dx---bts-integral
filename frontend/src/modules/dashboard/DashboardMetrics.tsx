@@ -23,8 +23,8 @@ function MetricCard({ title, value, icon: Icon, iconColor, iconBg }: MetricCardP
           <Icon size={22} style={{ color: iconColor }} />
         </div>
         <div>
-          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>{title}</p>
-          <p className="text-2xl font-bold tabular-nums" style={{ color: '#e2e8f0' }}>
+          <p className="text-sm" style={{ color: '#6e7976' }}>{title}</p>
+          <p className="text-2xl font-bold tabular-nums" style={{ color: '#191c1d' }}>
             {value.toLocaleString('es-CO')}
           </p>
         </div>
@@ -63,29 +63,29 @@ export function DashboardMetrics({
       title: 'Pacientes registrados',
       value: totalPatients,
       icon: Users,
-      iconColor: '#4ade80',
-      iconBg: 'rgba(74,222,128,0.1)',
+      iconColor: '#1B7A6B',
+      iconBg: 'rgba(27,122,107,0.10)',
     },
     {
       title: 'Órdenes pendientes',
       value: pendingOrders,
       icon: ClipboardList,
-      iconColor: '#fbbf24',
-      iconBg: 'rgba(251,191,36,0.1)',
+      iconColor: '#745b00',
+      iconBg: 'rgba(208,166,0,0.12)',
     },
     {
       title: 'En proceso',
       value: activeOrders,
       icon: Activity,
-      iconColor: '#38bdf8',
-      iconBg: 'rgba(56,189,248,0.1)',
+      iconColor: '#0061a3',
+      iconBg: 'rgba(0,97,163,0.10)',
     },
     {
       title: 'Completadas',
       value: completedOrders,
       icon: CheckCircle2,
-      iconColor: '#34d399',
-      iconBg: 'rgba(52,211,153,0.1)',
+      iconColor: '#006053',
+      iconBg: 'rgba(0,96,83,0.10)',
     },
   ];
 

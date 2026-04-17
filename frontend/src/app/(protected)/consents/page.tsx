@@ -33,35 +33,35 @@ function DoctorBadge({ status, signedAt }: { status: DoctorStatus; signedAt?: st
   if (status === 'pending')
     return (
       <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full"
-        style={{ background: 'rgba(250,204,21,0.12)', color: '#facc15' }}>
+        style={{ background: 'rgba(208,166,0,0.12)', color: '#745b00' }}>
         <Clock size={11} />Pendiente firma
       </span>
     );
   return (
     <div className="space-y-0.5">
       <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full"
-        style={{ background: 'rgba(74,222,128,0.12)', color: '#4ade80' }}>
+        style={{ background: 'rgba(27,122,107,0.10)', color: '#006053' }}>
         <CheckCircle2 size={11} />Firmado
       </span>
-      {signedAt && <p className="text-xs pl-1" style={{ color: 'rgba(255,255,255,0.35)' }}>{fmt(signedAt)}</p>}
+      {signedAt && <p className="text-xs pl-1" style={{ color: '#6e7976' }}>{fmt(signedAt)}</p>}
     </div>
   );
 }
 
 function PatientBadge({ status, respondedAt }: { status: PatientStatus; respondedAt?: string | null }) {
   if (status === 'na')
-    return <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>—</span>;
+    return <span className="text-xs" style={{ color: '#bec9c5' }}>—</span>;
   if (status === 'pending_send')
     return (
       <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full"
-        style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }}>
+        style={{ background: '#f2f4f4', color: '#6e7976' }}>
         <AlertCircle size={11} />Pendiente envío
       </span>
     );
   if (status === 'awaiting')
     return (
       <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full"
-        style={{ background: 'rgba(147,197,253,0.1)', color: '#93c5fd' }}>
+        style={{ background: 'rgba(0,97,163,0.10)', color: '#0061a3' }}>
         <Clock size={11} />Esperando respuesta
       </span>
     );
@@ -69,20 +69,20 @@ function PatientBadge({ status, respondedAt }: { status: PatientStatus; responde
     return (
       <div className="space-y-0.5">
         <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full"
-          style={{ background: 'rgba(74,222,128,0.12)', color: '#4ade80' }}>
+          style={{ background: 'rgba(27,122,107,0.10)', color: '#006053' }}>
           <CheckCircle2 size={11} />Aceptado
         </span>
-        {respondedAt && <p className="text-xs pl-1" style={{ color: 'rgba(255,255,255,0.35)' }}>{fmt(respondedAt)}</p>}
+        {respondedAt && <p className="text-xs pl-1" style={{ color: '#6e7976' }}>{fmt(respondedAt)}</p>}
       </div>
     );
   // rejected
   return (
     <div className="space-y-0.5">
       <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full"
-        style={{ background: 'rgba(239,68,68,0.12)', color: '#f87171' }}>
+        style={{ background: 'rgba(186,26,26,0.10)', color: '#ba1a1a' }}>
         <XCircle size={11} />Rechazado
       </span>
-      {respondedAt && <p className="text-xs pl-1" style={{ color: 'rgba(255,255,255,0.35)' }}>{fmt(respondedAt)}</p>}
+      {respondedAt && <p className="text-xs pl-1" style={{ color: '#6e7976' }}>{fmt(respondedAt)}</p>}
     </div>
   );
 }
@@ -101,17 +101,17 @@ function OrderConsentRow({ orderId, orderCode }: { orderId: string; orderCode: s
 
   return (
     <tr className="border-t transition-colors"
-      style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-      <td className="py-3 px-4 text-sm font-mono font-medium" style={{ color: '#e2e8f0' }}>
+      style={{ borderColor: '#e6e8e9' }}>
+      <td className="py-3 px-4 text-sm font-mono font-medium" style={{ color: '#191c1d' }}>
         {orderCode}
       </td>
 
       {/* Paso 1: Firma médica */}
       <td className="py-3 px-4">
         {isLoading ? (
-          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>…</span>
+          <span className="text-xs" style={{ color: '#bec9c5' }}>…</span>
         ) : !consent ? (
-          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>Sin consentimiento</span>
+          <span className="text-xs" style={{ color: '#bec9c5' }}>…</span>
         ) : (
           <DoctorBadge status={doctorStatus!} signedAt={consent.signedAt} />
         )}
@@ -120,9 +120,9 @@ function OrderConsentRow({ orderId, orderCode }: { orderId: string; orderCode: s
       {/* Paso 2: Respuesta paciente */}
       <td className="py-3 px-4">
         {isLoading ? (
-          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.25)' }}>…</span>
+          <span className="text-xs" style={{ color: '#bec9c5' }}>…</span>
         ) : !consent ? (
-          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.2)' }}>—</span>
+          <span className="text-xs" style={{ color: '#bec9c5' }}>—</span>
         ) : (
           <PatientBadge status={patientStatus!} respondedAt={consent.patientSignedAt ?? consent.respondedAt} />
         )}
@@ -131,7 +131,7 @@ function OrderConsentRow({ orderId, orderCode }: { orderId: string; orderCode: s
       <td className="py-3 px-4">
         <Link href={`/orders/${orderId}`}
           className="inline-flex items-center gap-1 text-xs font-medium transition-colors"
-          style={{ color: '#4ade80' }}>
+          style={{ color: '#1B7A6B' }}>
           Ver orden <ExternalLink size={11} />
         </Link>
       </td>
@@ -151,10 +151,10 @@ export default function ConsentsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <FileText size={24} style={{ color: '#4ade80' }} />
+        <FileText size={24} style={{ color: '#1B7A6B' }} />
         <div>
-          <h1 className="text-xl font-semibold" style={{ color: '#e2e8f0' }}>Consentimientos</h1>
-          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <h1 className="text-xl font-semibold" style={{ color: '#191c1d' }}>Consentimientos</h1>
+          <p className="text-sm" style={{ color: '#6e7976' }}>
             Seguimiento de las 2 firmas por orden médica
           </p>
         </div>
@@ -168,36 +168,36 @@ export default function ConsentsPage() {
         {isLoading ? (
           <div className="p-4"><TableSkeleton rows={6} cols={4} /></div>
         ) : isError ? (
-          <p className="px-4 py-6 text-sm" style={{ color: '#f87171' }}>Error al cargar órdenes.</p>
+          <p className="px-4 py-6 text-sm" style={{ color: '#ba1a1a' }}>Error al cargar órdenes.</p>
         ) : orders.length === 0 ? (
-          <p className="px-4 py-6 text-sm" style={{ color: 'rgba(255,255,255,0.3)' }}>
+          <p className="px-4 py-6 text-sm" style={{ color: '#6e7976' }}>
             No hay órdenes registradas.
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr style={{ background: 'rgba(255,255,255,0.03)' }}>
+                <tr style={{ background: '#f2f4f4' }}>
                   <th className="py-2 px-4 text-left text-xs font-semibold uppercase tracking-wide"
-                    style={{ color: 'rgba(255,255,255,0.35)' }}>Código orden</th>
+                    style={{ color: '#6e7976' }}>Código orden</th>
                   <th className="py-2 px-4 text-left text-xs font-semibold uppercase tracking-wide"
-                    style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    style={{ color: '#6e7976' }}>
                     <span className="inline-flex items-center gap-1">
                       <span className="w-4 h-4 rounded-full text-center leading-4 text-xs"
-                        style={{ background: 'rgba(250,204,21,0.2)', color: '#facc15' }}>1</span>
+                        style={{ background: 'rgba(208,166,0,0.15)', color: '#745b00' }}>1</span>
                       Firma médica
                     </span>
                   </th>
                   <th className="py-2 px-4 text-left text-xs font-semibold uppercase tracking-wide"
-                    style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    style={{ color: '#6e7976' }}>
                     <span className="inline-flex items-center gap-1">
                       <span className="w-4 h-4 rounded-full text-center leading-4 text-xs"
-                        style={{ background: 'rgba(74,222,128,0.2)', color: '#4ade80' }}>2</span>
+                        style={{ background: 'rgba(27,122,107,0.15)', color: '#1B7A6B' }}>2</span>
                       Respuesta paciente
                     </span>
                   </th>
                   <th className="py-2 px-4 text-left text-xs font-semibold uppercase tracking-wide"
-                    style={{ color: 'rgba(255,255,255,0.35)' }}>Acciones</th>
+                    style={{ color: '#6e7976' }}>Acciones</th>
                 </tr>
               </thead>
               <tbody>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-on-surface": "#eff1f1",
+                    "surface-container-low": "#f2f4f4",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed-dim": "#81d6c4",
+                    "outline": "#6e7976",
+                    "surface-dim": "#d8dada",
+                    "on-tertiary-container": "#4f3d00",
+                    "on-secondary-container": "#004474",
+                    "primary-fixed": "#9df2e0",
+                    "outline-variant": "#bec9c5",
+                    "on-primary-fixed-variant": "#005045",
+                    "surface-bright": "#f8fafa",
+                    "secondary-container": "#6ab2fe",
+                    "surface-tint": "#006b5d",
+                    "tertiary-container": "#d0a600",
+                    "surface-container-highest": "#e1e3e3",
+                    "surface": "#f8fafa",
+                    "on-primary": "#ffffff",
+                    "surface-variant": "#e1e3e3",
+                    "primary-container": "#1b7a6b",
+                    "on-surface": "#191c1d",
+                    "error": "#ba1a1a",
+                    "on-primary-container": "#b0ffed",
+                    "on-secondary-fixed-variant": "#00497c",
+                    "secondary": "#0061a3",
+                    "error-container": "#ffdad6",
+                    "surface-container": "#eceeee",
+                    "on-tertiary-fixed-variant": "#584400",
+                    "on-error": "#ffffff",
+                    "on-secondary-fixed": "#001d36",
+                    "tertiary-fixed-dim": "#f0c110",
+                    "on-surface-variant": "#3e4946",
+                    "on-background": "#191c1d",
+                    "secondary-fixed": "#d1e4ff",
+                    "surface-container-high": "#e6e8e9",
+                    "on-tertiary-fixed": "#241a00",
+                    "inverse-surface": "#2e3131",
+                    "primary": "#006053",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed": "#00201b",
+                    "background": "#f8fafa",
+                    "secondary-fixed-dim": "#9ecaff",
+                    "inverse-primary": "#81d6c4",
+                    "tertiary": "#745b00",
+                    "tertiary-fixed": "#ffe08b",
+                    "on-secondary": "#ffffff",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.75rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="bg-[#f8fafa]/80 dark:bg-[#191c1d]/80 backdrop-blur-xl sticky top-0 z-50 bg-surface-container-low shadow-[0px_8px_24px_rgba(25,28,29,0.06)] flex justify-between items-center w-full px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-fixed-dim flex items-center justify-center overflow-hidden">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="Close-up portrait of a professional woman with a warm expression in a brightly lit medical clinical setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7BoVggWwLXnWYFQJboojzv4sEYQcs5QG9GUB4zmxpJD6DqpPrVwlUJMYLb4FbhIq1uGimvkl_hniokR1n0M8P38nLCsuWPCgSdKdLAjBrqFH06hNcF94zTecYtDD8kMzc7CkZa-OhqoJnbka_UcfK-SO2qdMKhT3qxjVcwa_fKf_YyIYXhDf61Z8MBX3ur6WHf61AUx6mymDX5vZ2kBcc9sPDYNJQi3ecIA9LqdPY0R_UN0xI0r9-hfxRX7UiO2soqPm_YqpYIuaF"/>
+</div>
+<span class="text-xl font-extrabold text-[#1B7A6B] dark:text-[#26a69a] font-['Manrope'] tracking-tight">BTS Integral</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-[#1B7A6B]/5 transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<main class="max-w-5xl mx-auto px-6 py-8">
+<!-- Profile Summary Bento Section -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+<!-- Profile Card -->
+<div class="md:col-span-2 bg-surface-container-lowest p-8 rounded-3xl shadow-[0px_8px_24px_rgba(25,28,29,0.04)] relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+<div class="relative flex flex-col md:flex-row items-center md:items-start gap-8">
+<div class="w-32 h-32 rounded-3xl overflow-hidden shadow-xl ring-4 ring-white">
+<img alt="Profile" class="w-full h-full object-cover" data-alt="Modern professional headshot of a woman in her 30s with neutral soft background and natural daylighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdH1_BWv4FZXRvGVXR2lZGXhf_Q_9qruaifaI45BzKoUQZJ_af5mGdfFRzecB-rkpk4Ci59jAefyq7qyoqjXebuT1JKOK6uMBkYh9qYO29Pg1Yja4KEyqYMn8v7gcBnX2a4DfqTyMu81HsVKX6PEI7AzOKgYibJQVSUe-ChQml_qazUDwqmcp1GxFNMP3TaO4y3hD8fIsgSsHOj-6bHMY1sATHmcwxMotMH7jLCQd4mz1a7ebd9BVRKLi_TWZg4dI7MSsJT8pt-nNd"/>
+</div>
+<div class="flex-1 text-center md:text-left">
+<div class="inline-flex items-center px-3 py-1 bg-primary-container text-on-primary-container text-[11px] font-bold uppercase tracking-widest rounded-full mb-4">
+                            Paciente Activo
+                        </div>
+<h1 class="text-4xl font-extrabold text-on-surface mb-2 tracking-tight">Lucía Fernández García</h1>
+<p class="text-on-surface-variant flex items-center justify-center md:justify-start gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="id_card">id_card</span>
+                            Documento: <span class="font-semibold">48.291.003-K</span>
+</p>
+<div class="mt-6 flex flex-wrap justify-center md:justify-start gap-3">
+<div class="bg-surface-container-low px-4 py-2 rounded-xl">
+<span class="text-[10px] uppercase font-bold text-outline block">Edad</span>
+<span class="text-on-surface font-semibold">32 años</span>
+</div>
+<div class="bg-surface-container-low px-4 py-2 rounded-xl">
+<span class="text-[10px] uppercase font-bold text-outline block">Tipo Sangre</span>
+<span class="text-on-surface font-semibold">O+</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Action Stats -->
+<div class="flex flex-col gap-4">
+<div class="bg-tertiary-container/10 p-6 rounded-3xl border border-tertiary-container/20 flex-1 flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined text-tertiary text-3xl mb-2" data-icon="pending_actions">pending_actions</span>
+<h3 class="text-lg font-bold text-on-tertiary-container leading-tight">Acciones Pendientes</h3>
+</div>
+<div class="mt-4">
+<span class="text-5xl font-black text-tertiary">02</span>
+<p class="text-sm text-on-tertiary-container font-medium">Documentos por firmar</p>
+</div>
+</div>
+<div class="bg-secondary-container/10 p-6 rounded-3xl border border-secondary-container/20 flex-1 flex flex-col justify-between">
+<div>
+<span class="material-symbols-outlined text-secondary text-3xl mb-2" data-icon="calendar_month">calendar_month</span>
+<h3 class="text-lg font-bold text-on-secondary-container leading-tight">Próxima Cita</h3>
+</div>
+<div class="mt-4">
+<span class="text-lg font-bold text-on-secondary-container block">14 Oct, 2023</span>
+<p class="text-sm text-on-secondary-container font-medium opacity-70">Consulta General</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Pendientes de Firma Section -->
+<section class="mb-12">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-2xl font-extrabold tracking-tight text-on-surface">Pendientes de Firma</h2>
+<span class="text-primary font-semibold text-sm cursor-pointer hover:underline">Ver Historial</span>
+</div>
+<div class="space-y-4">
+<!-- Document Item 1 -->
+<div class="bg-surface-container-lowest p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex items-center gap-4 w-full">
+<div class="w-14 h-14 rounded-xl bg-error-container/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-error text-2xl" data-icon="draw">draw</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Consentimiento Informado: Cirugía Menor</h4>
+<p class="text-sm text-on-surface-variant">Generado el 12 de Octubre, 2023 • Dr. Carlos Ruiz</p>
+</div>
+</div>
+<button class="w-full sm:w-auto px-8 py-3 bg-primary text-on-primary font-bold rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 hover:translate-y-[-2px] transition-transform active:scale-95">
+                        Firmar Ahora
+                        <span class="material-symbols-outlined text-lg" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<!-- Document Item 2 -->
+<div class="bg-surface-container-lowest p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm hover:shadow-md transition-shadow group">
+<div class="flex items-center gap-4 w-full">
+<div class="w-14 h-14 rounded-xl bg-tertiary-container/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary text-2xl" data-icon="description">description</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Política de Privacidad y Tratamiento de Datos</h4>
+<p class="text-sm text-on-surface-variant">Actualización requerida • Administración BTS</p>
+</div>
+</div>
+<button class="w-full sm:w-auto px-8 py-3 bg-surface-container-highest text-on-surface font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-surface-variant transition-colors active:scale-95">
+                        Revisar
+                    </button>
+</div>
+</div>
+</section>
+<!-- Account Settings Grid -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+<!-- Settings Form -->
+<div class="bg-surface-container-low p-8 rounded-[32px]">
+<h3 class="text-xl font-extrabold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="settings">settings</span>
+                    Configuración de Cuenta
+                </h3>
+<div class="space-y-6">
+<div>
+<label class="block text-sm font-semibold text-on-surface-variant mb-2">Cambiar Contraseña</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border-none rounded-xl py-3 px-4 focus:ring-2 focus:ring-primary/20 text-on-surface placeholder:text-outline/50" placeholder="Nueva contraseña" type="password"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline" data-icon="lock">lock</span>
+</div>
+</div>
+<div class="pt-4 space-y-4">
+<h4 class="text-xs uppercase font-bold text-outline tracking-widest">Notificaciones</h4>
+<div class="flex items-center justify-between py-2">
+<span class="font-medium text-on-surface">Recordatorios de citas</span>
+<div class="w-12 h-6 bg-primary rounded-full relative cursor-pointer">
+<div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between py-2">
+<span class="font-medium text-on-surface">Nuevos resultados por Email</span>
+<div class="w-12 h-6 bg-primary rounded-full relative cursor-pointer">
+<div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between py-2">
+<span class="font-medium text-on-surface">Mensajes de especialistas</span>
+<div class="w-12 h-6 bg-outline-variant rounded-full relative cursor-pointer">
+<div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-8 pt-6">
+<button class="w-full py-4 bg-primary text-on-primary font-bold rounded-2xl shadow-lg shadow-primary/20 hover:shadow-xl transition-all">
+                        Guardar Cambios
+                    </button>
+</div>
+</div>
+<!-- Support & Logout -->
+<div class="flex flex-col gap-6">
+<div class="bg-surface-container-lowest p-8 rounded-[32px] shadow-sm border border-outline-variant/10">
+<h3 class="text-xl font-extrabold mb-4">¿Necesitas ayuda?</h3>
+<p class="text-on-surface-variant mb-6 text-sm">Nuestro equipo técnico está disponible 24/7 para resolver cualquier duda con la firma digital o tus datos.</p>
+<button class="flex items-center gap-3 text-primary font-bold hover:gap-4 transition-all">
+                        Contactar Soporte
+                        <span class="material-symbols-outlined" data-icon="support_agent">support_agent</span>
+</button>
+</div>
+<div class="mt-auto">
+<button class="w-full flex items-center justify-center gap-3 py-5 rounded-[24px] border-2 border-error/10 text-error font-extrabold hover:bg-error/5 transition-colors group">
+<span class="material-symbols-outlined group-hover:-translate-x-1 transition-transform" data-icon="logout">logout</span>
+                        Cerrar Sesión
+                    </button>
+<p class="text-center text-[10px] text-outline mt-4 font-bold uppercase tracking-widest">BTS Integral v4.2.0 • 2023</p>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-[#f8fafa]/90 dark:bg-[#191c1d]/90 backdrop-blur-lg border-t border-slate-100/10 shadow-[0px_-4px_24px_rgba(25,28,29,0.04)] rounded-t-[24px]">
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-5 py-2 hover:text-[#1B7A6B] transition-all duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-['Inter'] text-[11px] font-semibold uppercase tracking-wider mt-1">Inicio</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-5 py-2 hover:text-[#1B7A6B] transition-all duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-['Inter'] text-[11px] font-semibold uppercase tracking-wider mt-1">Pedidos</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#1B7A6B]/10 dark:bg-[#26a69a]/15 text-[#1B7A6B] dark:text-[#26a69a] rounded-[12px] px-5 py-2 transition-all duration-300 ease-out" href="#">
+<span class="material-symbols-outlined" data-icon="biotech" style="font-variation-settings: 'FILL' 1;">biotech</span>
+<span class="font-['Inter'] text-[11px] font-semibold uppercase tracking-wider mt-1">Perfil</span>
+</a>
+</nav>
+</body></html>

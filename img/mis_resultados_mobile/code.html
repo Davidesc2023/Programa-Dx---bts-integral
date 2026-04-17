@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-on-surface": "#eff1f1",
+                    "surface-container-low": "#f2f4f4",
+                    "on-tertiary": "#ffffff",
+                    "primary-fixed-dim": "#81d6c4",
+                    "outline": "#6e7976",
+                    "surface-dim": "#d8dada",
+                    "on-tertiary-container": "#4f3d00",
+                    "on-secondary-container": "#004474",
+                    "primary-fixed": "#9df2e0",
+                    "outline-variant": "#bec9c5",
+                    "on-primary-fixed-variant": "#005045",
+                    "surface-bright": "#f8fafa",
+                    "secondary-container": "#6ab2fe",
+                    "surface-tint": "#006b5d",
+                    "tertiary-container": "#d0a600",
+                    "surface-container-highest": "#e1e3e3",
+                    "surface": "#f8fafa",
+                    "on-primary": "#ffffff",
+                    "surface-variant": "#e1e3e3",
+                    "primary-container": "#1b7a6b",
+                    "on-surface": "#191c1d",
+                    "error": "#ba1a1a",
+                    "on-primary-container": "#b0ffed",
+                    "on-secondary-fixed-variant": "#00497c",
+                    "secondary": "#0061a3",
+                    "error-container": "#ffdad6",
+                    "surface-container": "#eceeee",
+                    "on-tertiary-fixed-variant": "#584400",
+                    "on-error": "#ffffff",
+                    "on-secondary-fixed": "#001d36",
+                    "tertiary-fixed-dim": "#f0c110",
+                    "on-surface-variant": "#3e4946",
+                    "on-background": "#191c1d",
+                    "secondary-fixed": "#d1e4ff",
+                    "surface-container-high": "#e6e8e9",
+                    "on-tertiary-fixed": "#241a00",
+                    "inverse-surface": "#2e3131",
+                    "primary": "#006053",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed": "#00201b",
+                    "background": "#f8fafa",
+                    "secondary-fixed-dim": "#9ecaff",
+                    "inverse-primary": "#81d6c4",
+                    "tertiary": "#745b00",
+                    "tertiary-fixed": "#ffe08b",
+                    "on-secondary": "#ffffff",
+                    "on-error-container": "#93000a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.75rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="bg-[#f8fafa]/80 dark:bg-[#191c1d]/80 backdrop-blur-xl docked full-width top-0 sticky z-50 bg-surface-container-low shadow-[0px_8px_24px_rgba(25,28,29,0.06)]">
+<div class="flex justify-between items-center w-full px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container">
+<img alt="User profile photo" class="w-full h-full object-cover" data-alt="Professional headshot of a middle-aged male patient with a friendly expression in a brightly lit indoor environment" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfisM2MdbxegTq8ZlLrRgPNpndQMP68Bk1AxyZ_j8klQbkoNX7aZjiaBeuzYyfGn-tTQanRUzzRE5oQr02HFXeaRFSwVORMb0XwyK0jQFShZG9CNCGfUJSYuhE582HDEL8qyMg88rWH3_XXSkWtp24CyP1jHme8SASyqbsYlQdZNnBkw-FrvSot_ilfs4lsp9-C1Rv6_44az3XrVcWl_7seicw4nx8zhozmlxq2wfAtc4HWIwGWdVB6WChcOl3fAsOy6pVmHVcK7SQ"/>
+</div>
+<span class="text-xl font-extrabold text-[#1B7A6B] dark:text-[#26a69a] tracking-tight font-['Manrope']">BTS Integral</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative active:scale-95 duration-200 cursor-pointer p-2 rounded-full hover:bg-[#1B7A6B]/5 transition-colors">
+<span class="material-symbols-outlined text-[#1B7A6B] text-2xl">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-error rounded-full border-2 border-surface"></span>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-5xl mx-auto px-6 pt-8">
+<!-- Hero Section & Search -->
+<section class="mb-10">
+<h1 class="text-4xl font-extrabold tracking-tight text-on-surface mb-2">Mis Resultados</h1>
+<p class="text-on-surface-variant text-lg font-medium opacity-80">Repositorio clínico digital centralizado.</p>
+<div class="mt-8 grid grid-cols-1 md:grid-cols-12 gap-4">
+<div class="md:col-span-8 relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-12 pr-4 py-4 bg-surface-container-lowest rounded-DEFAULT border-none focus:ring-2 focus:ring-primary-container shadow-sm text-on-surface" placeholder="Buscar por examen o especialista..." type="text"/>
+</div>
+<div class="md:col-span-4 flex gap-2">
+<button class="flex-1 flex items-center justify-center gap-2 bg-surface-container-highest text-on-surface py-4 px-4 rounded-DEFAULT font-semibold hover:bg-opacity-80 transition-all active:scale-95">
+<span class="material-symbols-outlined text-xl">calendar_today</span>
+                        Fecha
+                    </button>
+<button class="flex-1 flex items-center justify-center gap-2 bg-surface-container-highest text-on-surface py-4 px-4 rounded-DEFAULT font-semibold hover:bg-opacity-80 transition-all active:scale-95">
+<span class="material-symbols-outlined text-xl">filter_list</span>
+                        Filtros
+                    </button>
+</div>
+</div>
+</section>
+<!-- Bento Grid Layout for Results -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Result Card 1: Main Highlight -->
+<div class="md:col-span-2 bg-surface-container-lowest p-6 rounded-DEFAULT shadow-sm flex flex-col justify-between group hover:shadow-md transition-all duration-300 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-container text-on-primary-container text-xs font-bold rounded-full">
+<span class="w-1.5 h-1.5 bg-on-primary-container rounded-full"></span>
+                        NUEVO
+                    </span>
+</div>
+<div>
+<div class="w-12 h-12 bg-primary-container/10 rounded-xl flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary-container text-2xl">biotech</span>
+</div>
+<h3 class="text-2xl font-bold text-on-surface mb-1">Perfil Lipídico Completo</h3>
+<p class="text-on-surface-variant font-medium mb-6">Laboratorio Central • Dr. Ricardo Méndez</p>
+<div class="flex items-center gap-4 text-sm text-outline mb-8">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-lg">event</span>
+<span>14 Oct, 2023</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-lg">description</span>
+<span>PDF • 2.4 MB</span>
+</div>
+</div>
+</div>
+<button class="w-full py-4 bg-primary text-on-primary font-bold rounded-DEFAULT flex items-center justify-center gap-2 transition-all hover:bg-primary-container active:scale-[0.98]">
+<span class="material-symbols-outlined">download</span>
+                    Descargar PDF
+                </button>
+</div>
+<!-- Pending Item Card -->
+<div class="md:col-span-1 bg-tertiary-container/10 p-6 rounded-DEFAULT flex flex-col items-center justify-center text-center">
+<div class="w-16 h-16 bg-tertiary-container text-on-tertiary-container rounded-full flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-3xl">hourglass_empty</span>
+</div>
+<h4 class="text-on-tertiary-container font-bold text-lg mb-2">Examen en Proceso</h4>
+<p class="text-on-tertiary-container/80 text-sm mb-4">Hemograma de Control<br/>Solicitado: 18 Oct, 2023</p>
+<span class="text-xs font-bold uppercase tracking-widest text-tertiary px-3 py-1 bg-tertiary-fixed rounded-full">Pendiente</span>
+</div>
+<!-- Regular Result Card 2 -->
+<div class="bg-surface-container-lowest p-6 rounded-DEFAULT shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300 border border-transparent hover:border-primary-container/20">
+<div>
+<div class="w-10 h-10 bg-secondary-container/10 rounded-lg flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-secondary text-xl">radiology</span>
+</div>
+<h3 class="text-lg font-bold text-on-surface leading-tight mb-1">Radiografía de Tórax PA</h3>
+<p class="text-sm text-on-surface-variant mb-4">Imagenología San Lucas</p>
+<div class="text-xs text-outline font-medium">02 Oct, 2023</div>
+</div>
+<button class="mt-6 w-full py-3 bg-surface-container-highest text-on-surface font-semibold rounded-DEFAULT flex items-center justify-center gap-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-xl">download</span>
+                    Descargar PDF
+                </button>
+</div>
+<!-- Regular Result Card 3 -->
+<div class="bg-surface-container-lowest p-6 rounded-DEFAULT shadow-sm flex flex-col justify-between hover:shadow-md transition-all duration-300 border border-transparent hover:border-primary-container/20">
+<div>
+<div class="w-10 h-10 bg-secondary-container/10 rounded-lg flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-secondary text-xl">ecg</span>
+</div>
+<h3 class="text-lg font-bold text-on-surface leading-tight mb-1">Electrocardiograma</h3>
+<p class="text-sm text-on-surface-variant mb-4">Clínica General Integral</p>
+<div class="text-xs text-outline font-medium">25 Sep, 2023</div>
+</div>
+<button class="mt-6 w-full py-3 bg-surface-container-highest text-on-surface font-semibold rounded-DEFAULT flex items-center justify-center gap-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-xl">download</span>
+                    Descargar PDF
+                </button>
+</div>
+<!-- Empty State / Placeholder Illustration -->
+<div class="bg-surface-container-low p-6 rounded-DEFAULT flex flex-col items-center justify-center text-center opacity-60">
+<div class="w-20 h-20 mb-4 opacity-20">
+<svg class="w-full h-full stroke-on-surface" fill="none" stroke-width="1.5" viewbox="0 0 24 24">
+<path d="M9 17h6M9 13h6M9 9h2M13 3H8.2c-1.12 0-1.68 0-2.108.218a2 2 0 00-.874.874C5 4.52 5 5.08 5 6.2v11.6c0 1.12 0 1.68.218 2.108a2 2 0 00.874.874c.428.218.988.218 2.108.218h7.6c1.12 0 1.68 0 2.108-.218a2 2 0 00.874-.874c.218-.428.218-.988.218-2.108V7.8m-6-4.8l6 6m-6-6v4.8c0 1.12 0 1.68.218 2.108a2 2 0 00.874.874c.428.218.988.218 2.108.218h4.8" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<p class="text-sm font-medium text-on-surface-variant">Sin más resultados recientes</p>
+</div>
+</div>
+<!-- Secondary Info Section -->
+<section class="mt-12 bg-surface-container-highest/30 p-8 rounded-[24px] flex flex-col md:flex-row items-center gap-8">
+<div class="w-full md:w-1/3 h-48 rounded-xl overflow-hidden shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Modern medical laboratory interior with high-tech equipment and clean clinical white aesthetic with soft teal accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVjpp3h70XXqoNuvo7qHgD0v3yGNrlw7v81XDELb5IIO4HJkOjcsO3yVzyBv3dAztpVdg2RHw-QkNcLyLBM2J2UWP1JT8covy4TIlpClQC8Ib74uYfzQO7f94_gRG5JICwhG2_7QB8lVo2fanwu9zCy5qRvT2m24lQa09kn241wwvj5jJozxQvRbxImF2ipvkaCyvnlIzpCfg1GIqs0s7SvYmG97tf1yPXPGEqpKothOShX9ck-BYF6v7gsidawMQUrj47ebLAm3I9"/>
+</div>
+<div class="flex-1">
+<h4 class="text-xl font-bold text-on-surface mb-3 tracking-tight">Privacidad y Seguridad</h4>
+<p class="text-on-surface-variant leading-relaxed text-sm">Sus resultados están protegidos bajo protocolos de encriptación grado médico. Solo usted y los especialistas autorizados tienen acceso a este repositorio digital. Los documentos PDF incluyen firma electrónica validada.</p>
+<div class="mt-6 flex gap-4">
+<span class="flex items-center gap-1.5 text-xs font-bold text-primary">
+<span class="material-symbols-outlined text-base">verified_user</span>
+                     ENCRIPTADO
+                    </span>
+<span class="flex items-center gap-1.5 text-xs font-bold text-primary">
+<span class="material-symbols-outlined text-base">security</span>
+                     ACCESO BIO
+                    </span>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-[#f8fafa]/90 dark:bg-[#191c1d]/90 backdrop-blur-lg border-t border-slate-100/10 shadow-[0px_-4px_24px_rgba(25,28,29,0.04)] rounded-t-[24px]">
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-5 py-2 hover:text-[#1B7A6B] transition-all duration-300 ease-out" href="#">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-['Inter'] text-[11px] font-semibold uppercase tracking-wider">Inicio</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-5 py-2 hover:text-[#1B7A6B] transition-all duration-300 ease-out" href="#">
+<span class="material-symbols-outlined mb-1">receipt_long</span>
+<span class="font-['Inter'] text-[11px] font-semibold uppercase tracking-wider">Pedidos</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#1B7A6B]/10 dark:bg-[#26a69a]/15 text-[#1B7A6B] dark:text-[#26a69a] rounded-[12px] px-5 py-2 transition-all duration-300 ease-out" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">biotech</span>
+<span class="font-['Inter'] text-[11px] font-semibold uppercase tracking-wider">Resultados</span>
+</a>
+</nav>
+</body></html>

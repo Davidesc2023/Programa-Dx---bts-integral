@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#9df2e0",
+                        "surface": "#f8fafa",
+                        "on-primary-fixed": "#00201b",
+                        "on-secondary-fixed": "#001d36",
+                        "secondary-fixed": "#d1e4ff",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#f8fafa",
+                        "tertiary": "#745b00",
+                        "on-surface": "#191c1d",
+                        "surface-container-low": "#f2f4f4",
+                        "tertiary-fixed": "#ffe08b",
+                        "surface-tint": "#006b5d",
+                        "secondary-container": "#6ab2fe",
+                        "outline": "#6e7976",
+                        "on-tertiary-fixed": "#241a00",
+                        "secondary-fixed-dim": "#9ecaff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#eceeee",
+                        "primary-container": "#1b7a6b",
+                        "outline-variant": "#bec9c5",
+                        "primary-fixed-dim": "#81d6c4",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-container": "#4f3d00",
+                        "inverse-on-surface": "#eff1f1",
+                        "secondary": "#0061a3",
+                        "surface-variant": "#e1e3e3",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed-dim": "#f0c110",
+                        "on-primary-fixed-variant": "#005045",
+                        "tertiary-container": "#d0a600",
+                        "on-background": "#191c1d",
+                        "inverse-primary": "#81d6c4",
+                        "on-secondary-fixed-variant": "#00497c",
+                        "on-tertiary-fixed-variant": "#584400",
+                        "on-primary-container": "#b0ffed",
+                        "on-primary": "#ffffff",
+                        "surface-container-highest": "#e1e3e3",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "background": "#f8fafa",
+                        "on-secondary-container": "#004474",
+                        "primary": "#006053",
+                        "inverse-surface": "#2e3131",
+                        "surface-container-high": "#e6e8e9",
+                        "surface-dim": "#d8dada",
+                        "on-surface-variant": "#3e4946"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.75rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md shadow-[0_8px_24px_rgba(25,28,29,0.04)]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-primary-container flex items-center justify-center">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="professional portrait of a female doctor in a clinical setting with soft natural lighting and warm tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJsLRYoGg0w-g-l3evKlN_QvEvEFyU_Qgmpn1PJsXwLmmFRhuWDgJT35Ze9cOs6bcLjSdp5xnEHMnws7Os6h-US6WajHFmiI0Y1sU3RLeelRXxHI-B3Xg9XFWPjgUGDCDQh40wIvKIiZMA3OVP_JZ17p4sOnLDTnhySJ7Y67pPkZBS3KuRaq78oYGot9YF0iKm_XMfzX0sV_SHAa8CuOQRaSd_gTWZ75cRLakebTFb-Z_eQPDPkeREHa2K1zOtFAPtfV4GgFSBCpmy"/>
+</div>
+<span class="text-xl font-extrabold text-teal-800 dark:text-teal-400 tracking-tighter">LabNexus</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 dark:text-slate-400 hover:bg-teal-50/50 transition-all active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</header>
+<main class="pt-24 px-6 max-w-5xl mx-auto space-y-8">
+<!-- Welcome Header -->
+<section class="space-y-1">
+<h1 class="text-4xl font-extrabold tracking-tight text-on-surface">Hola, Dr. Vance</h1>
+<p class="text-on-surface-variant font-medium">Bienvenido a tu panel clínico hoy.</p>
+</section>
+<!-- Bento Grid: Quick Actions & Main Stats -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Quick Action: Crear Orden -->
+<div class="md:col-span-2 relative overflow-hidden bg-primary p-8 rounded-[2rem] shadow-lg group cursor-pointer transition-all duration-300 active:scale-[0.98]">
+<div class="relative z-10 flex flex-col h-full justify-between gap-8">
+<div class="space-y-2">
+<h2 class="text-3xl font-bold text-white leading-tight">Crear nueva<br/>orden médica</h2>
+<p class="text-primary-fixed/80 max-w-xs">Inicia un nuevo proceso diagnóstico de manera inmediata.</p>
+</div>
+<div class="flex items-center gap-4">
+<div class="bg-white text-primary px-6 py-3 rounded-full font-bold flex items-center gap-2">
+<span>Empezar ahora</span>
+<span class="material-symbols-outlined">add_circle</span>
+</div>
+</div>
+</div>
+<div class="absolute -right-12 -bottom-12 w-64 h-64 bg-primary-container rounded-full blur-3xl opacity-50 group-hover:scale-110 transition-transform duration-500"></div>
+<div class="absolute right-8 top-8 text-white/10 scale-[5]">
+<span class="material-symbols-outlined">biotech</span>
+</div>
+</div>
+<!-- Quick Action: Ver Pacientes -->
+<div class="bg-surface-container-lowest p-8 rounded-[2rem] shadow-[0_8px_24px_rgba(25,28,29,0.04)] border border-outline-variant/10 flex flex-col justify-between hover:shadow-xl transition-all cursor-pointer group active:scale-[0.98]">
+<div class="w-14 h-14 rounded-2xl bg-secondary-container/20 text-secondary flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl">groups</span>
+</div>
+<div>
+<h3 class="text-xl font-bold text-on-surface mb-2">Ver Pacientes</h3>
+<p class="text-on-surface-variant text-sm leading-relaxed">Gestiona tu base de datos de pacientes registrados.</p>
+</div>
+<div class="mt-8 flex items-center text-secondary font-bold text-sm gap-1 group-hover:gap-2 transition-all">
+                    Explorar <span class="material-symbols-outlined">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Order Statistics -->
+<section class="space-y-4">
+<div class="flex justify-between items-end">
+<h2 class="text-2xl font-bold tracking-tight">Estado de Órdenes</h2>
+<span class="text-sm font-semibold text-primary">Actualizado hace 2m</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- Pendiente -->
+<div class="bg-tertiary-container/10 p-6 rounded-3xl border border-tertiary-container/5 space-y-4">
+<div class="flex justify-between items-start">
+<span class="text-tertiary font-bold uppercase tracking-widest text-[10px]">Pendiente</span>
+<span class="material-symbols-outlined text-tertiary">pending_actions</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-extrabold text-on-tertiary-container">12</span>
+<span class="text-on-tertiary-container/60 text-xs font-medium">+2 nuevas</span>
+</div>
+</div>
+<!-- En proceso -->
+<div class="bg-secondary-container/10 p-6 rounded-3xl border border-secondary-container/5 space-y-4">
+<div class="flex justify-between items-start">
+<span class="text-secondary font-bold uppercase tracking-widest text-[10px]">En proceso</span>
+<span class="material-symbols-outlined text-secondary">hourglass_top</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-extrabold text-on-secondary-container">08</span>
+<span class="text-on-secondary-container/60 text-xs font-medium">En laboratorio</span>
+</div>
+</div>
+<!-- Completado -->
+<div class="bg-primary-container/10 p-6 rounded-3xl border border-primary-container/5 space-y-4">
+<div class="flex justify-between items-start">
+<span class="text-primary font-bold uppercase tracking-widest text-[10px]">Completado</span>
+<span class="material-symbols-outlined text-primary">check_circle</span>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-4xl font-extrabold text-primary-container">45</span>
+<span class="text-primary-container/60 text-xs font-medium">Esta semana</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Activity -->
+<section class="space-y-6">
+<h2 class="text-2xl font-bold tracking-tight">Actividad Reciente</h2>
+<div class="space-y-4">
+<!-- Activity Item 1 -->
+<div class="bg-surface-container-lowest p-6 rounded-3xl flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Mateo Rodriguez</p>
+<p class="text-xs text-on-surface-variant">Perfil Lipídico Completo • ID: #9822</p>
+</div>
+</div>
+<!-- Timeline Visualizer -->
+<div class="flex items-center flex-1 max-w-xs px-4">
+<div class="h-1 flex-1 bg-primary rounded-full"></div>
+<div class="w-3 h-3 rounded-full bg-primary ring-4 ring-primary-container/20"></div>
+<div class="h-1 flex-1 bg-surface-variant rounded-full"></div>
+<div class="w-3 h-3 rounded-full bg-surface-variant"></div>
+<div class="h-1 flex-1 bg-surface-variant rounded-full"></div>
+</div>
+<div class="flex items-center justify-between md:justify-end gap-6">
+<div class="text-right">
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-secondary-container/20 text-on-secondary-container">En Proceso</span>
+</div>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-all">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Activity Item 2 -->
+<div class="bg-surface-container-lowest p-6 rounded-3xl flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Lucía Fernández</p>
+<p class="text-xs text-on-surface-variant">Hemograma Tipo B • ID: #9821</p>
+</div>
+</div>
+<div class="flex items-center flex-1 max-w-xs px-4">
+<div class="h-1 flex-1 bg-primary rounded-full"></div>
+<div class="w-3 h-3 rounded-full bg-primary ring-4 ring-primary-container/20"></div>
+<div class="h-1 flex-1 bg-primary rounded-full"></div>
+<div class="w-3 h-3 rounded-full bg-primary ring-4 ring-primary-container/20"></div>
+<div class="h-1 flex-1 bg-primary rounded-full"></div>
+</div>
+<div class="flex items-center justify-between md:justify-end gap-6">
+<div class="text-right">
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-primary-container/20 text-primary-container">Completado</span>
+</div>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-all">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Activity Item 3 -->
+<div class="bg-surface-container-lowest p-6 rounded-3xl flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div>
+<p class="font-bold text-on-surface">Santiago Gómez</p>
+<p class="text-xs text-on-surface-variant">Prueba de Glucosa • ID: #9820</p>
+</div>
+</div>
+<div class="flex items-center flex-1 max-w-xs px-4">
+<div class="h-1 flex-1 bg-tertiary rounded-full"></div>
+<div class="w-3 h-3 rounded-full bg-tertiary ring-4 ring-tertiary-container/20"></div>
+<div class="h-1 flex-1 bg-surface-variant rounded-full"></div>
+<div class="w-3 h-3 rounded-full bg-surface-variant"></div>
+<div class="h-1 flex-1 bg-surface-variant rounded-full"></div>
+</div>
+<div class="flex items-center justify-between md:justify-end gap-6">
+<div class="text-right">
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-tertiary-container/20 text-on-tertiary-container">Pendiente</span>
+</div>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-all">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe pt-2 bg-white/90 dark:bg-slate-950/90 backdrop-blur-lg shadow-[0_-4px_20px_rgba(0,0,0,0.03)] rounded-t-2xl">
+<a class="flex flex-col items-center justify-center bg-teal-50 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300 rounded-xl px-4 py-1 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-4 py-1 hover:text-teal-600 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">biotech</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider">Orders</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-4 py-1 hover:text-teal-600 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider">Patients</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-4 py-1 hover:text-teal-600 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-['Inter'] text-[10px] font-medium uppercase tracking-wider">Results</span>
+</a>
+</nav>
+</body></html>
