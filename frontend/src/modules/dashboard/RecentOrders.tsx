@@ -190,35 +190,6 @@ export function RecentOrders({ orders, isLoading }: RecentOrdersProps) {
 }
 
 
-interface RecentOrdersProps {
-  orders: Order[];
-  isLoading: boolean;
-}
-
-function formatDate(iso: string): string {
-  return new Intl.DateTimeFormat('es-CO', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).format(new Date(iso));
-}
-
-export function RecentOrders({ orders, isLoading }: RecentOrdersProps) {
-  return (
-    <Card padding="none">
-      <CardHeader
-        title="Órdenes recientes"
-        description="Últimas 10 órdenes ingresadas al sistema"
-        action={
-          <Link
-            href="/orders"
-            className="flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700 font-medium"
-          >
-            Ver todas <ArrowRight size={14} />
-          </Link>
-        }
-      />
-
       {isLoading ? (
         <div className="p-4">
           <TableSkeleton rows={5} cols={4} />
