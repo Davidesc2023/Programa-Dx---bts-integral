@@ -54,7 +54,7 @@ export function RegisterPatientForm({ onSuccess, onBack }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center px-4">
+    <div className="min-h-screen bg-surface flex flex-col justify-center items-center px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex justify-center mb-8">
@@ -69,9 +69,9 @@ export function RegisterPatientForm({ onSuccess, onBack }: Props) {
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-xl shadow-md border border-gray-100 p-8">
-          <h1 className="text-2xl font-semibold text-gray-800 mb-1">Crear cuenta de paciente</h1>
-          <p className="text-sm text-gray-500 mb-6">
+        <div className="bg-white rounded-xl shadow-md border border-surface-container-high p-8">
+          <h1 className="text-2xl font-semibold text-on-surface mb-1">Crear cuenta de paciente</h1>
+          <p className="text-sm text-outline mb-6">
             Regístrate con tus datos para acceder a tu portal de resultados.
           </p>
 
@@ -84,7 +84,7 @@ export function RegisterPatientForm({ onSuccess, onBack }: Props) {
               {/* Nombre */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="firstName" className="block text-sm font-medium text-on-surface-variant mb-1">
                     Nombre
                   </label>
                   <input
@@ -94,7 +94,7 @@ export function RegisterPatientForm({ onSuccess, onBack }: Props) {
                     className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors ${
                       errors.firstName
                         ? 'border-red-400 focus:ring-red-300'
-                        : 'border-gray-300 focus:ring-primary-300 focus:border-primary-500'
+                        : 'border-outline-variant focus:ring-primary-300 focus:border-primary-500'
                     }`}
                     {...register('firstName')}
                   />
@@ -103,7 +103,7 @@ export function RegisterPatientForm({ onSuccess, onBack }: Props) {
                   )}
                 </div>
                 <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="lastName" className="block text-sm font-medium text-on-surface-variant mb-1">
                     Apellido
                   </label>
                   <input
@@ -113,7 +113,7 @@ export function RegisterPatientForm({ onSuccess, onBack }: Props) {
                     className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors ${
                       errors.lastName
                         ? 'border-red-400 focus:ring-red-300'
-                        : 'border-gray-300 focus:ring-primary-300 focus:border-primary-500'
+                        : 'border-outline-variant focus:ring-primary-300 focus:border-primary-500'
                     }`}
                     {...register('lastName')}
                   />
@@ -126,12 +126,12 @@ export function RegisterPatientForm({ onSuccess, onBack }: Props) {
               {/* Documento */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="documentType" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="documentType" className="block text-sm font-medium text-on-surface-variant mb-1">
                     Tipo doc.
                   </label>
                   <select
                     id="documentType"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-500"
+                    className="w-full px-3 py-2 border border-outline-variant rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-500"
                     {...register('documentType')}
                   >
                     {Object.values(DocumentType).map((dt) => (
@@ -140,7 +140,7 @@ export function RegisterPatientForm({ onSuccess, onBack }: Props) {
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="documentNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="documentNumber" className="block text-sm font-medium text-on-surface-variant mb-1">
                     Número
                   </label>
                   <input
@@ -150,7 +150,7 @@ export function RegisterPatientForm({ onSuccess, onBack }: Props) {
                     className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors ${
                       errors.documentNumber
                         ? 'border-red-400 focus:ring-red-300'
-                        : 'border-gray-300 focus:ring-primary-300 focus:border-primary-500'
+                        : 'border-outline-variant focus:ring-primary-300 focus:border-primary-500'
                     }`}
                     {...register('documentNumber')}
                   />
@@ -162,7 +162,7 @@ export function RegisterPatientForm({ onSuccess, onBack }: Props) {
 
               {/* Email */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-on-surface-variant mb-1">
                   Correo electrónico
                 </label>
                 <input
@@ -173,7 +173,7 @@ export function RegisterPatientForm({ onSuccess, onBack }: Props) {
                   className={`w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors ${
                     errors.email
                       ? 'border-red-400 focus:ring-red-300'
-                      : 'border-gray-300 focus:ring-primary-300 focus:border-primary-500'
+                      : 'border-outline-variant focus:ring-primary-300 focus:border-primary-500'
                   }`}
                   {...register('email')}
                 />
@@ -184,7 +184,7 @@ export function RegisterPatientForm({ onSuccess, onBack }: Props) {
 
               {/* Password */}
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="password" className="block text-sm font-medium text-on-surface-variant mb-1">
                   Contraseña
                 </label>
                 <div className="relative">
@@ -196,7 +196,7 @@ export function RegisterPatientForm({ onSuccess, onBack }: Props) {
                     className={`w-full px-3 py-2 pr-10 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors ${
                       errors.password
                         ? 'border-red-400 focus:ring-red-300'
-                        : 'border-gray-300 focus:ring-primary-300 focus:border-primary-500'
+                        : 'border-outline-variant focus:ring-primary-300 focus:border-primary-500'
                     }`}
                     {...register('password')}
                   />
@@ -204,7 +204,7 @@ export function RegisterPatientForm({ onSuccess, onBack }: Props) {
                     type="button"
                     aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                     onClick={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface-variant"
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -234,7 +234,7 @@ export function RegisterPatientForm({ onSuccess, onBack }: Props) {
           )}
 
           {/* Back to login */}
-          <p className="mt-4 text-center text-sm text-gray-500">
+          <p className="mt-4 text-center text-sm text-outline">
             ¿Ya tienes cuenta?{' '}
             <button
               type="button"
@@ -246,7 +246,7 @@ export function RegisterPatientForm({ onSuccess, onBack }: Props) {
           </p>
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-6">APP-DX — BTS Integral © 2026</p>
+        <p className="text-center text-xs text-outline mt-6">APP-DX — BTS Integral © 2026</p>
       </div>
     </div>
   );

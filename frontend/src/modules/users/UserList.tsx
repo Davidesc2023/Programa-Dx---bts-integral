@@ -25,7 +25,7 @@ const ROLE_BADGE: Record<UserRole, string> = {
 function RoleBadge({ role }: { role: UserRole }) {
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${ROLE_BADGE[role] ?? 'bg-gray-100 text-gray-600'}`}
+      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${ROLE_BADGE[role] ?? 'bg-surface-container text-on-surface-variant'}`}
     >
       {ROLE_LABELS[role] ?? role}
     </span>
@@ -90,46 +90,46 @@ function CreateUserForm({ onClose }: CreateFormProps) {
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+        <label className="block text-sm font-medium text-on-surface-variant mb-1">Correo electrónico</label>
         <input
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           placeholder="usuario@ejemplo.com"
         />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+          <label className="block text-sm font-medium text-on-surface-variant mb-1">Contraseña</label>
           <input
             type="password"
             required
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder="Mínimo 8 caracteres"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+          <label className="block text-sm font-medium text-on-surface-variant mb-1">Teléfono</label>
           <input
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder="Ej. 3001234567"
           />
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
+        <label className="block text-sm font-medium text-on-surface-variant mb-1">Rol</label>
         <select
           value={role}
           onChange={(e) => setRole(e.target.value as UserRole)}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           {Object.values(UserRole).map((r) => (
             <option key={r} value={r}>
@@ -141,22 +141,22 @@ function CreateUserForm({ onClose }: CreateFormProps) {
       {isMedico && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t pt-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Especialidad</label>
+            <label className="block text-sm font-medium text-on-surface-variant mb-1">Especialidad</label>
             <input
               type="text"
               value={specialty}
               onChange={(e) => setSpecialty(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Ej. Neurología"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Registro médico</label>
+            <label className="block text-sm font-medium text-on-surface-variant mb-1">Registro médico</label>
             <input
               type="text"
               value={medicalLicense}
               onChange={(e) => setMedicalLicense(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Ej. RM-12345"
             />
           </div>
@@ -215,48 +215,48 @@ function EditUserForm({ user, onClose }: EditFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
-      <p className="text-xs text-gray-500">
-        Editando: <span className="font-medium text-gray-700">{user.email}</span>
+        <p className="text-xs text-outline">
+        Editando: <span className="font-medium text-on-surface-variant">{user.email}</span>
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+          <label className="block text-sm font-medium text-on-surface-variant mb-1">Nombre</label>
           <input
             type="text"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder="Ej. Carlos"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
+          <label className="block text-sm font-medium text-on-surface-variant mb-1">Apellido</label>
           <input
             type="text"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder="Ej. Martínez"
           />
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+          <label className="block text-sm font-medium text-on-surface-variant mb-1">Teléfono</label>
           <input
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder="Ej. 3001234567"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Rol</label>
+          <label className="block text-sm font-medium text-on-surface-variant mb-1">Rol</label>
           <select
             value={role}
             onChange={(e) => setRole(e.target.value as UserRole)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
             {Object.values(UserRole).map((r) => (
               <option key={r} value={r}>
@@ -269,22 +269,22 @@ function EditUserForm({ user, onClose }: EditFormProps) {
       {isMedico && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t pt-3">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Especialidad</label>
+            <label className="block text-sm font-medium text-on-surface-variant mb-1">Especialidad</label>
             <input
               type="text"
               value={specialty}
               onChange={(e) => setSpecialty(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Ej. Neurología"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Registro médico</label>
+            <label className="block text-sm font-medium text-on-surface-variant mb-1">Registro médico</label>
             <input
               type="text"
               value={medicalLicense}
               onChange={(e) => setMedicalLicense(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Ej. RM-12345"
             />
           </div>
@@ -292,30 +292,30 @@ function EditUserForm({ user, onClose }: EditFormProps) {
       )}
       {isPaciente && (
         <div className="border-t pt-3">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-on-surface-variant mb-1">
             ID del paciente vinculado{' '}
-            <span className="text-xs font-normal text-gray-400">(UUID — dejar vacío para desvincular)</span>
+            <span className="text-xs font-normal text-outline">(UUID — dejar vacío para desvincular)</span>
           </label>
           <input
             type="text"
             value={patientId}
             onChange={(e) => setPatientId(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
           />
         </div>
       )}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-on-surface-variant mb-1">
           Nueva contraseña{' '}
-          <span className="text-xs font-normal text-gray-400">(dejar vacío para no cambiar)</span>
+          <span className="text-xs font-normal text-outline">(dejar vacío para no cambiar)</span>
         </label>
         <input
           type="password"
           minLength={8}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="w-full rounded-lg border border-outline-variant px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
           placeholder="Mínimo 8 caracteres"
         />
       </div>
@@ -372,48 +372,48 @@ export function UserList() {
               Error al cargar los usuarios.
             </p>
           ) : users.length === 0 ? (
-            <p className="text-sm text-gray-400 px-6 py-10 text-center">
+            <p className="text-sm text-outline px-6 py-10 text-center">
               No hay usuarios registrados.
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50">
+                  <tr className="border-b border-surface-container-high bg-surface-container-low">
                     {['Nombre', 'Correo electrónico', 'Rol', 'Creado', 'Acciones'].map((h) => (
                       <th
                         key={h}
-                        className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide"
+                        className="px-5 py-3 text-left text-xs font-semibold text-outline uppercase tracking-wide"
                       >
                         {h}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-surface-container-low">
                   {users.map((u) => (
-                    <tr key={u.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-5 py-3 text-gray-900">
+                    <tr key={u.id} className="hover:bg-surface-container-low transition-colors">
+                      <td className="px-5 py-3 text-on-surface">
                         {u.firstName || u.lastName
                           ? `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim()
-                          : <span className="text-gray-400 text-xs">—</span>}
+                          : <span className="text-outline text-xs">—</span>}
                       </td>
-                      <td className="px-5 py-3 font-medium text-gray-900">{u.email}</td>
+                      <td className="px-5 py-3 font-medium text-on-surface">{u.email}</td>
                       <td className="px-5 py-3">
                         <RoleBadge role={u.role} />
                       </td>
-                      <td className="px-5 py-3 text-gray-500 text-xs">{formatDate(u.createdAt)}</td>
+                      <td className="px-5 py-3 text-outline text-xs">{formatDate(u.createdAt)}</td>
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-1">
                           <button
-                            className="p-1.5 rounded hover:bg-primary-50 text-gray-400 hover:text-primary-600 transition-colors"
+                            className="p-1.5 rounded hover:bg-primary-50 text-outline hover:text-primary-600 transition-colors"
                             title="Editar"
                             onClick={() => setEditUser(u)}
                           >
                             <Pencil size={14} />
                           </button>
                           <button
-                            className="p-1.5 rounded hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
+                            className="p-1.5 rounded hover:bg-red-50 text-outline hover:text-red-600 transition-colors"
                             title="Eliminar"
                             onClick={() => setDeleteId(u.id)}
                           >
@@ -430,25 +430,25 @@ export function UserList() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100 bg-gray-50">
-              <span className="text-xs text-gray-500">
+            <div className="flex items-center justify-between px-5 py-3 border-t border-surface-container-high bg-surface-container-low">
+              <span className="text-xs text-outline">
                 {total} usuario{total !== 1 ? 's' : ''}
               </span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="p-1 rounded hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="p-1 rounded hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft size={16} />
                 </button>
-                <span className="text-xs text-gray-600">
+                <span className="text-xs text-on-surface-variant">
                   {page} / {totalPages}
                 </span>
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="p-1 rounded hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="p-1 rounded hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight size={16} />
                 </button>

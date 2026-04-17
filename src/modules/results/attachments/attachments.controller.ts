@@ -54,7 +54,7 @@ export class AttachmentsController {
     @UploadedFile() file: MulterFile,
     @CurrentUser() user: ICurrentUser,
   ) {
-    const attachment = await this.attachmentsService.upload(resultId, file, user.userId);
+    const attachment = await this.attachmentsService.upload(resultId, file, user.userId, user.role);
     return ResponseDto.of(attachment, 'Archivo adjuntado correctamente', HttpStatus.CREATED);
   }
 

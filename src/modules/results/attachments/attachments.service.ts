@@ -49,6 +49,7 @@ export class AttachmentsService {
     resultId: string,
     file: UploadedFile,
     createdBy: string,
+    requestingUserRole: string,
   ) {
     if (!this.storage.enabled) {
       throw new ServiceUnavailableException(
@@ -66,12 +67,23 @@ export class AttachmentsService {
       throw new BadRequestException('El archivo supera el límite de 10 MB.');
     }
 
+    // MEDICO solo puede adjuntar archivos a resultados de sus propias órdenes
     const result = await this.prisma.result.findFirst({
       where: { id: resultId, deletedAt: null },
-      select: { id: true },
+      select: {
+        id: true,
+        order: { select: { doctorId: true } },
+      },
     });
 
     if (!result) {
+      throw new NotFoundException('Resultado no encontrado');
+    }
+
+    if (
+      requestingUserRole === 'MEDICO' &&
+      result.order?.doctorId !== createdBy
+    ) {
       throw new NotFoundException('Resultado no encontrado');
     }
 

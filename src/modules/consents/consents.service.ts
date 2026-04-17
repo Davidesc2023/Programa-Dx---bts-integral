@@ -11,7 +11,7 @@ import {
   buildConsentHtml,
   PdfService,
 } from '../pdf/pdf.service';
-import { StorageService } from '../storage/storage.service';
+import { StorageService } from '../../common/storage/storage.service';
 import { CreateConsentDto } from './dto/create-consent.dto';
 import { RespondConsentDto } from './dto/respond-consent.dto';
 import { SignConsentDto } from './dto/sign-consent.dto';

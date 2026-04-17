@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { Appointment } from '@/types/api.types';
+import type { Appointment, ApiResponse } from '@/types/api.types';
 import type { PaginatedApiResponse } from '@/types/api.types';
 import type { AppointmentStatus } from '@/types/enums';
 
@@ -32,12 +32,12 @@ export async function getAppointments(
 }
 
 export async function getAppointmentById(id: string): Promise<Appointment> {
-  const { data } = await api.get<{ data: Appointment }>(`/appointments/${id}`);
+  const { data } = await api.get<ApiResponse<Appointment>>(`/appointments/${id}`);
   return data.data;
 }
 
 export async function createAppointment(payload: CreateAppointmentPayload): Promise<Appointment> {
-  const { data } = await api.post<{ data: Appointment }>('/appointments', payload);
+  const { data } = await api.post<ApiResponse<Appointment>>('/appointments', payload);
   return data.data;
 }
 
@@ -45,7 +45,7 @@ export async function updateAppointment(
   id: string,
   payload: UpdateAppointmentPayload,
 ): Promise<Appointment> {
-  const { data } = await api.patch<{ data: Appointment }>(`/appointments/${id}`, payload);
+  const { data } = await api.patch<ApiResponse<Appointment>>(`/appointments/${id}`, payload);
   return data.data;
 }
 
@@ -53,7 +53,7 @@ export async function updateAppointmentStatus(
   id: string,
   status: AppointmentStatus,
 ): Promise<Appointment> {
-  const { data } = await api.patch<{ data: Appointment }>(`/appointments/${id}/status`, { status });
+  const { data } = await api.patch<ApiResponse<Appointment>>(`/appointments/${id}/status`, { status });
   return data.data;
 }
 

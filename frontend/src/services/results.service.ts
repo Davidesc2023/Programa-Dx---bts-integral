@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { Result, ResultAttachment } from '@/types/api.types';
+import type { Result, ResultAttachment, ApiResponse } from '@/types/api.types';
 import type { PaginatedApiResponse} from '@/types/api.types';
 
 export interface GetResultsParams {
@@ -31,17 +31,17 @@ export async function getResults(params: GetResultsParams = {}): Promise<Paginat
 }
 
 export async function getResultById(id: string): Promise<Result> {
-  const { data } = await api.get<{ data: Result }>(`/results/${id}`);
+  const { data } = await api.get<ApiResponse<Result>>(`/results/${id}`);
   return data.data;
 }
 
 export async function createResult(payload: CreateResultPayload): Promise<Result> {
-  const { data } = await api.post<{ data: Result }>('/results', payload);
+  const { data } = await api.post<ApiResponse<Result>>('/results', payload);
   return data.data;
 }
 
 export async function updateResult(id: string, payload: UpdateResultPayload): Promise<Result> {
-  const { data } = await api.patch<{ data: Result }>(`/results/${id}`, payload);
+  const { data } = await api.patch<ApiResponse<Result>>(`/results/${id}`, payload);
   return data.data;
 }
 
@@ -52,14 +52,14 @@ export async function deleteResult(id: string): Promise<void> {
 // --- Attachments ---
 
 export async function getAttachments(resultId: string): Promise<ResultAttachment[]> {
-  const { data } = await api.get<{ data: ResultAttachment[] }>(`/results/${resultId}/attachments`);
+  const { data } = await api.get<ApiResponse<ResultAttachment[]>>(`/results/${resultId}/attachments`);
   return data.data;
 }
 
 export async function uploadAttachment(resultId: string, file: File): Promise<ResultAttachment> {
   const form = new FormData();
   form.append('file', file);
-  const { data } = await api.post<{ data: ResultAttachment }>(
+  const { data } = await api.post<ApiResponse<ResultAttachment>>(
     `/results/${resultId}/attachments`,
     form,
     { headers: { 'Content-Type': 'multipart/form-data' } },

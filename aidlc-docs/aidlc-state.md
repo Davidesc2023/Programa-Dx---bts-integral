@@ -261,4 +261,24 @@
 - [x] UDT-V16-01: ConsentPanel 2-step + consents/page 2 columnas — Complete (2026-04-15)
 - [x] UDT-V16-02: StorageService (src/common/storage/storage.service.ts) — Complete (2026-04-15)
 - [x] UDT-V16-03: AttachmentsService/Controller/Module → R2; spec actualizado — Complete (2026-04-15)
-- [ ] Build and Test
+- [x] Build and Test — Complete (2026-04-15) — 0 errores TypeScript; commit c28d46d pushed to origin/main
+
+### SECURITY AUDIT + MEDIUM FIXES — Increment v17: Zero-Issue State
+
+- [x] Audit Round 1 — CRITICAL/HIGH — Complete (commit c28d46d):
+  - Attachment download ownership check (CRITICAL)
+  - Patient-portal userId guard (CRITICAL)
+  - Orders doctorId validation (HIGH)
+  - Protected layout PACIENTE redirect (HIGH)
+  - ConsentPanel iframe sandbox (HIGH)
+  - Prisma schema lint fix (HIGH)
+
+- [x] Audit Round 2 — MEDIUM — Complete (this session):
+  - Storage service duplication eliminated — `src/modules/storage/` deleted; single canonical `src/common/storage/storage.service.ts` with `uploadBuffer()` + dual env var support
+  - MEDICO upload ownership check — AttachmentsService validates `result.order.doctorId === createdBy` when role=MEDICO
+  - MD3 color tokens migration — all `gray-*` Tailwind classes replaced with Clinical Sanctuary tokens in: `RegisterPatientForm.tsx`, `UserList.tsx`, `ResultList.tsx`, `portal/results/page.tsx`
+  - Response type consistency — `{ data: T }` → `ApiResponse<T>` in `appointments.service.ts` and `results.service.ts`
+  - No TypeScript errors across all modified files
+
+- **Status: ZERO OPEN ISSUES (CRITICAL / MEDIUM / LOW)**
+- **HEAD**: pending commit (all changes staged)

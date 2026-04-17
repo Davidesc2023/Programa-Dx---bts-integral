@@ -39,13 +39,13 @@ export function ResultList() {
     <>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div className="relative max-w-xs w-full">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-outline" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por examen o valor…"
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
         {canWrite && (
@@ -66,16 +66,16 @@ export function ResultList() {
         ) : isError ? (
           <p className="px-4 py-6 text-sm text-red-500">Error al cargar resultados.</p>
         ) : filtered.length === 0 ? (
-          <p className="px-4 py-6 text-sm text-gray-400">Sin resultados registrados.</p>
+          <p className="px-4 py-6 text-sm text-outline">Sin resultados registrados.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-surface-container-low">
                 <tr>
                   {['Tipo de examen', 'Valor', 'Unidad', 'Rango referencia', ''].map((h) => (
                     <th
                       key={h}
-                      className="py-2 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wide"
+                      className="py-2 px-4 text-left text-xs font-medium text-outline uppercase tracking-wide"
                     >
                       {h}
                     </th>
@@ -86,20 +86,20 @@ export function ResultList() {
                 {filtered.map((r) => (
                   <tr
                     key={r.id}
-                    className="border-t border-gray-100 hover:bg-gray-50 transition-colors"
+                    className="border-t border-surface-container-high hover:bg-surface-container-low transition-colors"
                   >
-                    <td className="py-3 px-4 text-sm font-medium text-gray-900">
+                    <td className="py-3 px-4 text-sm font-medium text-on-surface">
                       <Link href={`/results/${r.id}`} className="hover:text-primary-600">
                         {r.examType}
                       </Link>
                     </td>
-                    <td className="py-3 px-4 text-sm text-gray-700">{r.value}</td>
-                    <td className="py-3 px-4 text-sm text-gray-500">{r.unit ?? '—'}</td>
-                    <td className="py-3 px-4 text-sm text-gray-500">{r.referenceRange ?? '—'}</td>
+                    <td className="py-3 px-4 text-sm text-on-surface-variant">{r.value}</td>
+                    <td className="py-3 px-4 text-sm text-outline">{r.unit ?? '—'}</td>
+                    <td className="py-3 px-4 text-sm text-outline">{r.referenceRange ?? '—'}</td>
                     <td className="py-3 px-4">
                       {canWrite && (
                         <button
-                          className="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                          className="p-1 rounded hover:bg-red-50 text-outline hover:text-red-500 transition-colors"
                           onClick={() => setDeleteId(r.id)}
                         >
                           <Trash2 size={13} />
@@ -115,7 +115,7 @@ export function ResultList() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100 text-sm text-gray-500">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-surface-container-high text-sm text-outline">
             <span>
               Página {page} de {totalPages}
             </span>
