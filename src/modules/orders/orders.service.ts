@@ -102,6 +102,16 @@ export class OrdersService {
       throw new NotFoundException('Paciente no encontrado');
     }
 
+    if (dto.doctorId) {
+      const doctor = await this.prisma.user.findFirst({
+        where: { id: dto.doctorId, role: 'MEDICO', deletedAt: null },
+        select: { id: true },
+      });
+      if (!doctor) {
+        throw new NotFoundException('Médico no encontrado o no válido');
+      }
+    }
+
     return this.prisma.order.create({
       data: {
         patientId: dto.patientId,

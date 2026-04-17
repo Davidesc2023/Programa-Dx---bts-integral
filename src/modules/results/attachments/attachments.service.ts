@@ -109,13 +109,40 @@ export class AttachmentsService {
     });
   }
 
-  async download(resultId: string, attachmentId: string): Promise<StreamableFile> {
+  async download(
+    resultId: string,
+    attachmentId: string,
+    requestingUserId: string,
+    requestingUserRole: string,
+  ): Promise<StreamableFile> {
     const attachment = await this.prisma.resultAttachment.findFirst({
       where: { id: attachmentId, resultId, deletedAt: null },
+      include: {
+        result: {
+          select: {
+            orderId: true,
+            order: {
+              select: {
+                patientId: true,
+                doctorId: true,
+                patient: { select: { userId: true } },
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!attachment) {
       throw new NotFoundException('Adjunto no encontrado');
+    }
+
+    // PACIENTE solo puede acceder a sus propios adjuntos
+    if (requestingUserRole === 'PACIENTE') {
+      const patientUserId = attachment.result?.order?.patient?.userId;
+      if (!patientUserId || patientUserId !== requestingUserId) {
+        throw new NotFoundException('Adjunto no encontrado');
+      }
     }
 
     const stream = await this.storage.getStream(attachment.filePath);

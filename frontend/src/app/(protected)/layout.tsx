@@ -2,9 +2,11 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAccessToken, isTokenExpired } from '@/lib/token';
+import { getAccessToken, decodeJwtPayload, isTokenExpired } from '@/lib/token';
 import { useAuthStore } from '@/modules/auth/authStore';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { UserRole } from '@/types/enums';
+import type { JwtPayload } from '@/types/api.types';
 
 export default function ProtectedLayout({
   children,
@@ -24,6 +26,12 @@ export default function ProtectedLayout({
 
     if (!isAuthenticated) {
       setUserFromToken(token);
+    }
+
+    // PACIENTE no debe acceder al panel de staff — redirigir al portal
+    const payload = decodeJwtPayload<JwtPayload>(token);
+    if (payload?.role === UserRole.PACIENTE) {
+      router.replace('/portal/dashboard');
     }
   }, [isAuthenticated, router, setUserFromToken]);
 

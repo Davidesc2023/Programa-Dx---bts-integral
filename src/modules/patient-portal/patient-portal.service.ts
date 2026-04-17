@@ -281,7 +281,7 @@ export class PatientPortalService {
 
     if (!result) throw new NotFoundException('Resultado no encontrado');
 
-    return this.attachmentsService.download(resultId, attachmentId);
+    return this.attachmentsService.download(resultId, attachmentId, userId, 'PACIENTE');
   }
 
   // ── Appointments ──────────────────────────────────────────────────────────────

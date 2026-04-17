@@ -70,13 +70,14 @@ export class AttachmentsController {
   @Get(':attachmentId/download')
   @HttpCode(HttpStatus.OK)
   @Roles('ADMIN', 'OPERADOR', 'LABORATORIO', 'MEDICO')
-  @ApiOperation({ summary: 'Descargar un archivo adjunto' })
+  @ApiOperation({ summary: 'Descargar un archivo adjunto (staff)' })
   async download(
     @Param('resultId', ParseUUIDPipe) resultId: string,
     @Param('attachmentId', ParseUUIDPipe) attachmentId: string,
+    @CurrentUser() user: ICurrentUser,
     @Res({ passthrough: true }) _res: Response,
   ): Promise<StreamableFile> {
-    return this.attachmentsService.download(resultId, attachmentId);
+    return this.attachmentsService.download(resultId, attachmentId, user.userId, user.role);
   }
 
   @Delete(':attachmentId')

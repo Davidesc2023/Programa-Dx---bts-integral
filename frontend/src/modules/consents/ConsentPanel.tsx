@@ -191,10 +191,12 @@ export function ConsentPanel({ orderId }: ConsentPanelProps) {
                   {showDocument ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                 </button>
                 {showDocument && (
-                  <div className="p-4 max-h-96 overflow-y-auto text-sm prose prose-sm max-w-none"
-                    style={{ background: '#f8fafa', color: '#191c1d' }}
-                    // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted HTML from backend template
-                    dangerouslySetInnerHTML={{ __html: consent.documentHtml }}
+                  <iframe
+                    title="Documento de consentimiento"
+                    sandbox="allow-same-origin"
+                    srcDoc={consent.documentHtml}
+                    className="w-full border-0"
+                    style={{ minHeight: '380px', background: '#f8fafa', color: '#191c1d' }}
                   />
                 )}
               </div>
