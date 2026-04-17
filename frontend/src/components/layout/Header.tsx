@@ -1,6 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { Bell } from 'lucide-react';
 import { useAuthStore } from '@/modules/auth/authStore';
 
 const PAGE_TITLES: Record<string, string> = {
@@ -65,11 +66,11 @@ export function Header() {
       <div className="flex items-center gap-3 lg:gap-5">
         {/* Bell */}
         <button
-          className="p-2 rounded-full transition-colors hover:bg-teal-50 material-symbols-outlined text-slate-500"
-          style={{ color: '#3e4946', fontSize: '1.25rem' }}
+          className="p-2 rounded-full transition-colors hover:bg-surface-container-low"
+          style={{ color: '#3e4946' }}
           aria-label="Notificaciones"
         >
-          notifications
+          <Bell size={18} />
         </button>
 
         {/* Desktop: divider + user info */}
