@@ -33,10 +33,10 @@ export function ConfirmDialog({
         <div className="shrink-0 mt-0.5">
           <AlertTriangle
             size={20}
-            className={variant === 'danger' ? 'text-red-500' : 'text-primary-500'}
+            className={variant === 'danger' ? 'text-error' : 'text-primary-container'}
           />
         </div>
-        <p className="text-sm text-gray-600">{message}</p>
+        <p className="text-sm text-on-surface-variant">{message}</p>
       </div>
 
       <div className="flex justify-end gap-2">

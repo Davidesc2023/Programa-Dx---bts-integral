@@ -87,19 +87,19 @@ export function DoctorPicker({
   return (
     <div className="space-y-1" ref={containerRef}>
       {label && (
-        <label className="text-sm font-medium text-gray-700">{label}</label>
+        <label className="text-sm font-medium text-on-surface-variant">{label}</label>
       )}
 
       <div className="relative">
         {/* Selected display */}
         {value && selectedLabel ? (
-          <div className="flex items-center justify-between rounded-lg border border-gray-300 px-3 py-2 bg-white text-sm text-gray-900">
+          <div className="flex items-center justify-between rounded-xl border border-outline-variant px-3 py-2.5 bg-surface-container-low text-sm text-on-surface">
             <span>{selectedLabel}</span>
             {!disabled && (
               <button
                 type="button"
                 onClick={handleClear}
-                className="ml-2 text-gray-400 hover:text-gray-600"
+                className="ml-2 text-outline hover:text-on-surface"
                 aria-label="Quitar médico"
               >
                 <X size={14} />
@@ -111,7 +111,7 @@ export function DoctorPicker({
           <div className="relative">
             <Search
               size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none"
             />
             <input
               ref={inputRef}
@@ -127,19 +127,19 @@ export function DoctorPicker({
                 if (results.length === 0) search('');
               }}
               placeholder="Buscar médico por nombre…"
-              className="w-full rounded-lg border border-gray-300 pl-8 pr-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-50"
+              className="w-full rounded-xl border border-outline-variant pl-8 pr-3 py-2.5 text-sm text-on-surface bg-surface-container-low placeholder:text-outline/60 focus:outline-none focus:ring-2 focus:ring-primary-container/20 focus:border-primary-container disabled:opacity-50"
             />
           </div>
         )}
 
         {/* Dropdown */}
         {open && !value && (
-          <ul className="absolute z-50 mt-1 w-full max-h-56 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg text-sm">
+          <ul className="absolute z-50 mt-1 w-full max-h-56 overflow-y-auto rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg text-sm">
             {loading && (
-              <li className="px-3 py-2 text-gray-400">Buscando…</li>
+              <li className="px-3 py-2 text-outline">Buscando…</li>
             )}
             {!loading && results.length === 0 && (
-              <li className="px-3 py-2 text-gray-400">
+              <li className="px-3 py-2 text-outline">
                 {query.length >= 1 ? `Sin resultados para "${query}"` : 'No hay médicos registrados'}
               </li>
             )}
@@ -147,13 +147,13 @@ export function DoctorPicker({
               <li
                 key={doc.id}
                 onMouseDown={() => handleSelect(doc)}
-                className="flex items-center gap-3 px-3 py-2 hover:bg-primary-50 cursor-pointer"
+                className="flex items-center gap-3 px-3 py-2 hover:bg-surface-container-low cursor-pointer"
               >
                 <div>
-                  <p className="font-medium text-gray-900">
+                  <p className="font-medium text-on-surface">
                     {[doc.firstName, doc.lastName].filter(Boolean).join(' ') || doc.email}
                   </p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-outline">
                     {doc.specialty && <span>{doc.specialty}</span>}
                     {doc.specialty && doc.medicalLicense && <span> · </span>}
                     {doc.medicalLicense && <span>Reg. {doc.medicalLicense}</span>}
@@ -166,7 +166,7 @@ export function DoctorPicker({
         )}
       </div>
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-error">{error}</p>}
     </div>
   );
 }

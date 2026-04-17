@@ -1,192 +1,316 @@
-# 📘 PRD — Sistema de Solicitud y Gestión de Laboratorios (APP-DX)
+# 🎨 Prompt Avanzado — Diseño UX/UI APP-DX (BTS Integral)
+
+## 🎯 Contexto
+
+Diseñar una aplicación web **responsive (mobile-first + tablet + desktop)** para un sistema de **gestión de diagnósticos y laboratorios clínicos** llamado:
+
+**APP-DX — BTS Integral**
+
+La aplicación debe permitir gestionar todo el flujo clínico:
+
+* Médico crea orden
+* Médico firma consentimiento
+* Paciente recibe notificación
+* Paciente firma consentimiento + autorización (Habeas Data)
+* Se agenda examen
+* Se realiza el laboratorio
+* Se cargan resultados (médico / paciente / operador)
 
 ---
 
-## 🎯 1. Visión del Producto
+## 🎨 Identidad Visual (OBLIGATORIO)
 
-Desarrollar una plataforma digital que permita gestionar de forma integral el ciclo de solicitud de exámenes de laboratorio, desde la orden médica inicial hasta la carga y consulta de resultados, garantizando trazabilidad, validación clínica y consentimiento informado del paciente.
+Basado en marca **BTS Integral**:
 
----
+* 🎯 Color primario: `#1B7A6B` (teal clínico)
+* ✨ Color acento: `#F5C518` (amarillo)
+* 🔵 Color secundario: `#4490D9` (azul)
+* ⚪ Fondo: blanco / gris muy claro
+* 🧱 UI limpia tipo **health-tech SaaS moderno**
 
-## 🧩 2. Problema
+Estilo:
 
-Actualmente el proceso presenta:
-
-- Falta de trazabilidad entre solicitud, autorización y resultado  
-- Procesos manuales (firmas físicas, documentos dispersos)  
-- Riesgo legal por ausencia de consentimiento formal  
-- Descoordinación entre médico, paciente y laboratorio  
-
----
-
-## 💡 3. Solución
-
-Una plataforma centralizada que permita:
-
-1. Creación de orden médica por el médico  
-2. Firma digital del consentimiento por el médico  
-3. Envío de la solicitud al paciente  
-4. Aceptación o rechazo del paciente  
-5. Notificación automática del estado  
-6. Programación de toma de muestras  
-7. Ejecución del examen  
-8. Carga de resultados  
-9. Consulta de resultados por médico y paciente  
+* Minimalista
+* Profesional médico
+* Alta legibilidad
+* Espaciado generoso
+* Bordes redondeados (8–16px)
+* Sombras suaves
 
 ---
 
-## 👤 4. Actores del Sistema
+## 🧩 Arquitectura UX
 
-### 🩺 Médico
-- Crea la orden
-- Firma el consentimiento
-- Consulta resultados
-- Puede cargar resultados
+### Roles del sistema:
 
-### 🧍 Paciente
-- Recibe la solicitud
-- Acepta o rechaza el consentimiento
-- Consulta resultados
-- Puede cargar resultados
-
-### 🧪 Laboratorio / Operador
-- Agenda la toma de muestras
-- Ejecuta los exámenes
-- Carga resultados
-
-### 🛠️ Administrador
-- Gestiona usuarios
-- Configura el sistema
+1. Médico
+2. Paciente
+3. Operador/Laboratorio
+4. Admin
 
 ---
 
-## 🔄 5. Flujo Funcional Principal
+## 🔐 Flujo Principal (CRÍTICO)
 
-```text
-Médico crea orden
-        ↓
-Firma consentimiento
-        ↓
-Se envía al paciente
-        ↓
-Paciente decide:
-   ├── ❌ Rechaza → FIN DEL PROCESO
-   └── ✅ Acepta
-            ↓
-   Notificación automática
-            ↓
-   Se agenda toma de muestras
-            ↓
-   Se realiza examen
-            ↓
-   Se cargan resultados
-            ↓
-   Médico/Paciente consultan resultados
+### 1. Registro Médico
 
-   🧱 6. Módulos del Sistema
-6.1 Órdenes Médicas
-Crear orden
-Asociar paciente
-Definir exámenes
-Gestionar estados
+* Formulario:
 
-Campos clave:
+  * Nombre completo
+  * Tipo y número de documento
+  * Especialidad
+  * Registro médico
+  * Email
+  * Teléfono
+  * Contraseña
 
-patientId
-doctorId
-testList
-status
-priority
-notes
-6.2 Consentimiento
-Generar documento
-Firma del médico
-Firma del paciente
-Validación legal
+* Estado:
 
-Estados:
+  * `PENDIENTE_APROBACION`
 
-PENDING_DOCTOR_SIGNATURE
-SIGNED_BY_DOCTOR
-SENT_TO_PATIENT
-ACCEPTED
-REJECTED
-6.3 Notificaciones
-Notificar al paciente
-Notificar aceptación/rechazo
-Activar siguiente paso del flujo
-6.4 Agendamiento
-Crear cita
-Asociar a orden y paciente
-Manejo de fechas
-6.5 Resultados
-Registrar resultados
-Permitir carga por:
-laboratorio
-médico
-paciente
-Adjuntar archivos (PDF, imágenes)
-🔁 7. Estados del Proceso
-Estados principales
-CREATED
-→ CONSENT_PENDING
-→ SENT_TO_PATIENT
-→ ACCEPTED
-→ SCHEDULED
-→ SAMPLE_COLLECTED
-→ IN_ANALYSIS
-→ COMPLETED
-Estados alternos
-REJECTED
-CANCELLED
-📜 8. Reglas de Negocio
-Consentimiento
-Sin aceptación del paciente no se puede continuar
-Si el paciente rechaza, el proceso termina
-El médico debe firmar antes de enviar
-Órdenes
-Deben estar asociadas a un paciente válido
-No pueden avanzar sin consentimiento aceptado
-Resultados
-Solo se pueden cargar si la orden está en estado válido
-🔐 9. Seguridad
-Autenticación con JWT
-Control por roles:
-Admin
-Médico
-Operador
-Paciente
-Validación estricta de acceso a datos
-📊 10. Métricas de Éxito
-% de órdenes completadas
-Tiempo desde creación hasta resultado
-% de consentimientos aceptados
-Reducción de procesos manuales
-⚠️ 11. Restricciones Técnicas
-Backend: NestJS
-ORM: Prisma
-Base de datos: PostgreSQL
-Validación: class-validator
-Arquitectura: modular
-🚀 12. Alcance MVP
+* Pantalla:
 
-Incluye:
+  * "Tu cuenta está en revisión"
 
-Gestión de pacientes
-Creación de órdenes
-Validación de datos
-Persistencia en base de datos
-🔜 13. Próximas Iteraciones
-Consentimiento digital completo
-Flujo clínico automatizado
-Resultados
-Notificaciones
-Agendamiento
-🧠 14. Punto Crítico del Sistema
+---
 
-El sistema depende del consentimiento del paciente:
+### 2. Aprobación (Admin)
 
-❌ Si el paciente NO acepta → el proceso termina
-✅ Si el paciente acepta → se habilita todo el flujo clínico
+* Lista de médicos pendientes
+* Botón: **Aprobar / Rechazar**
 
-Esto garantiza cumplimiento legal, trazabilidad y control del proceso.
+---
+
+### 3. Consentimiento del Médico
+
+Antes de usar el sistema:
+
+* Mostrar documento legal (scrollable)
+* Checkbox:
+
+  * "Acepto términos y consentimiento informado"
+* Botón:
+
+  * **Firmar consentimiento**
+
+📄 Generar:
+
+* PDF automático
+* Guardar en S3
+
+---
+
+### 4. Dashboard Médico
+
+Secciones:
+
+* Crear orden
+* Mis órdenes
+* Pacientes
+* Resultados
+
+---
+
+### 5. Crear Orden Médica
+
+Formulario:
+
+* Paciente:
+
+  * Nombre
+  * Documento
+  * Email
+  * Teléfono
+
+* Exámenes:
+
+  * Lista dinámica (multi-select)
+  * Ejemplos:
+
+    * Alfa-1 Antitripsina
+    * Serpina 1
+    * Niveles séricos
+    * Coagulación
+
+* Prioridad:
+
+  * Normal / Urgente
+
+* Notas médicas
+
+Botón:
+
+* **Crear orden + generar consentimiento**
+
+---
+
+### 6. Consentimiento del Paciente
+
+El paciente recibe:
+
+* Email
+* WhatsApp (simulado UI)
+* Link seguro
+
+Pantalla:
+
+* Mostrar:
+
+  * Documento HTML completo
+  * Datos del médico
+  * Datos del paciente
+  * Lista de exámenes
+
+* Acciones:
+
+  * ❌ Rechazar
+  * ✅ Aceptar y firmar
+
+📄 Resultado:
+
+* Generar PDF firmado
+* Guardar en S3
+
+---
+
+### 7. Cambio de Estado
+
+Estados visibles:
+
+* Pendiente
+* En proceso
+* Agendado
+* Muestra recolectada
+* En análisis
+* Completado
+* Rechazado
+
+---
+
+### 8. Agendamiento
+
+UI operador:
+
+* Calendario
+* Selección fecha/hora
+* Asociación a orden
+
+---
+
+### 9. Resultados
+
+Carga por:
+
+* Médico
+* Paciente
+* Laboratorio
+
+Soporte:
+
+* PDF
+* Imágenes
+
+UI:
+
+* Upload drag & drop
+* Lista de archivos
+* Botón descargar
+
+---
+
+## 🧠 Reglas UX
+
+* Mostrar siempre estado visible
+* Feedback inmediato (toasts)
+* Validaciones claras
+* Confirmaciones en acciones críticas
+
+---
+
+## 🔐 Legal & Compliance (COLOMBIA)
+
+Incluir:
+
+* Autorización de datos personales (Ley 1581 de 2012)
+* Habeas Data
+* Consentimiento informado médico
+
+Cada firma:
+
+* Timestamp
+* Nombre
+* IP (simulado)
+* PDF descargable
+
+---
+
+## 🏗️ Multitenancy
+
+El sistema debe permitir:
+
+* Múltiples clínicas o clientes
+* Branding configurable por tenant
+* Aislamiento de datos
+
+UI:
+
+* Selector de tenant (opcional)
+* Logo dinámico
+
+---
+
+## 📱 Responsive Design
+
+Diseñar para:
+
+* Mobile (prioridad)
+* Tablet
+* Desktop
+
+Patrones:
+
+* Sidebar colapsable
+* Cards en mobile
+* Tablas en desktop
+
+---
+
+## ✨ Extras UX (IMPORTANTE)
+
+* Timeline visual del estado de la orden
+* Indicadores de progreso
+* Notificaciones tipo inbox
+* Vista tipo “historial clínico”
+
+---
+
+## 🎯 Output esperado
+
+Generar:
+
+* Pantallas completas:
+
+  * Login
+  * Registro médico
+  * Dashboard
+  * Crear orden
+  * Consentimiento paciente
+  * Resultados
+  * Agendamiento
+
+* Componentes reutilizables
+
+* Diseño consistente con marca
+
+---
+
+## 🚀 Instrucción Final
+
+Diseñar como un **producto SaaS clínico real listo para producción**, no como mockup básico.
+
+Priorizar:
+
+* Claridad
+* Flujo legal completo
+* Experiencia del usuario
+* Escalabilidad

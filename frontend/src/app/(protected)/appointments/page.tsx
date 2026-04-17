@@ -7,10 +7,10 @@ export default function AppointmentsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <CalendarDays className="text-primary-600" size={24} />
+        <CalendarDays className="text-primary-container shrink-0" size={24} />
         <div>
-          <h1 className="text-xl font-semibold text-gray-900">Citas</h1>
-          <p className="text-sm text-gray-500">Gestion de citas medicas</p>
+          <h1 className="text-xl font-extrabold text-on-surface" style={{ fontFamily: 'Manrope, sans-serif' }}>Citas</h1>
+          <p className="text-sm text-outline">Gestión de citas médicas</p>
         </div>
       </div>
       <AppointmentList />
