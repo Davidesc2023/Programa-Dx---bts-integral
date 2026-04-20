@@ -84,8 +84,9 @@ export class AppointmentsService {
       .notifyAppointmentScheduled({
         appointmentId: appointment.id,
         scheduledAt: appointment.scheduledAt,
-        patientEmail: patient!.email,
+        patientId: patient!.id,
         patientName: `${patient!.firstName} ${patient!.lastName}`,
+        orderId: dto.orderId,
       })
       .catch(() => null);
 

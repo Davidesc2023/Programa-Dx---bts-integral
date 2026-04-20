@@ -256,7 +256,7 @@ export class ConsentsService {
     void this.notifications
       .notifyConsentSentToPatient({
         orderId,
-        patientEmail: result.order.patient.email,
+        patientId: result.order.patient.id,
         patientName: `${result.order.patient.firstName} ${result.order.patient.lastName}`,
       })
       .catch((err) =>
@@ -371,7 +371,7 @@ export class ConsentsService {
     void this.notifications
       .notifyConsentResponded({
         orderId,
-        doctorEmail: updated.doctor?.email ?? null,
+        doctorId: updated.doctorId,
         patientName,
         response: newConsentStatus as 'ACEPTADO' | 'RECHAZADO',
       })

@@ -1,186 +1,220 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Resend } from 'resend';
+﻿import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { NotificationType } from '@prisma/client';
+import { PrismaService } from '../../database/prisma.service';
 
-interface PatientNotificationData {
-  orderId: string;
-  patientEmail: string | null | undefined;
-  patientName: string;
+// ─── Domain helpers ───────────────────────────────────────────────────────────
+
+export interface CreateNotificationInput {
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  metadata?: Record<string, unknown>;
 }
 
-interface DoctorNotificationData {
-  orderId: string;
-  doctorEmail: string | null | undefined;
-  patientName: string;
-  response: 'ACEPTADO' | 'RECHAZADO';
-}
-
-interface ResultReadyData {
-  orderId: string;
-  patientEmail: string | null | undefined;
-  patientName: string;
-  doctorEmail: string | null | undefined;
-  doctorName: string;
-}
-
-interface AppointmentScheduledData {
-  appointmentId: string;
-  scheduledAt: Date;
-  patientEmail: string | null | undefined;
-  patientName: string;
-}
+// ─── Service ──────────────────────────────────────────────────────────────────
 
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
-  private readonly resend: Resend | null;
-  private readonly fromEmail: string;
 
-  constructor() {
-    const apiKey = process.env.RESEND_API_KEY;
-    this.resend = apiKey ? new Resend(apiKey) : null;
-    this.fromEmail =
-      process.env.RESEND_FROM_EMAIL ?? 'APP-DX <noreply@bts-dx.app>';
+  constructor(private readonly prisma: PrismaService) {}
 
-    if (!this.resend) {
-      this.logger.warn(
-        'RESEND_API_KEY no configurada — notificaciones en modo logger (desarrollo)',
-      );
-    }
-  }
+  // ── In-App CRUD ──────────────────────────────────────────────────────────────
 
-  private async sendEmail(opts: {
-    to: string;
-    subject: string;
-    html: string;
-  }): Promise<void> {
-    if (!this.resend) {
-      this.logger.log(
-        `[NOTIF LOG] → Para: ${opts.to} | Asunto: ${opts.subject}`,
-      );
-      this.logger.debug(`[NOTIF LOG] HTML:\n${opts.html}`);
-      return;
-    }
-
+  /** Persist an in-app notification. Fire-and-forget safe (never throws). */
+  async createNotification(input: CreateNotificationInput): Promise<void> {
     try {
-      await this.resend.emails.send({
-        from: this.fromEmail,
-        to: opts.to,
-        subject: opts.subject,
-        html: opts.html,
+      await this.prisma.notification.create({
+        data: {
+          userId: input.userId,
+          type: input.type,
+          title: input.title,
+          message: input.message,
+          metadata: input.metadata ?? undefined,
+        },
       });
-      this.logger.log(`[NOTIF OK] Email enviado → ${opts.to}`);
     } catch (err) {
       this.logger.error(
-        `[NOTIF ERROR] Fallo envío a ${opts.to}: ${(err as Error).message}`,
+        `[NOTIF] Error persisting notification for user ${input.userId}: ${(err as Error).message}`,
       );
     }
   }
 
-  async notifyConsentSentToPatient(
-    data: PatientNotificationData,
-  ): Promise<void> {
-    if (!data.patientEmail) {
-      this.logger.warn(
-        `[NOTIF] Sin email para paciente en orden ${data.orderId} — omitiendo notificación de consentimiento`,
-      );
-      return;
+  /** Return notifications for a user — newest first, paginated. */
+  async findAll(userId: string, page = 1, limit = 20) {
+    const skip = (page - 1) * limit;
+
+    const [notifications, total, unreadCount] = await this.prisma.$transaction([
+      this.prisma.notification.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.notification.count({ where: { userId } }),
+      this.prisma.notification.count({ where: { userId, isRead: false } }),
+    ]);
+
+    return {
+      data: notifications,
+      meta: {
+        total,
+        unreadCount,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  /** Lightweight unread count (used for badge polling). */
+  async getUnreadCount(userId: string): Promise<{ unreadCount: number }> {
+    const unreadCount = await this.prisma.notification.count({
+      where: { userId, isRead: false },
+    });
+    return { unreadCount };
+  }
+
+  /** Mark a single notification as read — verifies ownership. */
+  async markRead(id: string, userId: string) {
+    const notification = await this.prisma.notification.findUnique({
+      where: { id },
+      select: { id: true, userId: true },
+    });
+
+    if (!notification || notification.userId !== userId) {
+      throw new NotFoundException('Notificacion no encontrada');
     }
 
-    const html = `
-<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
-  <h2 style="color: #2563eb; margin-top: 0;">Consentimiento Informado Pendiente</h2>
-  <p>Estimado/a <strong>${data.patientName}</strong>,</p>
-  <p>Se ha generado una solicitud de consentimiento informado para su orden de laboratorio <strong>#${data.orderId}</strong>.</p>
-  <p>Por favor, revise los detalles con su operador y proceda a confirmar o rechazar la solicitud.</p>
-  <hr style="border: none; border-top: 1px solid #e5e7eb;" />
-  <p style="color: #6b7280; font-size: 12px; margin-bottom: 0;">Mensaje automático — Sistema APP-DX. No responder a este correo.</p>
-</div>`.trim();
-
-    await this.sendEmail({
-      to: data.patientEmail,
-      subject: `Consentimiento pendiente — Orden #${data.orderId}`,
-      html,
+    return this.prisma.notification.update({
+      where: { id },
+      data: { isRead: true },
     });
   }
 
-  async notifyConsentResponded(data: DoctorNotificationData): Promise<void> {
-    if (!data.doctorEmail) {
+  /** Mark ALL notifications for a user as read. */
+  async markAllRead(userId: string): Promise<{ updated: number }> {
+    const result = await this.prisma.notification.updateMany({
+      where: { userId, isRead: false },
+      data: { isRead: true },
+    });
+    return { updated: result.count };
+  }
+
+  // ── Domain Event Helpers ─────────────────────────────────────────────────────
+
+  /**
+   * Notify patient when a consent is sent to them.
+   * Resolves Patient -> User; silently skips if patient has no linked account.
+   */
+  async notifyConsentSentToPatient(data: {
+    orderId: string;
+    patientId: string;
+    patientName: string;
+  }): Promise<void> {
+    const patient = await this.prisma.patient.findUnique({
+      where: { id: data.patientId },
+      select: { userId: true },
+    });
+
+    if (!patient?.userId) {
       this.logger.warn(
-        `[NOTIF] Sin email de médico para orden ${data.orderId} — omitiendo notificación de respuesta`,
+        `[NOTIF] Paciente ${data.patientId} sin cuenta — omitiendo notificacion de consentimiento`,
+      );
+      return;
+    }
+
+    await this.createNotification({
+      userId: patient.userId,
+      type: NotificationType.CONSENT_REQUEST,
+      title: 'Consentimiento pendiente',
+      message: `Se ha enviado un consentimiento informado para tu orden #${data.orderId}. Revisalo y firma para continuar.`,
+      metadata: { orderId: data.orderId },
+    });
+  }
+
+  /** Notify doctor when the patient responds to the consent. */
+  async notifyConsentResponded(data: {
+    orderId: string;
+    doctorId: string | null | undefined;
+    patientName: string;
+    response: 'ACEPTADO' | 'RECHAZADO';
+  }): Promise<void> {
+    if (!data.doctorId) {
+      this.logger.warn(
+        `[NOTIF] Orden ${data.orderId} sin medico asignado — omitiendo notificacion de respuesta`,
       );
       return;
     }
 
     const isAccepted = data.response === 'ACEPTADO';
-    const subject = isAccepted
-      ? `Consentimiento ACEPTADO — Orden #${data.orderId}`
-      : `Consentimiento RECHAZADO — Orden #${data.orderId}`;
 
-    const statusColor = isAccepted ? '#16a34a' : '#dc2626';
-    const statusLabel = isAccepted ? 'ACEPTADO ✓' : 'RECHAZADO ✗';
-    const statusMessage = isAccepted
-      ? 'La orden está lista para continuar con la toma de muestras.'
-      : 'El proceso ha sido detenido según la decisión del paciente.';
-
-    const html = `
-<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
-  <h2 style="color: #2563eb; margin-top: 0;">Respuesta de Consentimiento Registrada</h2>
-  <p>El paciente <strong>${data.patientName}</strong> ha respondido el consentimiento de la orden <strong>#${data.orderId}</strong>.</p>
-  <p>Estado: <strong style="color: ${statusColor};">${statusLabel}</strong></p>
-  <p>${statusMessage}</p>
-  <hr style="border: none; border-top: 1px solid #e5e7eb;" />
-  <p style="color: #6b7280; font-size: 12px; margin-bottom: 0;">Mensaje automático — Sistema APP-DX. No responder a este correo.</p>
-</div>`.trim();
-
-    await this.sendEmail({ to: data.doctorEmail, subject, html });
+    await this.createNotification({
+      userId: data.doctorId,
+      type: NotificationType.CONSENT_RESPONDED,
+      title: isAccepted ? 'Consentimiento aceptado' : 'Consentimiento rechazado',
+      message: isAccepted
+        ? `${data.patientName} acepto el consentimiento de la orden #${data.orderId}. La orden puede continuar.`
+        : `${data.patientName} rechazo el consentimiento de la orden #${data.orderId}. El proceso fue detenido.`,
+      metadata: { orderId: data.orderId, response: data.response },
+    });
   }
 
-  async notifyResultReady(data: ResultReadyData): Promise<void> {
-    const html = (recipientName: string) => `
-<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
-  <h2 style="color: #16a34a; margin-top: 0;">Resultados Disponibles</h2>
-  <p>Estimado/a <strong>${recipientName}</strong>,</p>
-  <p>Los resultados de la orden de laboratorio <strong>#${data.orderId}</strong> ya están disponibles.</p>
-  <p>Paciente: <strong>${data.patientName}</strong></p>
-  <p>Médico tratante: <strong>${data.doctorName}</strong></p>
-  <p>Puede consultar los resultados ingresando al sistema.</p>
-  <hr style="border: none; border-top: 1px solid #e5e7eb;" />
-  <p style="color: #6b7280; font-size: 12px; margin-bottom: 0;">Mensaje automático — Sistema APP-DX. No responder a este correo.</p>
-</div>`.trim();
+  /** Notify patient and doctor when results are available. */
+  async notifyResultReady(data: {
+    orderId: string;
+    patientId: string;
+    patientName: string;
+    doctorId: string | null | undefined;
+    doctorName: string;
+  }): Promise<void> {
+    const patient = await this.prisma.patient.findUnique({
+      where: { id: data.patientId },
+      select: { userId: true },
+    });
 
-    const sends: Promise<void>[] = [];
-
-    if (data.doctorEmail) {
-      sends.push(
-        this.sendEmail({
-          to: data.doctorEmail,
-          subject: `Resultados disponibles — Orden #${data.orderId}`,
-          html: html(data.doctorName),
-        }),
-      );
+    if (patient?.userId) {
+      await this.createNotification({
+        userId: patient.userId,
+        type: NotificationType.RESULT_READY,
+        title: 'Resultados disponibles',
+        message: `Los resultados de tu orden #${data.orderId} ya estan listos. Puedes verlos en el portal.`,
+        metadata: { orderId: data.orderId },
+      });
     } else {
       this.logger.warn(
-        `[NOTIF] Sin email de médico para orden ${data.orderId} — omitiendo notificación de resultado`,
+        `[NOTIF] Paciente ${data.patientId} sin cuenta — omitiendo notificacion de resultado`,
       );
     }
 
-    if (data.patientEmail) {
-      sends.push(
-        this.sendEmail({
-          to: data.patientEmail,
-          subject: `Sus resultados están listos — Orden #${data.orderId}`,
-          html: html(data.patientName),
-        }),
-      );
+    if (data.doctorId) {
+      await this.createNotification({
+        userId: data.doctorId,
+        type: NotificationType.RESULT_READY,
+        title: 'Resultados cargados',
+        message: `Se cargaron resultados para la orden #${data.orderId} del paciente ${data.patientName}.`,
+        metadata: { orderId: data.orderId },
+      });
     }
-
-    await Promise.all(sends);
   }
 
-  async notifyAppointmentScheduled(data: AppointmentScheduledData): Promise<void> {
-    if (!data.patientEmail) {
+  /** Notify patient when an appointment is scheduled. */
+  async notifyAppointmentScheduled(data: {
+    appointmentId: string;
+    scheduledAt: Date;
+    patientId: string;
+    patientName: string;
+    orderId?: string | null;
+  }): Promise<void> {
+    const patient = await this.prisma.patient.findUnique({
+      where: { id: data.patientId },
+      select: { userId: true },
+    });
+
+    if (!patient?.userId) {
       this.logger.warn(
-        `[NOTIF] Sin email para paciente en cita ${data.appointmentId} — omitiendo notificación de cita`,
+        `[NOTIF] Paciente ${data.patientId} sin cuenta — omitiendo notificacion de cita`,
       );
       return;
     }
@@ -191,21 +225,55 @@ export class NotificationsService {
       timeZone: 'America/Bogota',
     }).format(data.scheduledAt);
 
-    const html = `
-<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
-  <h2 style="color: #2563eb; margin-top: 0;">Cita Agendada</h2>
-  <p>Estimado/a <strong>${data.patientName}</strong>,</p>
-  <p>Se ha agendado una cita de laboratorio para usted.</p>
-  <p><strong>Fecha y hora:</strong> ${formattedDate}</p>
-  <p>Por favor, preséntese puntualmente con su documento de identidad.</p>
-  <hr style="border: none; border-top: 1px solid #e5e7eb;" />
-  <p style="color: #6b7280; font-size: 12px; margin-bottom: 0;">Mensaje automático — Sistema APP-DX. No responder a este correo.</p>
-</div>`.trim();
-
-    await this.sendEmail({
-      to: data.patientEmail,
-      subject: `Cita agendada — ${formattedDate}`,
-      html,
+    await this.createNotification({
+      userId: patient.userId,
+      type: NotificationType.APPOINTMENT_SCHEDULED,
+      title: 'Cita agendada',
+      message: `Se agendo una cita de laboratorio para el ${formattedDate}.`,
+      metadata: {
+        appointmentId: data.appointmentId,
+        ...(data.orderId ? { orderId: data.orderId } : {}),
+      },
     });
+  }
+
+  /** Notify patient when their order changes to a relevant status. */
+  async notifyOrderUpdated(data: {
+    orderId: string;
+    patientId: string;
+    newStatus: string;
+  }): Promise<void> {
+    const statusMessages: Partial<Record<string, { title: string; message: string }>> = {
+      SCHEDULED: {
+        title: 'Cita programada',
+        message: `Tu orden #${data.orderId} fue programada para toma de muestras.`,
+      },
+      MUESTRA_RECOLECTADA: {
+        title: 'Muestra recolectada',
+        message: `La muestra de tu orden #${data.orderId} fue recolectada y esta siendo procesada.`,
+      },
+      EN_ANALISIS: {
+        title: 'Orden en analisis',
+        message: `Tu orden #${data.orderId} esta siendo analizada en el laboratorio.`,
+      },
+    };
+
+    const content = statusMessages[data.newStatus];
+    if (!content) return;
+
+    const patient = await this.prisma.patient.findUnique({
+      where: { id: data.patientId },
+      select: { userId: true },
+    });
+
+    if (patient?.userId) {
+      await this.createNotification({
+        userId: patient.userId,
+        type: NotificationType.ORDER_UPDATED,
+        title: content.title,
+        message: content.message,
+        metadata: { orderId: data.orderId, status: data.newStatus },
+      });
+    }
   }
 }

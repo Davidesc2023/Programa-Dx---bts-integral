@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { Prisma, DocumentType, UserRole } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
@@ -33,19 +34,22 @@ export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateUserDto, createdBy: string) {
-    const existing = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const email = dto.email ?? `internal-${randomUUID()}@appdx.local`;
 
-    if (existing) {
-      throw new ConflictException('El correo ya está registrado');
+    if (dto.email) {
+      const existing = await this.prisma.user.findUnique({
+        where: { email: dto.email },
+      });
+      if (existing) {
+        throw new ConflictException('El correo ya está registrado');
+      }
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
     return this.prisma.user.create({
       data: {
-        email: dto.email,
+        email,
         password: hashedPassword,
         role: dto.role,
         firstName: dto.firstName,

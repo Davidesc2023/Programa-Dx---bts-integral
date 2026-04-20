@@ -215,29 +215,27 @@ export class OrdersService {
       void this.dispatchResultReadyNotification(id, order);
     }
 
+    // Notify patient of intermediate status changes (SCHEDULED, MUESTRA_RECOLECTADA, EN_ANALISIS)
+    if (order.patientId) {
+      void this.notifications
+        .notifyOrderUpdated({ orderId: id, patientId: order.patientId, newStatus })
+        .catch((err) =>
+          Logger.warn(`notifyOrderUpdated failed for ${id}: ${String(err)}`, 'OrdersService'),
+        );
+    }
+
     return updated;
   }
 
   private async dispatchResultReadyNotification(
     orderId: string,
-    order: { patientId?: string | null; patient?: { firstName?: string; lastName?: string; documentNumber?: string } | null; doctor?: { email?: string | null; firstName?: string | null; lastName?: string | null } | null },
+    order: {
+      patientId?: string | null;
+      patient?: { firstName?: string; lastName?: string } | null;
+      doctor?: { id?: string | null; firstName?: string | null; lastName?: string | null } | null;
+    },
   ): Promise<void> {
     try {
-      // Fetch linked patient user email if exists
-      const patientLink = await this.prisma.patient.findFirst({
-        where: { id: order.patientId ?? undefined, deletedAt: null },
-        select: { userId: true, firstName: true, lastName: true },
-      });
-
-      let patientEmail: string | null = null;
-      if (patientLink?.userId) {
-        const user = await this.prisma.user.findUnique({
-          where: { id: patientLink.userId },
-          select: { email: true },
-        });
-        patientEmail = user?.email ?? null;
-      }
-
       const patientName = order.patient
         ? `${order.patient.firstName ?? ''} ${order.patient.lastName ?? ''}`.trim()
         : 'Paciente';
@@ -248,13 +246,12 @@ export class OrdersService {
 
       await this.notifications.notifyResultReady({
         orderId,
-        patientEmail,
+        patientId: order.patientId ?? '',
         patientName,
-        doctorEmail: order.doctor?.email ?? null,
+        doctorId: order.doctor?.id ?? null,
         doctorName,
       });
     } catch (err) {
-      // Non-blocking: log and ignore notification errors
       Logger.warn(`Notification failed for order ${orderId}: ${String(err)}`, 'OrdersService');
     }
   }

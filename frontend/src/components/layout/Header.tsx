@@ -1,8 +1,8 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { Bell } from 'lucide-react';
 import { useAuthStore } from '@/modules/auth/authStore';
+import { NotificationBell } from '@/components/ui/NotificationBell';
 
 const PAGE_TITLES: Record<string, string> = {
   '/dashboard':    'Panel de Control',
@@ -65,13 +65,7 @@ export function Header() {
       {/* Right — notifications + desktop user info */}
       <div className="flex items-center gap-3 lg:gap-5">
         {/* Bell */}
-        <button
-          className="p-2 rounded-full transition-colors hover:bg-surface-container-low"
-          style={{ color: '#3e4946' }}
-          aria-label="Notificaciones"
-        >
-          <Bell size={18} />
-        </button>
+        <NotificationBell />
 
         {/* Desktop: divider + user info */}
         <div className="hidden lg:flex items-center gap-3">

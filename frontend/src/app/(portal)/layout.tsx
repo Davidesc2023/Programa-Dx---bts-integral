@@ -8,6 +8,7 @@ import { useAuthStore } from '@/modules/auth/authStore';
 import { getPortalDashboard } from '@/services/portal.service';
 import { UserRole } from '@/types/enums';
 import type { JwtPayload } from '@/types/api.types';
+import { NotificationBell } from '@/components/ui/NotificationBell';
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -78,6 +79,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             </a>
           </nav>
           <div className="flex items-center gap-3">
+            <NotificationBell isPortal />
             <span className="text-sm text-gray-500">
               {user?.email}
             </span>

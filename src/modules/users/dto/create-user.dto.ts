@@ -8,9 +8,10 @@ import {
 } from 'class-validator';
 
 export class CreateUserDto {
-  @ApiProperty({ example: 'medico@bts-integral.com' })
+  @ApiPropertyOptional({ example: 'medico@bts-integral.com' })
+  @IsOptional()
   @IsEmail({}, { message: 'El correo electrónico no es válido' })
-  email: string;
+  email?: string;
 
   @ApiProperty({ example: 'Medico1234!', minLength: 8 })
   @IsString()

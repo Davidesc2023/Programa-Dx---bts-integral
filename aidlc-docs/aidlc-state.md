@@ -4,7 +4,7 @@
 - **Project Name**: Sistema de Solicitud de Laboratorios (APP-DX)
 - **Project Type**: Brownfield (incremento activo)
 - **Start Date**: 2026-04-13
-- **Current Phase**: CONSTRUCTION — Increment v11: Rol PACIENTE + Portal del Paciente
+- **Current Phase**: CONSTRUCTION — Increment v18: In-App Notification System (email-free)
 - **Current Stage**: Build and Test pending
 
 ## Workspace State

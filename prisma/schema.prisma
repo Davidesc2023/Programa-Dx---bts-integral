@@ -63,13 +63,23 @@ enum AppointmentStatus {
   COMPLETADA
 }
 
+enum NotificationType {
+  CONSENT_REQUEST
+  CONSENT_RESPONDED
+  ORDER_CREATED
+  ORDER_UPDATED
+  RESULT_READY
+  APPOINTMENT_SCHEDULED
+  GENERAL
+}
+
 // ============================================================
 // MÓDULO: Users + Auth (UDT-02)
 // ============================================================
 
 model User {
   id             String        @id @default(uuid())
-  email          String        @unique
+  email          String?       @unique
   password       String
   role           UserRole      @default(OPERADOR)
   // Personal / clinical fields
@@ -89,6 +99,7 @@ model User {
   consents       Consent[]
   doctorOrders   Order[]       @relation("OrderDoctor")
   patientProfile Patient?      @relation("PatientUser")
+  notifications  Notification[]
 
   @@map("users")
 }
@@ -272,4 +283,25 @@ model OrderTest {
   updatedBy String?
 
   @@map("order_tests")
+}
+
+// ============================================================
+// MÓDULO: Notifications (UDT-N02)
+// ============================================================
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  metadata  Json?            // e.g. { orderId, consentId, resultId }
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@map("notifications")
 }
