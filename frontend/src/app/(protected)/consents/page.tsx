@@ -113,7 +113,7 @@ function OrderConsentRow({ orderId, orderCode }: { orderId: string; orderCode: s
         ) : !consent ? (
           <span className="text-xs" style={{ color: '#bec9c5' }}>…</span>
         ) : (
-          <DoctorBadge status={doctorStatus!} signedAt={consent.signedAt} />
+          <DoctorBadge status={doctorStatus!} signedAt={consent.doctorSignedAt} />
         )}
       </td>
 
@@ -124,7 +124,7 @@ function OrderConsentRow({ orderId, orderCode }: { orderId: string; orderCode: s
         ) : !consent ? (
           <span className="text-xs" style={{ color: '#bec9c5' }}>—</span>
         ) : (
-          <PatientBadge status={patientStatus!} respondedAt={consent.patientSignedAt ?? consent.respondedAt} />
+          <PatientBadge status={patientStatus!} respondedAt={consent.patientSignedAt} />
         )}
       </td>
 

@@ -2,6 +2,8 @@
 const nextConfig = {
   // Security headers (OWASP A05 / XSS mitigation)
   async headers() {
+    // All browser API calls go through the /api/* proxy (same origin), so connect-src
+    // only needs 'self'. No backend URL required in the CSP.
     return [
       {
         source: '/(.*)',
@@ -30,7 +32,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob:",
-              "connect-src 'self' https://programa-dx-bts-integral-production.up.railway.app",
+              "connect-src 'self'",
               "frame-ancestors 'none'",
             ].join('; '),
           },

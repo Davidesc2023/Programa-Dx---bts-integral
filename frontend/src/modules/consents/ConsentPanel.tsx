@@ -380,13 +380,13 @@ export function ConsentPanel({ orderId }: ConsentPanelProps) {
                   <StepIcon state={doctorState} />
                 </div>
                 <p className="text-sm font-semibold" style={{ color: doctorStyle.iconColor }}>{doctorStyle.label}</p>
-                {(consent.doctorNameSnapshot || (consent as { signedBy?: string }).signedBy) && (
+                {consent.doctorNameSnapshot && (
                   <div className="flex items-center gap-1.5 text-xs" style={{ color: '#3e4946' }}>
-                    <User size={12} />{consent.doctorNameSnapshot ?? (consent as { signedBy?: string }).signedBy}
+                    <User size={12} />{consent.doctorNameSnapshot}
                   </div>
                 )}
                 {consent.doctorSignedAt && (
-                  <p className="text-xs" style={{ color: '#6e7976' }}>{formatDate(consent.doctorSignedAt as unknown as string)}</p>
+                  <p className="text-xs" style={{ color: '#6e7976' }}>{formatDate(consent.doctorSignedAt)}</p>
                 )}
               </div>
 
@@ -411,9 +411,9 @@ export function ConsentPanel({ orderId }: ConsentPanelProps) {
                     <UserCheck size={12} />{consent.patientNameSnapshot}
                   </div>
                 )}
-                {(consent.patientSignedAt ?? (consent as { respondedAt?: string }).respondedAt) && (
+                {consent.patientSignedAt && (
                   <p className="text-xs" style={{ color: '#6e7976' }}>
-                    {formatDate(consent.patientSignedAt as unknown as string ?? (consent as { respondedAt?: string }).respondedAt)}
+                    {formatDate(consent.patientSignedAt)}
                   </p>
                 )}
               </div>

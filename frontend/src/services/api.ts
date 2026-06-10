@@ -1,14 +1,10 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { clearTokens, getAccessToken } from '@/lib/token';
 
-// Call the Railway backend directly from the browser.
-// NEXT_PUBLIC_BACKEND_URL is baked at build time; fallback is the known Railway URL.
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ??
-  'https://programa-dx-bts-integral-production.up.railway.app';
-
+// All browser API calls go through the Next.js proxy at /api/* which forwards to BACKEND_URL.
+// This avoids CORS issues and avoids baking the backend URL at build time.
 export const api = axios.create({
-  baseURL: BACKEND_URL,
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },

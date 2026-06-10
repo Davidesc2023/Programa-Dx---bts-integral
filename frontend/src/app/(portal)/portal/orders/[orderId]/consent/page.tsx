@@ -69,11 +69,10 @@ export default function PortalConsentPage({
   };
 
   // ── extract patient + order data from consent ────────────────────────────
-  const patient = (consent as { order?: { patient?: { firstName?: string; lastName?: string; documentType?: string; documentNumber?: string; birthDate?: string } | null; id?: string; physician?: string; doctorId?: string } | null } | null)?.order?.patient;
-  const order = (consent as { order?: { id?: string; physician?: string } | null } | null)?.order;
+  const patient = consent?.order?.patient;
   const patientName = [patient?.firstName, patient?.lastName].filter(Boolean).join(' ');
-  const doctorName = (consent as { doctorNameSnapshot?: string | null } | null)?.doctorNameSnapshot ?? consent?.['signedBy'] ?? 'Médico';
-  const tests = (consent as { order?: { tests?: { id: string; examName: string; examCode: string; notes?: string | null }[] } | null } | null)?.order?.tests ?? [];
+  const doctorName = consent?.doctorNameSnapshot ?? 'Médico';
+  const tests = consent?.order?.tests ?? [];
 
   return (
     <div className="min-h-screen pb-20" style={{ background: '#f8fafa', fontFamily: 'Inter, sans-serif', color: '#191c1d' }}>

@@ -169,10 +169,6 @@ export interface Consent {
     };
   } | null;
   doctor?: Pick<User, 'id' | 'email' | 'role' | 'firstName' | 'lastName'> | null;
-  // Legacy compatibility (kept for existing references)
-  signedBy?: string | null;
-  signedAt?: string | null;
-  respondedAt?: string | null;
 }
 
 // ─── Results ──────────────────────────────────────────────────────────────────

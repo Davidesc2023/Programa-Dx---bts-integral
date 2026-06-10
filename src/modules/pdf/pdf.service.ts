@@ -1,6 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import puppeteer from 'puppeteer-core';
-import chromium from '@sparticuz/chromium';
+import chromium from '@sparticuz/chromium-min';
+
+// Chromium binary is downloaded at runtime from GitHub Releases.
+// This avoids bundling the ~80MB binary in the Vercel function (50MB limit on Hobby).
+const CHROMIUM_CDN =
+  'https://github.com/Sparticuz/chromium/releases/download/v123.0.1/chromium-v123.0.1-pack.tar';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Data contract for the consent HTML template
@@ -135,7 +140,7 @@ export class PdfService {
   async generateConsentPdf(html: string): Promise<Buffer> {
     this.logger.log('Launching headless Chromium for PDF generation…');
 
-    const executablePath = await chromium.executablePath();
+    const executablePath = await chromium.executablePath(CHROMIUM_CDN);
 
     const browser = await puppeteer.launch({
       args: chromium.args,

@@ -1,19 +1,14 @@
 /**
  * Catch-all API proxy route.
  *
- * All requests to /api/* from the browser are handled here at RUNTIME.
- * The BACKEND_URL env var is read on every request, so it never gets
- * baked incorrectly at build time (unlike next.config.mjs rewrites).
+ * All browser requests to /api/* are handled here at RUNTIME and proxied to BACKEND_URL.
+ * BACKEND_URL is set in Vercel environment variables (Settings → Environment Variables).
  *
- * Browser → Vercel /api/auth/login
- *         → this handler
- *         → Railway /auth/login
+ * Browser → Vercel /api/auth/login → this handler → NestJS /auth/login
  */
 import { type NextRequest, NextResponse } from 'next/server';
 
-const BACKEND =
-  process.env.BACKEND_URL ??
-  'https://programa-dx-bts-integral-production.up.railway.app';
+const BACKEND = process.env.BACKEND_URL ?? 'http://localhost:3000';
 
 type Ctx = { params: { path: string[] } };
 
