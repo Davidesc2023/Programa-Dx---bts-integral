@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../database/prisma.service';
 import { CreateOrderTestDto } from './dto/create-order-test.dto';
 
@@ -17,13 +17,41 @@ export class OrderTestsService {
 
   async create(orderId: string, dto: CreateOrderTestDto, createdBy: string) {
     await this.assertOrderExists(orderId);
+
+    let examCode = dto.examCode;
+    let examName = dto.examName;
+    let labTestId = dto.labTestId ?? null;
+
+    // Si viene labTestId, resolver código y nombre desde el catálogo
+    if (dto.labTestId) {
+      const labTest = await this.prisma.labTest.findUnique({
+        where: { id: dto.labTestId },
+        select: { id: true, code: true, name: true, isActive: true },
+      });
+      if (!labTest) throw new NotFoundException(`Examen del catálogo no encontrado: ${dto.labTestId}`);
+      if (!labTest.isActive) throw new BadRequestException(`El examen "${labTest.name}" no está activo`);
+      examCode = labTest.code;
+      examName = labTest.name;
+      labTestId = labTest.id;
+    }
+
+    if (!examCode || !examName) {
+      throw new BadRequestException('Debe proporcionar labTestId o examCode + examName');
+    }
+
     return this.prisma.orderTest.create({
       data: {
         orderId,
-        examCode: dto.examCode,
-        examName: dto.examName,
+        labTestId,
+        examCode,
+        examName,
         notes: dto.notes,
         createdBy,
+      },
+      include: {
+        labTest: {
+          select: { id: true, code: true, name: true, type: true, category: true },
+        },
       },
     });
   }
@@ -33,6 +61,11 @@ export class OrderTestsService {
     return this.prisma.orderTest.findMany({
       where: { orderId },
       orderBy: { createdAt: 'asc' },
+      include: {
+        labTest: {
+          select: { id: true, code: true, name: true, type: true, category: true, instructions: true, estimatedHours: true },
+        },
+      },
     });
   }
 

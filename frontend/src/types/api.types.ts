@@ -118,8 +118,19 @@ export interface Order {
 export interface OrderTest {
   id: string;
   orderId: string;
-  name: string;
+  examCode: string;
+  examName: string;
+  notes: string | null;
+  labTestId: string | null;
+  labTest?: {
+    id: string;
+    code: string;
+    name: string;
+    type: string;
+    category: string | null;
+  } | null;
   createdAt: string;
+  createdBy: string | null;
 }
 
 // ─── Consents ─────────────────────────────────────────────────────────────────
@@ -128,21 +139,40 @@ export interface Consent {
   id: string;
   orderId: string;
   status: ConsentStatus;
-  // Legacy compatibility fields (kept for existing UI code)
-  signedBy: string | null;
-  signedAt: string | null;
-  patientResponse: string | null;
-  respondedAt: string | null;
-  // v13 — legal fields
+  doctorId: string | null;
+  doctorSignedAt: string | null;
   doctorNameSnapshot: string | null;
   patientNameSnapshot: string | null;
   patientSignedAt: string | null;
   accepted: boolean | null;
   documentHtml: string | null;
   documentPdfUrl: string | null;
+  patientResponseAt: string | null;
   notes: string | null;
   createdAt: string;
   updatedAt: string;
+  // Nested relations (returned by backend)
+  order?: {
+    id: string;
+    status: string;
+    physician: string | null;
+    createdAt: string;
+    tests?: OrderTest[];
+    patient: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      documentType: string;
+      documentNumber: string;
+      birthDate?: string;
+      email: string | null;
+    };
+  } | null;
+  doctor?: Pick<User, 'id' | 'email' | 'role' | 'firstName' | 'lastName'> | null;
+  // Legacy compatibility (kept for existing references)
+  signedBy?: string | null;
+  signedAt?: string | null;
+  respondedAt?: string | null;
 }
 
 // ─── Results ──────────────────────────────────────────────────────────────────

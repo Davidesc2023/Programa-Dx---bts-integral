@@ -53,12 +53,33 @@ export async function deleteOrder(id: string): Promise<void> {
 
 // ─── Order tests ──────────────────────────────────────────────────────────────
 
-export async function addOrderTest(orderId: string, name: string): Promise<OrderTest> {
+export interface AddOrderTestPayload {
+  examCode: string;
+  examName: string;
+  labTestId?: string;
+  notes?: string;
+}
+
+export async function addOrderTest(
+  orderId: string,
+  payload: AddOrderTestPayload | string,
+): Promise<OrderTest> {
+  const body =
+    typeof payload === 'string'
+      ? { examCode: payload, examName: payload }
+      : payload;
   const { data } = await apiClient.post<ApiResponse<OrderTest>>(
     `/orders/${orderId}/tests`,
-    { name },
+    body,
   );
   return data.data;
+}
+
+export async function addOrderTests(
+  orderId: string,
+  exams: AddOrderTestPayload[],
+): Promise<void> {
+  await Promise.all(exams.map((e) => addOrderTest(orderId, e)));
 }
 
 export async function deleteOrderTest(orderId: string, testId: string): Promise<void> {

@@ -59,6 +59,8 @@ const CONSENT_SELECT = {
       role: true,
       firstName: true,
       lastName: true,
+      specialty: true,
+      medicalLicense: true,
     },
   },
 } as const;
@@ -211,6 +213,7 @@ export class ConsentsService {
       doctorSignedAt,
       // placeholder — will be filled in once patient accepts
       patientSignedAt: doctorSignedAt,
+      doctorSignatureDataUrl: dto.signatureDataUrl ?? null,
     });
 
     return this.prisma.consent.update({

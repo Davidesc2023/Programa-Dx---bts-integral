@@ -1,18 +1,25 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, MaxLength } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
 
 export class CreateOrderTestDto {
-  @ApiProperty({ example: 'HEM-001', description: 'Código del examen' })
+  @ApiPropertyOptional({ example: 'a1b2c3d4-...', description: 'ID del examen del catálogo (opcional)' })
+  @IsOptional()
+  @IsUUID()
+  labTestId?: string;
+
+  @ApiPropertyOptional({ example: 'HEM-001', description: 'Código del examen (inferido del catálogo si labTestId presente)' })
+  @IsOptional()
   @IsString()
   @MaxLength(50)
-  examCode: string;
+  examCode?: string;
 
-  @ApiProperty({ example: 'Hemograma completo', description: 'Nombre del examen' })
+  @ApiPropertyOptional({ example: 'Hemograma completo', description: 'Nombre del examen (inferido del catálogo si labTestId presente)' })
+  @IsOptional()
   @IsString()
   @MaxLength(200)
-  examName: string;
+  examName?: string;
 
-  @ApiPropertyOptional({ example: 'Ayuno de 8 horas requerido', description: 'Notas adicionales' })
+  @ApiPropertyOptional({ example: 'Ayuno de 8 horas requerido' })
   @IsOptional()
   @IsString()
   @MaxLength(500)

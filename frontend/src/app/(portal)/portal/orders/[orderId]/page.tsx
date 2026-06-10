@@ -103,7 +103,7 @@ export default function PortalOrderDetailPage({
                 {order.tests.map((t) => (
                   <li key={t.id} className="text-sm text-gray-700 flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />
-                    {t.name}
+                    {t.examName}
                   </li>
                 ))}
               </ul>

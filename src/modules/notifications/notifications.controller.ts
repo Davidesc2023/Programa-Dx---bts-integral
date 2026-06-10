@@ -33,27 +33,27 @@ export class NotificationsController {
       page ? parseInt(page, 10) : 1,
       limit ? Math.min(parseInt(limit, 10), 50) : 20,
     );
-    return ResponseDto.of(result, 'Notificaciones obtenidas');
+    return ResponseDto.of(result, 'Notificaciones obtenidas', 200);
   }
 
   @Get('unread-count')
   @ApiOperation({ summary: 'Get unread notification count' })
   async getUnreadCount(@CurrentUser() user: ICurrentUser) {
     const result = await this.notifications.getUnreadCount(user.userId);
-    return ResponseDto.of(result, 'Conteo de no leídas');
+    return ResponseDto.of(result, 'Conteo de no leídas', 200);
   }
 
   @Patch(':id/read')
   @ApiOperation({ summary: 'Mark a notification as read' })
   async markRead(@CurrentUser() user: ICurrentUser, @Param('id') id: string) {
     const result = await this.notifications.markRead(id, user.userId);
-    return ResponseDto.of(result, 'Notificación marcada como leída');
+    return ResponseDto.of(result, 'Notificación marcada como leída', 200);
   }
 
   @Patch('read-all')
   @ApiOperation({ summary: 'Mark ALL my notifications as read' })
   async markAllRead(@CurrentUser() user: ICurrentUser) {
     const result = await this.notifications.markAllRead(user.userId);
-    return ResponseDto.of(result, 'Todas las notificaciones marcadas como leídas');
+    return ResponseDto.of(result, 'Todas las notificaciones marcadas como leídas', 200);
   }
 }

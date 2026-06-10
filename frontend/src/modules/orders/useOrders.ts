@@ -16,11 +16,17 @@ import {
   updateOrderStatus,
   deleteOrder,
   addOrderTest,
+  addOrderTests,
   deleteOrderTest,
+  type AddOrderTestPayload,
 } from '@/services/orders.service';
 import { getApiErrorMessage } from '@/services/api';
 import type { OrderFormValues } from '@/lib/validators';
 import type { OrderStatus } from '@/types/enums';
+
+export interface CreateOrderPayload extends OrderFormValues {
+  selectedExams?: AddOrderTestPayload[];
+}
 
 const ORDERS_KEY = 'orders';
 const PAGE_SIZE = 15;
@@ -66,7 +72,13 @@ export function useOrder(id: string) {
 export function useCreateOrder(onSuccess?: (id: string) => void) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload: OrderFormValues) => createOrder(payload),
+    mutationFn: async ({ selectedExams, ...values }: CreateOrderPayload) => {
+      const order = await createOrder(values);
+      if (selectedExams && selectedExams.length > 0) {
+        await addOrderTests(order.id, selectedExams);
+      }
+      return order;
+    },
     onSuccess: (order) => {
       qc.invalidateQueries({ queryKey: [ORDERS_KEY] });
       toast.success('Orden creada correctamente');

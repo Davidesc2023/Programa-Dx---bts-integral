@@ -195,7 +195,7 @@ export function OrderDetail({ orderId }: OrderDetailProps) {
                     key={t.id}
                     className="flex items-center justify-between py-2 text-sm text-gray-700"
                   >
-                    <span>{t.name}</span>
+                    <span>{t.examName}</span>
                     <button
                       className="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
                       title="Eliminar examen"

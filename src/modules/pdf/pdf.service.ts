@@ -16,6 +16,7 @@ export interface ConsentTemplateData {
   doctorMedicalLicense: string | null;
   doctorSignedAt: Date;
   patientSignedAt: Date;
+  doctorSignatureDataUrl?: string | null;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -103,12 +104,14 @@ export function buildConsentHtml(data: ConsentTemplateData): string {
 
   <div class="signatures">
     <div class="sig-box">
+      ${data.doctorSignatureDataUrl ? `<img src="${data.doctorSignatureDataUrl}" alt="Firma médico" style="height:48px;margin-bottom:6px;display:block;" />` : '<div style="height:48px;margin-bottom:6px;"></div>'}
       <div class="name">${data.doctorName}</div>
       ${data.doctorSpecialty ? `<div class="role">${data.doctorSpecialty}</div>` : ''}
       ${data.doctorMedicalLicense ? `<div class="role">RM: ${data.doctorMedicalLicense}</div>` : ''}
       <div class="role">Firmado digitalmente: ${fmt(data.doctorSignedAt)}</div>
     </div>
     <div class="sig-box">
+      <div style="height:48px;margin-bottom:6px;"></div>
       <div class="name">${data.patientName}</div>
       <div class="role">${data.patientDocumentType} N.° ${data.patientDocumentNumber}</div>
       <div class="role">Acepta: ${fmt(data.patientSignedAt)}</div>

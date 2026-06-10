@@ -267,20 +267,55 @@ model Appointment {
 }
 
 // ============================================================
+// MÓDULO: LabTests — Catálogo de exámenes (UDT-CAT01)
+// ============================================================
+
+enum LabTestType {
+  NIVEL_SERICO
+  GENETICO
+  PANEL
+  IMAGEN
+  MICROBIOLOGIA
+  OTRO
+}
+
+model LabTest {
+  id                   String      @id @default(uuid())
+  code                 String      @unique
+  name                 String
+  type                 LabTestType @default(OTRO)
+  category             String?     // Ej. "Proteínas Plasmáticas", "Lípidos"
+  description          String?     // Descripción corta visible en el picker
+  instructions         String?     // Instrucciones para el paciente (ej. "Requiere 12h de ayuno")
+  estimatedHours       Int?        // Tiempo estimado de entrega en horas
+  requiresResultFromId String?     // FK al examen prerrequisito
+  requiresResultFrom   LabTest?    @relation("TestDependency", fields: [requiresResultFromId], references: [id])
+  dependentTests       LabTest[]   @relation("TestDependency")
+  isActive             Boolean     @default(true)
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+  orderTests           OrderTest[]
+
+  @@map("lab_tests")
+}
+
+// ============================================================
 // MÓDULO: OrderTests (UDT-V5)
 // ============================================================
 
 model OrderTest {
-  id        String   @id @default(uuid())
-  orderId   String
-  order     Order    @relation(fields: [orderId], references: [id])
-  examCode  String
-  examName  String
-  notes     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  createdBy String?
-  updatedBy String?
+  id         String    @id @default(uuid())
+  orderId    String
+  order      Order     @relation(fields: [orderId], references: [id])
+  labTestId  String?   // Referencia al catálogo (null = entrada libre legacy)
+  labTest    LabTest?  @relation(fields: [labTestId], references: [id])
+  examCode   String
+  examName   String
+  notes      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  createdBy  String?
+  updatedBy  String?
 
   @@map("order_tests")
 }

@@ -7,4 +7,9 @@ export class SignConsentDto {
   @IsString()
   @MaxLength(1000)
   notes?: string;
+
+  @ApiPropertyOptional({ description: 'Base64 PNG data URL de la firma digital del médico' })
+  @IsOptional()
+  @IsString()
+  signatureDataUrl?: string;
 }

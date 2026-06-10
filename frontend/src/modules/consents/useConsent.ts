@@ -40,10 +40,15 @@ export function useCreateConsent(orderId: string) {
   });
 }
 
+export interface SignPayload {
+  notes?: string;
+  signatureDataUrl?: string | null;
+}
+
 export function useSignConsent(orderId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (notes?: string) => signConsent(orderId, notes),
+    mutationFn: (payload?: SignPayload) => signConsent(orderId, payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: key(orderId) });
       qc.invalidateQueries({ queryKey: ['orders', orderId] });

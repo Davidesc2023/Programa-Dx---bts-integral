@@ -12,6 +12,7 @@ import { AppointmentsModule } from './modules/appointments/appointments.module';
 import { ConsentsModule } from './modules/consents/consents.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { PatientPortalModule } from './modules/patient-portal/patient-portal.module';
+import { LabTestsModule } from './modules/lab-tests/lab-tests.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -26,6 +27,7 @@ import { AppController } from './app.controller';
     ConsentsModule,
     NotificationsModule,
     PatientPortalModule,
+    LabTestsModule,
   ],
   controllers: [AppController],
   providers: [

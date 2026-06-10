@@ -31,7 +31,7 @@ export class NotificationsService {
           type: input.type,
           title: input.title,
           message: input.message,
-          metadata: input.metadata ?? undefined,
+          metadata: input.metadata ? JSON.parse(JSON.stringify(input.metadata)) : undefined,
         },
       });
     } catch (err) {

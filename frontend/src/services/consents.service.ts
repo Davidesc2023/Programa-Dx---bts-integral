@@ -16,10 +16,13 @@ export async function createConsent(orderId: string): Promise<Consent> {
   return data.data;
 }
 
-export async function signConsent(orderId: string, notes?: string): Promise<Consent> {
+export async function signConsent(
+  orderId: string,
+  payload?: { notes?: string; signatureDataUrl?: string | null },
+): Promise<Consent> {
   const { data } = await apiClient.patch<ApiResponse<Consent>>(
     `/orders/${orderId}/consent/sign`,
-    { notes },
+    payload ?? {},
   );
   return data.data;
 }
