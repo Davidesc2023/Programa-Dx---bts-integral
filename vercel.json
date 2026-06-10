@@ -1,18 +1,19 @@
 {
   "version": 2,
-  "buildCommand": "npx prisma generate && npm run build",
-  "installCommand": "npm install",
-  "functions": {
-    "api/index.js": {
-      "maxDuration": 10,
-      "memory": 1024,
-      "includeFiles": "dist/**,node_modules/.prisma/**,node_modules/@prisma/client/**"
-    }
-  },
-  "routes": [
+  "builds": [
     {
-      "src": "/(.*)",
-      "dest": "/api/index.js"
+      "src": "api/index.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "dist/**",
+          "node_modules/.prisma/**",
+          "node_modules/@prisma/client/**"
+        ]
+      }
     }
+  ],
+  "routes": [
+    { "src": "/(.*)", "dest": "/api/index.js" }
   ]
 }
