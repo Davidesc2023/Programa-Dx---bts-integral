@@ -96,7 +96,6 @@ jobs:
 
       - name: Deploy frontend to Vercel (Production)
         run: vercel deploy --prod --yes
-        working-directory: frontend
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
