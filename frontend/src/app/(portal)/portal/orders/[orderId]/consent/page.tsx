@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   ChevronLeft, AlertCircle, CheckCircle, XCircle, ChevronDown, ChevronUp,
@@ -15,9 +15,9 @@ import { SignaturePad, type SignaturePadHandle } from '@/components/ui/Signature
 export default function PortalConsentPage({
   params,
 }: {
-  params: Promise<{ orderId: string }>;
+  params: { orderId: string };
 }) {
-  const { orderId } = use(params);
+  const { orderId } = params;
   const [consent, setConsent] = useState<Consent | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<'accept' | 'reject' | null>(null);

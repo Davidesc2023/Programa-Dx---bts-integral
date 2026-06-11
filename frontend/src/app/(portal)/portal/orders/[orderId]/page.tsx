@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, AlertCircle, FileText } from 'lucide-react';
 import { getPortalOrderById } from '@/services/portal.service';
@@ -11,9 +11,9 @@ import { ORDER_STATUS_LABELS, ConsentStatus } from '@/types/enums';
 export default function PortalOrderDetailPage({
   params,
 }: {
-  params: Promise<{ orderId: string }>;
+  params: { orderId: string };
 }) {
-  const { orderId } = use(params);
+  const { orderId } = params;
   const [order, setOrder] = useState<Order | null>(null);
   const [error, setError] = useState<string | null>(null);
 
