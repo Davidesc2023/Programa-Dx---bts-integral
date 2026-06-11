@@ -113,16 +113,16 @@ Invoke-RestMethod -Method POST -Uri "https://api.supabase.com/v1/projects/wwosgg
 
 ### 2. Secrets de CI/CD en GitHub
 
-Sin estos secrets, los jobs de deploy en GitHub Actions fallarán en cada push a `main`.
+✅ **COMPLETADO 2026-06-11** — Los 4 secrets están activos en el repo:
 
-Ir a: GitHub → `Programa-Dx---bts-integral` → Settings → Secrets and variables → Actions
+| Secret | Estado |
+|--------|--------|
+| `SUPABASE_ACCESS_TOKEN` | ✅ Configurado |
+| `VERCEL_TOKEN` | ✅ Configurado |
+| `VERCEL_ORG_ID` | ✅ Configurado (`team_ulPxS0vuyEXzQGBYum5EOpUg`) |
+| `VERCEL_PROJECT_ID` | ✅ Configurado (`prj_zhkvLBtI6incOSGZCiEHgtqBGXkW`) |
 
-| Secret | Valor / Dónde obtenerlo |
-|--------|------------------------|
-| `SUPABASE_ACCESS_TOKEN` | Tu Personal Access Token de Supabase (nuevo — requerido para deploy de Edge Function) |
-| `VERCEL_TOKEN` | Token de Vercel (https://vercel.com/account/tokens) |
-| `VERCEL_ORG_ID` | `team_ulPxS0vuyEXzQGBYum5EOpUg` |
-| `VERCEL_PROJECT_ID` | `prj_zhkvLBtI6incOSGZCiEHgtqBGXkW` |
+El CI/CD completo (test → build → deploy-backend Supabase → deploy-frontend Vercel) se activa en cada push a `main`.
 
 ### 4. Storage R2 para PDFs de consentimientos
 
