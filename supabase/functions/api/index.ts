@@ -2,6 +2,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2"
 import * as jose from "npm:jose@5"
 import bcrypt from "npm:bcryptjs@2"
+import { PDFDocument, rgb, StandardFonts } from "npm:pdf-lib@1.17.1"
 
 // â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 type UserRole = "ADMIN" | "OPERADOR" | "LABORATORIO" | "MEDICO" | "PACIENTE"
@@ -525,28 +526,136 @@ async function consentsGet(req: Request, orderId: string): Promise<Response> {
   return ok(data)
 }
 
+// ── PDF generation ────────────────────────────────────────────────────────────
+async function generateConsentPdf(
+  db: ReturnType<typeof createClient>,
+  opts: {
+    orderId: string; consentId: string; doctorName: string
+    specialty: string | null; medicalLicense: string | null
+    patientName: string; diagnosis: string | null
+    notes: string | null; signedAt: Date
+  }
+): Promise<string | null> {
+  try {
+    const pdfDoc = await PDFDocument.create()
+    const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+    const regular = await pdfDoc.embedFont(StandardFonts.Helvetica)
+    const page = pdfDoc.addPage([612, 792])
+    const { width, height } = page.getSize()
+    const m = 60
+    let y = height - m
+
+    const text = (t: string, size = 11, font = regular, color = rgb(0, 0, 0)) => {
+      page.drawText(t.slice(0, 90), { x: m, y, size, font, color })
+      y -= size + 6
+    }
+    const section = (title: string) => {
+      y -= 8
+      page.drawLine({ start: { x: m, y: y + 4 }, end: { x: width - m, y: y + 4 }, thickness: 0.5, color: rgb(0.8, 0.8, 0.8) })
+      y -= 4
+      text(title, 11, bold, rgb(0.1, 0.3, 0.6))
+      y -= 2
+    }
+
+    // Header
+    page.drawText("CONSENTIMIENTO INFORMADO", { x: m, y, size: 20, font: bold, color: rgb(0.1, 0.2, 0.5) })
+    y -= 28
+    const dateStr = opts.signedAt.toLocaleString("es-CO", { timeZone: "America/Bogota" })
+    text(`Fecha de firma: ${dateStr}`, 9, regular, rgb(0.45, 0.45, 0.45))
+    text(`Orden #: ${opts.orderId.slice(0, 8).toUpperCase()}`, 9, regular, rgb(0.45, 0.45, 0.45))
+
+    section("DATOS DEL MÉDICO")
+    text(`Nombre: ${opts.doctorName}`)
+    text(`Especialidad: ${opts.specialty ?? "No especificada"}`)
+    text(`Licencia médica: ${opts.medicalLicense ?? "No especificada"}`)
+
+    section("DATOS DEL PACIENTE")
+    text(`Nombre: ${opts.patientName}`)
+
+    if (opts.diagnosis) {
+      section("DIAGNÓSTICO")
+      text(opts.diagnosis)
+    }
+
+    if (opts.notes) {
+      section("NOTAS")
+      // Simple word-wrap at 80 chars
+      const words = opts.notes.split(" ")
+      let line = ""
+      for (const w of words) {
+        if ((line + w).length > 80) { text(line.trim()); line = "" }
+        line += w + " "
+      }
+      if (line.trim()) text(line.trim())
+    }
+
+    section("FIRMA DIGITAL")
+    text(`El médico ${opts.doctorName} firmó este documento digitalmente el ${opts.signedAt.toLocaleDateString("es-CO")}.`)
+    text("Este consentimiento tiene validez como documento médico oficial generado por el sistema APP-DX.")
+    y -= 20
+    page.drawLine({ start: { x: m, y }, end: { x: m + 200, y }, thickness: 1, color: rgb(0, 0, 0) })
+    y -= 14
+    text(opts.doctorName, 10, bold)
+
+    const pdfBytes = await pdfDoc.save()
+    const path = `${opts.orderId}/${opts.consentId}.pdf`
+    const { error: upErr } = await db.storage.from("consents-pdf")
+      .upload(path, pdfBytes, { contentType: "application/pdf", upsert: true })
+    if (upErr) { console.error("PDF upload error:", upErr.message); return null }
+
+    const { data: signed } = await db.storage.from("consents-pdf").createSignedUrl(path, 31536000)
+    return signed?.signedUrl ?? null
+  } catch (e) {
+    console.error("Error generating/uploading consent PDF", e)
+    return null
+  }
+}
+
 async function consentSign(req: Request, orderId: string, actor: AuthUser): Promise<Response> {
   const body = await req.json().catch(() => null) ?? {}
   const db = getDb()
   const { data: consent } = await db.from("consents").select("id, status").eq("orderId", orderId).is("deletedAt", null).single()
   if (!consent) return err(404, "Consent not found")
   if (consent.status !== "PENDIENTE_FIRMA_MEDICO") return err(422, "Consent must be in PENDIENTE_FIRMA_MEDICO status")
+
   const { data: doc } = await db.from("users").select("firstName, lastName, specialty, medicalLicense").eq("id", actor.sub).single()
   const doctorName = doc ? `${doc.firstName ?? ""} ${doc.lastName ?? ""}`.trim() : "Doctor"
+
+  const { data: order } = await db.from("orders").select("id, diagnosis, patients(firstName, lastName)").eq("id", orderId).single()
+  const patient = (order as { patients?: { firstName?: string; lastName?: string } } | null)?.patients
+  const patientName = patient ? `${patient.firstName ?? ""} ${patient.lastName ?? ""}`.trim() : "Paciente"
+
+  const now = new Date()
   const html = `<html><body style="font-family:sans-serif;max-width:800px;margin:auto;padding:20px">
 <h1>Consentimiento Informado</h1>
-<p><strong>MÃ©dico:</strong> ${doctorName}</p>
+<p><strong>Médico:</strong> ${doctorName}</p>
 <p><strong>Especialidad:</strong> ${doc?.specialty ?? "N/A"}</p>
 <p><strong>Licencia:</strong> ${doc?.medicalLicense ?? "N/A"}</p>
-<p><strong>Fecha de firma:</strong> ${new Date().toLocaleString("es-CO")}</p>
+<p><strong>Paciente:</strong> ${patientName}</p>
+<p><strong>Fecha de firma:</strong> ${now.toLocaleString("es-CO")}</p>
 <p><strong>Notas:</strong> ${body.notes ?? ""}</p>
 </body></html>`
+
   const { data, error } = await db.from("consents")
     .update({ status: "FIRMADO_MEDICO", doctorId: actor.sub, doctorNameSnapshot: doctorName,
-      doctorSignedAt: new Date().toISOString(), documentHtml: html,
-      notes: body.notes??null, updatedBy: actor.sub, updatedAt: new Date().toISOString() })
+      doctorSignedAt: now.toISOString(), documentHtml: html,
+      notes: body.notes??null, updatedBy: actor.sub, updatedAt: now.toISOString() })
     .eq("id", consent.id).select().single()
   if (error) return err(500, error.message)
+
+  // Generate PDF async — does not block the response
+  void generateConsentPdf(db, {
+    orderId, consentId: consent.id, doctorName,
+    specialty: (doc as { specialty?: string | null } | null)?.specialty ?? null,
+    medicalLicense: (doc as { medicalLicense?: string | null } | null)?.medicalLicense ?? null,
+    patientName,
+    diagnosis: (order as { diagnosis?: string | null } | null)?.diagnosis ?? null,
+    notes: body.notes ?? null,
+    signedAt: now,
+  }).then(async (pdfUrl) => {
+    if (pdfUrl) await db.from("consents").update({ documentPdfUrl: pdfUrl }).eq("id", consent.id)
+  }).catch((e) => console.error("PDF post-sign update failed:", e))
+
   return ok(data, "Consent signed")
 }
 
