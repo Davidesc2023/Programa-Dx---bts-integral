@@ -72,7 +72,7 @@ Browser
 
 ## ✅ Sistema 100% OPERATIVO (verificado 2026-06-11)
 
-Smoke test completo pasando vía `https://programa-dx-bts-integral.vercel.app`:
+### Smoke test admin (vía `https://programa-dx-bts-integral.vercel.app`)
 
 | Check | Resultado |
 |-------|-----------|
@@ -80,6 +80,28 @@ Smoke test completo pasando vía `https://programa-dx-bts-integral.vercel.app`:
 | `POST /api/auth/login` | 200, accessToken generado ✅ |
 | `GET /api/auth/me` | datos del admin correctos ✅ |
 | `GET /api/notifications` | lista vacía 200 ✅ |
+
+### Portal del Paciente — Playwright test 14/14 PASS (2026-06-11)
+
+Usuario de prueba: `paciente@botoshop.com` / `Pac123456!`
+
+| Paso | Resultado |
+|------|-----------|
+| Login PACIENTE → redirect `/portal/dashboard` | ✅ |
+| Header "Portal del Paciente" visible | ✅ |
+| Navbar: Inicio / Mis Órdenes / Resultados / Citas | ✅ |
+| Email del paciente visible en header | ✅ |
+| Dashboard: "Bienvenido" + stats (1 orden activa, 1 resultado) | ✅ |
+| Página Mis Órdenes carga 2 órdenes | ✅ |
+| Detalle de orden (id, fecha, diagnóstico, estado) | ✅ |
+| Página Resultados: Alfa-1 Antitripsina 142 mg/dL | ✅ |
+| Página Citas: carga correctamente (sin citas aún) | ✅ |
+| Sin errores JS críticos | ✅ |
+
+### Bugs corregidos durante el test del portal (2026-06-11)
+- `PortalDashboard` type: backend retorna arrays, frontend esperaba números → corregido `.length`
+- `use(params)` Next.js 15 en Next.js 14 → corregido a `params` objeto plano
+- Commits: `bfc71c3`, `85b1e88`
 
 ---
 
