@@ -1,7 +1,7 @@
 # Estado del Proyecto APP-DX — Junio 2026
 
 > Documento de referencia: resume todo lo implementado, el estado actual de cada componente y los pasos exactos que faltan para tener el sistema al 100 % en producción.
-> Última actualización: 2026-06-11 (rev 2)
+> Última actualización: 2026-06-11 (rev 4)
 
 ---
 
@@ -73,7 +73,7 @@ Browser
 
 ---
 
-## ✅ Sistema 100% OPERATIVO (verificado 2026-06-11)
+## ✅ Sistema 100% OPERATIVO — incluye PDFs (verificado 2026-06-11)
 
 ### Smoke test admin (vía `https://programa-dx-bts-integral.vercel.app`)
 
@@ -108,23 +108,34 @@ Usuario de prueba: `paciente@botoshop.com` / `Pac123456!`
 
 ---
 
+## ✅ PDFs de consentimientos — IMPLEMENTADO Y VERIFICADO (2026-06-11)
+
+`consentSign` genera el PDF con `pdf-lib@1.17.1`, lo sube al bucket `consents-pdf` (Supabase Storage, privado) y devuelve una URL firmada de 1 año en `documentPdfUrl`.
+
+**Prueba end-to-end (2 corridas confirmadas, última: 2026-06-11):**
+
+| Check | Resultado |
+|-------|-----------|
+| CI/CD run #67 — commit `3e76334` | ✅ PASS |
+| `PATCH /orders/test-order-001/consent/sign` | ✅ 200 en ~1165ms |
+| `status` en respuesta | ✅ `FIRMADO_MEDICO` |
+| `documentPdfUrl` en respuesta | ✅ URL firmada Supabase Storage |
+| DB `consents.documentPdfUrl` persistido | ✅ |
+| GET URL → HTTP status | ✅ 200 |
+| GET URL → Content-Type | ✅ `application/pdf` |
+| Magic bytes (`%PDF`) | ✅ archivo PDF válido (~1741 bytes) |
+
+**Fix clave:** `void generateConsentPdf(...)` → `await generateConsentPdf(...)` — las Supabase Edge Functions matan las promesas en background cuando devuelven la respuesta HTTP. El tiempo de respuesta subió de 777ms a ~1165ms, confirmando que la generación ocurre dentro de la request.
+
+**Implementación:**
+- Librería: `npm:pdf-lib@1.17.1` (Deno)
+- Storage: bucket `consents-pdf` (privado), path `{orderId}/{consentId}.pdf`
+- URL firmada: validez 1 año (31 536 000 s)
+- Contenido del PDF: médico, especialidad, licencia, paciente, diagnóstico, notas, fecha firma, línea de firma
+
+---
+
 ## 🔧 Pendiente — MEJORAS (no bloquean producción)
-
-### 1. PDFs de consentimientos (generación + almacenamiento)
-
-`consentSign` genera HTML (guardado en `documentHtml`). La generación de PDF real no está implementada.
-
-**Solución:** Edge Function separada `generate-pdf` usando `pdf-lib` + Cloudflare R2.
-
-Secrets requeridos en Supabase cuando sea necesario:
-
-| Secret | Descripción |
-|--------|-------------|
-| `R2_BUCKET` | Nombre del bucket en Cloudflare R2 |
-| `R2_ACCOUNT_ID` | Account ID de Cloudflare |
-| `R2_ACCESS_KEY_ID` | Clave de acceso R2 |
-| `R2_SECRET_ACCESS_KEY` | Secret R2 |
-| `R2_PUBLIC_URL` | URL pública del bucket |
 
 ### 2. Dominio personalizado
 
