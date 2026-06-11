@@ -105,52 +105,33 @@ Usuario de prueba: `paciente@botoshop.com` / `Pac123456!`
 
 ---
 
-## ⚠️ Pendiente — IMPORTANTE (no bloquean producción)
+## ⚠️ Pendiente — IMPORTANTE
 
-### 1. Variables de entorno de la Edge Function en Supabase
+### 1. Edge Function source en el repositorio
 
-La Edge Function NO tiene los secrets JWT configurados. Sin ellos, todos los endpoints de auth fallan.
+El código fuente de la Edge Function `api` (Deno/TypeScript) **no está en el repositorio git**. Está desplegado directamente en Supabase pero no versionado localmente.
 
-**Opción A — Supabase Management API (recomendado, un comando):**
+**Riesgo:** si se necesita modificar el backend, no hay fuente para editar y hacer CI/CD.
 
-Obtener tu Personal Access Token en: https://supabase.com/dashboard/account/tokens
-
-Luego ejecutar en terminal (reemplaza `TU_SUPABASE_PAT`):
-
-```powershell
-$token = "TU_SUPABASE_PAT"
-$body = '[{"name":"JWT_SECRET","value":"iHvRUM2gVmhSBfquMdp/+g/GETyC6cDCWkPz2af0ohIbeHEQ2KjLQervhTiR/gK0"},{"name":"JWT_REFRESH_SECRET","value":"4zAtiMd0FomITcFxDKYByycoXM7KmiftEtgtELYZIOIw6+F6LaGpVV/txBDtKIEl"},{"name":"CORS_ORIGIN","value":"https://programa-dx-bts-integral.vercel.app"}]'
-Invoke-RestMethod -Method POST -Uri "https://api.supabase.com/v1/projects/wwosggahpasvoexshrdl/secrets" -Headers @{Authorization="Bearer $token"; "Content-Type"="application/json"} -Body $body
-```
-
-✅ **COMPLETADO 2026-06-11** — Secrets configurados via Supabase Management API:
-- `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CORS_ORIGIN` activos en la Edge Function
-
-✅ **COMPLETADO 2026-06-11** — `BACKEND_URL` configurado en Vercel:
-- Valor: `https://wwosggahpasvoexshrdl.supabase.co/functions/v1/api`
-- Proyecto corregido: `rootDirectory=frontend`, `framework=nextjs`
-- Proxy fix: `content-length` ya no se reenvía, response bufferizado con `arrayBuffer()`
+**Acción recomendada:** exportar el código desde Supabase y guardarlo en `supabase/functions/api/index.ts` para que el CI/CD lo gestione.
 
 ---
 
-### 2. Secrets de CI/CD en GitHub
+## 🔧 Pendiente — MEJORAS (no bloquean producción)
 
-✅ **COMPLETADO 2026-06-11** — Los 4 secrets están activos en el repo:
+### 2. Row Level Security (RLS) en Supabase
 
-| Secret | Estado |
-|--------|--------|
-| `SUPABASE_ACCESS_TOKEN` | ✅ Configurado |
-| `VERCEL_TOKEN` | ✅ Configurado |
-| `VERCEL_ORG_ID` | ✅ Configurado (`team_ulPxS0vuyEXzQGBYum5EOpUg`) |
-| `VERCEL_PROJECT_ID` | ✅ Configurado (`prj_zhkvLBtI6incOSGZCiEHgtqBGXkW`) |
+Las 11 tablas tienen RLS deshabilitado. El backend usa `service_role_key` (bypasea RLS), por lo que es seguro funcionalmente. Sin embargo, como buena práctica defense-in-depth se recomienda habilitarlo con políticas apropiadas.
 
-El CI/CD completo (test → build → deploy-backend Supabase → deploy-frontend Vercel) se activa en cada push a `main`.
+**Advertencia:** habilitar RLS sin políticas bloquea TODO acceso. Solo hacer si se definen las políticas correspondientes.
 
-### 4. Storage R2 para PDFs de consentimientos
+### 3. PDFs de consentimientos (generación + almacenamiento)
 
-El flujo de consentimientos funciona (create, sign, send, respond), pero la generación y subida del PDF está deshabilitada.
+`consentSign` genera HTML (guardado en `documentHtml`). La generación de PDF real no está implementada.
 
-Cuando sea necesario, agregar en Supabase Edge Function secrets:
+**Solución:** Edge Function separada `generate-pdf` usando `pdf-lib` + Cloudflare R2.
+
+Secrets requeridos en Supabase cuando sea necesario:
 
 | Secret | Descripción |
 |--------|-------------|
@@ -160,65 +141,13 @@ Cuando sea necesario, agregar en Supabase Edge Function secrets:
 | `R2_SECRET_ACCESS_KEY` | Secret R2 |
 | `R2_PUBLIC_URL` | URL pública del bucket |
 
----
+### 4. Eliminar proyecto `app-dx-api` de Vercel
 
-## 🔧 Pendiente — MEJORAS (no bloquean producción)
+Proyecto deshabilitado de un intento anterior de desplegar NestJS. No se usa. Eliminar desde Vercel Dashboard para evitar confusión.
 
-### 5. Row Level Security (RLS) en Supabase
+### 5. Dominio personalizado
 
-Las 11 tablas tienen RLS deshabilitado. El backend usa `service_role_key` (bypasea RLS), por lo que es seguro funcionalmente. Sin embargo, como buena práctica defense-in-depth se recomienda habilitarlo con políticas apropiadas.
-
-**Advertencia**: habilitar RLS sin políticas bloquea TODO acceso. Solo hacer esto si se definen las políticas correspondientes.
-
-### 6. Generación de PDFs de consentimientos
-
-`consentSign` genera HTML (guardado en `documentHtml`). La generación de PDF real no está implementada en la Edge Function (limitación de Deno con puppeteer).
-
-**Solución futura**: crear Edge Function separada `generate-pdf` usando `pdf-lib` (TypeScript puro, compatible con Deno) para generar el PDF y subirlo a R2.
-
-### 7. Eliminar proyecto `app-dx-api` de Vercel
-
-Fue un intento fallido de desplegar NestJS. Ya no se usa. Eliminar desde Vercel Dashboard.
-
-### 8. Dominio personalizado
-
-La app corre en `programa-dx-bts-integral.vercel.app`. Si se quiere un dominio propio (ej: `app.botoshop.com`), configurarlo en Vercel Dashboard → Domains.
-
----
-
-## Flujo de verificación (smoke test — ejecutar después de completar pasos 1 y 2)
-
-```bash
-# 1. Health check directo al backend
-GET https://wwosggahpasvoexshrdl.supabase.co/functions/v1/api/health
-# Esperado: {"data":{"status":"ok","version":"2.0.0"}}
-
-# 2. Health check vía proxy del frontend
-GET https://programa-dx-bts-integral.vercel.app/api/health
-# Esperado: mismo resultado
-
-# 3. Login con el admin creado
-POST https://programa-dx-bts-integral.vercel.app/api/auth/login
-Body: {"email":"admin@botoshop.com","password":"uC6w4B9GN3RHL3bP"}
-# Esperado: {"accessToken":"...","refreshToken":"...","user":{...}}
-
-# 4. Verificar token
-GET https://programa-dx-bts-integral.vercel.app/api/auth/me
-Header: Authorization: Bearer {accessToken del paso 3}
-# Esperado: datos del admin
-
-# 5. Crear paciente de prueba
-POST https://programa-dx-bts-integral.vercel.app/api/patients
-# Esperado: 201 Created
-
-# 6. Crear orden
-POST https://programa-dx-bts-integral.vercel.app/api/orders
-# Esperado: 201 Created
-
-# 7. Notificaciones
-GET https://programa-dx-bts-integral.vercel.app/api/notifications
-# Esperado: lista vacía []
-```
+La app corre en `programa-dx-bts-integral.vercel.app`. Si se quiere dominio propio (ej: `app.botoshop.com`), configurar en Vercel Dashboard → Domains.
 
 ---
 
