@@ -85,10 +85,30 @@ export interface Patient {
 
 // ─── Portal Dashboard ─────────────────────────────────────────────────────────
 
+export interface PortalDashboardOrder {
+  id: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface PortalDashboardConsent {
+  id: string;
+  status: string;
+  orderId: string;
+  createdAt: string;
+}
+
+export interface PortalDashboardResult {
+  id: string;
+  examType: string;
+  createdAt: string;
+  orderId: string;
+}
+
 export interface PortalDashboard {
-  activeOrders: number;
-  pendingConsents: number;
-  availableResults: number;
+  activeOrders: PortalDashboardOrder[];
+  pendingConsents: PortalDashboardConsent[];
+  recentResults: PortalDashboardResult[];
   nextAppointment: Appointment | null;
 }
 

@@ -38,19 +38,19 @@ export default function PortalDashboardPage() {
           <StatCard
             icon={<ClipboardList size={20} className="text-blue-500" />}
             label="Órdenes activas"
-            value={dashboard.activeOrders}
+            value={dashboard.activeOrders.length}
             href="/portal/orders"
           />
           <StatCard
             icon={<FileText size={20} className="text-orange-500" />}
             label="Consentimientos pendientes"
-            value={dashboard.pendingConsents}
+            value={dashboard.pendingConsents.length}
             href="/portal/orders"
           />
           <StatCard
             icon={<FileText size={20} className="text-green-500" />}
             label="Resultados disponibles"
-            value={dashboard.availableResults}
+            value={dashboard.recentResults.length}
             href="/portal/results"
           />
         </div>

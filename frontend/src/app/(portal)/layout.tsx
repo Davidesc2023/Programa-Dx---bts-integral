@@ -39,8 +39,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
     staleTime: 30_000,
   });
 
-  const pendingConsents = dashboardData?.pendingConsents ?? 0;
-  const availableResults = dashboardData?.availableResults ?? 0;
+  const pendingConsents = dashboardData?.pendingConsents?.length ?? 0;
+  const availableResults = dashboardData?.recentResults?.length ?? 0;
 
   if (!isAuthenticated || user?.role !== UserRole.PACIENTE) {
     return null;
