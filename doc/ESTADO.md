@@ -70,7 +70,20 @@ Browser
 
 ---
 
-## ❌ Pendiente — CRÍTICO (app no funciona sin esto)
+## ✅ Sistema 100% OPERATIVO (verificado 2026-06-11)
+
+Smoke test completo pasando vía `https://programa-dx-bts-integral.vercel.app`:
+
+| Check | Resultado |
+|-------|-----------|
+| `GET /api/health` | `{"status":"ok","version":"2.0.0"}` ✅ |
+| `POST /api/auth/login` | 200, accessToken generado ✅ |
+| `GET /api/auth/me` | datos del admin correctos ✅ |
+| `GET /api/notifications` | lista vacía 200 ✅ |
+
+---
+
+## ⚠️ Pendiente — IMPORTANTE (no bloquean producción)
 
 ### 1. Variables de entorno de la Edge Function en Supabase
 
@@ -88,52 +101,17 @@ $body = '[{"name":"JWT_SECRET","value":"iHvRUM2gVmhSBfquMdp/+g/GETyC6cDCWkPz2af0
 Invoke-RestMethod -Method POST -Uri "https://api.supabase.com/v1/projects/wwosggahpasvoexshrdl/secrets" -Headers @{Authorization="Bearer $token"; "Content-Type"="application/json"} -Body $body
 ```
 
-**Opción B — Dashboard manual:**
+✅ **COMPLETADO 2026-06-11** — Secrets configurados via Supabase Management API:
+- `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CORS_ORIGIN` activos en la Edge Function
 
-Ir a: Supabase Dashboard → `wwosggahpasvoexshrdl` → Edge Functions → `api` → Secrets
-
-| Secret | Valor |
-|--------|-------|
-| `JWT_SECRET` | `iHvRUM2gVmhSBfquMdp/+g/GETyC6cDCWkPz2af0ohIbeHEQ2KjLQervhTiR/gK0` |
-| `JWT_REFRESH_SECRET` | `4zAtiMd0FomITcFxDKYByycoXM7KmiftEtgtELYZIOIw6+F6LaGpVV/txBDtKIEl` |
-| `CORS_ORIGIN` | `https://programa-dx-bts-integral.vercel.app` |
+✅ **COMPLETADO 2026-06-11** — `BACKEND_URL` configurado en Vercel:
+- Valor: `https://wwosggahpasvoexshrdl.supabase.co/functions/v1/api`
+- Proyecto corregido: `rootDirectory=frontend`, `framework=nextjs`
+- Proxy fix: `content-length` ya no se reenvía, response bufferizado con `arrayBuffer()`
 
 ---
 
-### 2. Variable de entorno BACKEND_URL en Vercel + Redeploy
-
-El proxy del frontend no sabe a dónde apuntar sin esta variable.
-
-**Opción A — Vercel API (un comando):**
-
-Obtener tu Vercel Token en: https://vercel.com/account/tokens
-
-```powershell
-$token = "TU_VERCEL_TOKEN"
-$body = '{"key":"BACKEND_URL","value":"https://wwosggahpasvoexshrdl.supabase.co/functions/v1/api","target":["production","preview","development"],"type":"plain"}'
-Invoke-RestMethod -Method POST -Uri "https://api.vercel.com/v10/projects/prj_zhkvLBtI6incOSGZCiEHgtqBGXkW/env?teamId=team_ulPxS0vuyEXzQGBYum5EOpUg" -Headers @{Authorization="Bearer $token"; "Content-Type"="application/json"} -Body $body
-```
-
-Después del POST, hacer redeploy:
-```powershell
-Invoke-RestMethod -Method POST -Uri "https://api.vercel.com/v13/deployments?teamId=team_ulPxS0vuyEXzQGBYum5EOpUg" -Headers @{Authorization="Bearer $token"; "Content-Type"="application/json"} -Body '{"name":"programa-dx-bts-integral","target":"production","gitSource":{"type":"github","repoId":"Davidesc2023/Programa-Dx---bts-integral","ref":"main"}}'
-```
-
-**Opción B — Dashboard manual:**
-
-Vercel Dashboard → `programa-dx-bts-integral` → Settings → Environment Variables
-
-| Variable | Valor | Entornos |
-|----------|-------|----------|
-| `BACKEND_URL` | `https://wwosggahpasvoexshrdl.supabase.co/functions/v1/api` | Production, Preview, Development |
-
-Después: Deployments → último deployment → "..." → Redeploy
-
----
-
-## ⚠️ Pendiente — IMPORTANTE
-
-### 3. Secrets de CI/CD en GitHub
+### 2. Secrets de CI/CD en GitHub
 
 Sin estos secrets, los jobs de deploy en GitHub Actions fallarán en cada push a `main`.
 
