@@ -411,7 +411,7 @@ async function ordersCreate(req: Request, actor: AuthUser): Promise<Response> {
     .insert({ patientId: body.patientId, doctorId: body.doctorId||null,
       physician: body.physician??null, diagnosis: body.diagnosis??null,
       priority: body.priority??"NORMAL", observations: body.observations??null,
-      estimatedCompletionDate: body.estimatedCompletionDate??null,
+      estimatedCompletionDate: body.estimatedCompletionDate||null,
       createdBy: actor.sub, updatedBy: actor.sub })
     .select("*, patients(id, firstName, lastName, documentType, documentNumber)").single()
   if (error) return err(500, error.message)
@@ -455,8 +455,9 @@ async function ordersUpdate(req: Request, id: string, actor: AuthUser): Promise<
   if (!ex) return err(404, "Order not found")
   if (ex.status !== "PENDIENTE") return err(422, "Can only update orders in PENDIENTE status")
   const allowed = ["doctorId","physician","diagnosis","priority","observations","estimatedCompletionDate"]
+  const dateFields = new Set(["estimatedCompletionDate"])
   const update: Record<string,unknown> = { updatedBy: actor.sub, updatedAt: new Date().toISOString() }
-  for (const k of allowed) if (body[k] !== undefined) update[k] = body[k]
+  for (const k of allowed) if (body[k] !== undefined) update[k] = dateFields.has(k) ? body[k]||null : body[k]
   const { data, error } = await db.from("orders").update(update).eq("id", id).select().single()
   if (error) return err(500, error.message)
   return ok(data, "Order updated")
