@@ -1,7 +1,7 @@
 # Estado del Proyecto APP-DX — Junio 2026
 
 > Documento de referencia: resume todo lo implementado, el estado actual de cada componente y los pasos exactos que faltan para tener el sistema al 100 % en producción.
-> Última actualización: 2026-06-11 (rev 4)
+> Última actualización: 2026-06-11 (rev 5)
 
 ---
 
@@ -105,6 +105,36 @@ Usuario de prueba: `paciente@botoshop.com` / `Pac123456!`
 - `PortalDashboard` type: backend retorna arrays, frontend esperaba números → corregido `.length`
 - `use(params)` Next.js 15 en Next.js 14 → corregido a `params` objeto plano
 - Commits: `bfc71c3`, `85b1e88`
+
+---
+
+## ✅ Flujo de creación de orden médica (MEDICO) — Playwright 10/10 PASS (2026-06-11)
+
+Usuario de prueba: `dr.garcia@botoshop.com` / `Medico123!`
+
+| Paso | Resultado |
+|------|-----------|
+| Login MEDICO → redirect `/dashboard` | ✅ |
+| `/orders/new` carga sin "Application error" | ✅ |
+| Catálogo de lab tests carga (25 exámenes) | ✅ |
+| DoctorPicker muestra médicos | ✅ |
+| PatientPicker selecciona María García | ✅ |
+| Selección de examen (TSH) | ✅ |
+| Submit habilitado, formulario enviado | ✅ |
+| Redirect a `/orders/<uuid>` | ✅ |
+| Detalle: nombre paciente, examen, estado, panel consentimiento | ✅ |
+| POST `/orders/:id/tests` desde UI de detalle | ✅ |
+
+### Bugs corregidos (commits `621feb7`, `3a77dad`)
+
+| Bug | Causa raíz | Fix |
+|-----|-----------|-----|
+| "Application error" al crear orden MEDICO | `getLabTests()` retornaba el envelope `{statusCode, message, data:[...]}` en vez del array; `catalog.reduce(...)` lanzaba `TypeError` | `api.get<ApiResponse<LabTest[]>>` + `return data.data` en `lab-tests.service.ts` |
+| DoctorPicker 403 para MEDICO | `GET /users` era solo ADMIN | `requireRole(authResult, "ADMIN", "MEDICO")` en `usersFind` |
+| Rutas `POST/DELETE /orders/:id/tests` inexistentes | No estaban en el router del backend | `orderTestsCreate` + `orderTestsDelete` + entradas en el router |
+| `doctorId: ""` generaba error UUID en PostgreSQL | `??null` no convierte `""` a `null` | `body.doctorId\|\|null` |
+| `order.patient` / `order.tests` / `order.consent` undefined en detalle | Supabase retorna `patients`, `order_tests`, `consents`; frontend esperaba `patient`, `tests`, `consent` | Remapeo en `getOrderById()` |
+| Form submit no redirige (sigue en `/orders/new`) | `estimatedCompletionDate: ""` enviado a columna `TIMESTAMP(3)`; PostgreSQL rechaza el valor | `body.estimatedCompletionDate\|\|null` en `ordersCreate` y `ordersUpdate` |
 
 ---
 
