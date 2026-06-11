@@ -643,8 +643,7 @@ async function consentSign(req: Request, orderId: string, actor: AuthUser): Prom
     .eq("id", consent.id).select().single()
   if (error) return err(500, error.message)
 
-  // Generate PDF async — does not block the response
-  void generateConsentPdf(db, {
+  const pdfUrl = await generateConsentPdf(db, {
     orderId, consentId: consent.id, doctorName,
     specialty: (doc as { specialty?: string | null } | null)?.specialty ?? null,
     medicalLicense: (doc as { medicalLicense?: string | null } | null)?.medicalLicense ?? null,
@@ -652,9 +651,11 @@ async function consentSign(req: Request, orderId: string, actor: AuthUser): Prom
     diagnosis: (order as { diagnosis?: string | null } | null)?.diagnosis ?? null,
     notes: body.notes ?? null,
     signedAt: now,
-  }).then(async (pdfUrl) => {
-    if (pdfUrl) await db.from("consents").update({ documentPdfUrl: pdfUrl }).eq("id", consent.id)
-  }).catch((e) => console.error("PDF post-sign update failed:", e))
+  })
+  if (pdfUrl) {
+    await db.from("consents").update({ documentPdfUrl: pdfUrl }).eq("id", consent.id)
+    ;(data as Record<string, unknown>).documentPdfUrl = pdfUrl
+  }
 
   return ok(data, "Consent signed")
 }
