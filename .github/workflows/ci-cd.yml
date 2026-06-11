@@ -59,11 +59,11 @@ jobs:
       - name: Build Next.js app
         run: npm run build
         env:
-          BACKEND_URL: https://placeholder.vercel.app
+          BACKEND_URL: https://wwosggahpasvoexshrdl.supabase.co/functions/v1/api
 
-  # ─── Job 3: Deploy Backend to Vercel ───────────────────────────────────────
+  # ─── Job 3: Deploy Backend → Supabase Edge Function ────────────────────────
   deploy-backend:
-    name: Deploy Backend → Vercel
+    name: Deploy Backend → Supabase Edge Function
     runs-on: ubuntu-latest
     needs: [test-backend, build-frontend]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -71,17 +71,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Vercel CLI
-        run: npm install -g vercel
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
 
-      - name: Deploy backend to Vercel (Production)
-        run: vercel deploy --prod --yes
+      - name: Deploy Edge Function
+        run: supabase functions deploy api --project-ref wwosggahpasvoexshrdl --no-verify-jwt
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
-  # ─── Job 4: Deploy Frontend to Vercel ──────────────────────────────────────
+  # ─── Job 4: Deploy Frontend → Vercel ───────────────────────────────────────
   deploy-frontend:
     name: Deploy Frontend → Vercel
     runs-on: ubuntu-latest

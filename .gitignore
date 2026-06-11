@@ -42,3 +42,4 @@ prisma/*.db
 
 # ─── Uploads (user-generated content, not source code) ───────────────────────
 uploads/
+.vercel
