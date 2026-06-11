@@ -1,4 +1,5 @@
 import { api } from './api';
+import type { ApiResponse } from '@/types/api.types';
 
 export interface LabTest {
   id: string;
@@ -21,16 +22,16 @@ export interface PrerequisiteCheck {
 }
 
 export async function getLabTests(): Promise<LabTest[]> {
-  const { data } = await api.get<LabTest[]>('/lab-tests');
-  return data;
+  const { data } = await api.get<ApiResponse<LabTest[]>>('/lab-tests');
+  return data.data;
 }
 
 export async function checkPrerequisite(
   labTestId: string,
   patientId: string,
 ): Promise<PrerequisiteCheck> {
-  const { data } = await api.get<PrerequisiteCheck>(
+  const { data } = await api.get<ApiResponse<PrerequisiteCheck>>(
     `/lab-tests/${labTestId}/prerequisite/${patientId}`,
   );
-  return data;
+  return data.data;
 }

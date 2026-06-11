@@ -253,7 +253,7 @@ async function usersCreate(req: Request): Promise<Response> {
 async function usersFind(req: Request): Promise<Response> {
   const authResult = await requireAuth(req)
   if (authResult instanceof Response) return authResult
-  const denied = requireRole(authResult, "ADMIN"); if (denied) return denied
+  const denied = requireRole(authResult, "ADMIN", "MEDICO"); if (denied) return denied
   const url = new URL(req.url)
   const { page, limit, from, to } = parsePagination(url)
   const role = url.searchParams.get("role")
@@ -408,7 +408,7 @@ async function ordersCreate(req: Request, actor: AuthUser): Promise<Response> {
   const { data: pat } = await db.from("patients").select("id").eq("id", body.patientId).is("deletedAt", null).single()
   if (!pat) return err(404, "Patient not found")
   const { data, error } = await db.from("orders")
-    .insert({ patientId: body.patientId, doctorId: body.doctorId??null,
+    .insert({ patientId: body.patientId, doctorId: body.doctorId||null,
       physician: body.physician??null, diagnosis: body.diagnosis??null,
       priority: body.priority??"NORMAL", observations: body.observations??null,
       estimatedCompletionDate: body.estimatedCompletionDate??null,
@@ -689,6 +689,34 @@ async function consentRespond(req: Request, orderId: string, actor: AuthUser): P
   const { data: order } = await db.from("orders").select("doctorId").eq("id", orderId).single()
   if (order?.doctorId) void notify(db, order.doctorId, "CONSENT_RESPONDED", "Respuesta al consentimiento", `El paciente ${accepted ? "aceptÃ³" : "rechazÃ³"} el consentimiento`)
   return ok({ id: consent.id, status: body.response }, "Response recorded")
+}
+
+// ============================================================================
+// ORDER TESTS
+// ============================================================================
+async function orderTestsCreate(req: Request, orderId: string, actor: AuthUser): Promise<Response> {
+  const body = await req.json().catch(() => null)
+  if (!body?.examCode || !body?.examName) return err(400, "examCode and examName are required")
+  const db = getDb()
+  const { data: order } = await db.from("orders").select("id").eq("id", orderId).is("deletedAt", null).single()
+  if (!order) return err(404, "Order not found")
+  const { data, error } = await db.from("order_tests")
+    .insert({ orderId, examCode: body.examCode, examName: body.examName,
+      labTestId: body.labTestId??null, notes: body.notes??null, createdBy: actor.sub })
+    .select().single()
+  if (error) return err(500, error.message)
+  return created(data, "Test added to order")
+}
+
+async function orderTestsDelete(req: Request, orderId: string, testId: string): Promise<Response> {
+  const authResult = await requireAuth(req)
+  if (authResult instanceof Response) return authResult
+  const denied = requireRole(authResult, "ADMIN","OPERADOR","MEDICO"); if (denied) return denied
+  const db = getDb()
+  const { data: ex } = await db.from("order_tests").select("id").eq("id", testId).eq("orderId", orderId).single()
+  if (!ex) return err(404, "Order test not found")
+  await db.from("order_tests").delete().eq("id", testId)
+  return ok(null, "Order test deleted")
 }
 
 // ============================================================================
@@ -1130,6 +1158,14 @@ Deno.serve(async (req: Request) => {
     }
     else if (m==="GET"   && matchPath("/orders/:orderId/consent",path)) {
       const p=matchPath("/orders/:orderId/consent",path)!; res=await consentsGet(req,p.orderId)
+    }
+
+    // Order Tests
+    else if (m==="POST"  && matchPath("/orders/:orderId/tests",path)) {
+      const p=matchPath("/orders/:orderId/tests",path)!; const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR","MEDICO");res=d??await orderTestsCreate(req,p.orderId,a)}
+    }
+    else if (m==="DELETE"&& matchPath("/orders/:orderId/tests/:testId",path)) {
+      const p=matchPath("/orders/:orderId/tests/:testId",path)!; res=await orderTestsDelete(req,p.orderId,p.testId)
     }
 
     // Lab Tests

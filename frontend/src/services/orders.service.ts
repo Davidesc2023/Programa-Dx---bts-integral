@@ -28,8 +28,14 @@ export async function getOrders(
 }
 
 export async function getOrderById(id: string): Promise<Order> {
-  const { data } = await apiClient.get<ApiResponse<Order>>(`/orders/${id}`);
-  return data.data;
+  const { data } = await apiClient.get<ApiResponse<Record<string, unknown>>>(`/orders/${id}`);
+  const raw = data.data;
+  return {
+    ...(raw as unknown as Order),
+    patient: (raw.patients as Order['patient']) ?? undefined,
+    tests: (raw.order_tests as Order['tests']) ?? [],
+    consent: Array.isArray(raw.consents) ? (raw.consents as Order['consent'][])[0] : undefined,
+  };
 }
 
 export async function createOrder(payload: OrderFormValues): Promise<Order> {
