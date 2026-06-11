@@ -1,7 +1,7 @@
 # Estado del Proyecto APP-DX — Junio 2026
 
 > Documento de referencia: resume todo lo implementado, el estado actual de cada componente y los pasos exactos que faltan para tener el sistema al 100 % en producción.
-> Última actualización: 2026-06-11
+> Última actualización: 2026-06-11 (rev 2)
 
 ---
 
@@ -67,6 +67,9 @@ Browser
   - Email: `admin@botoshop.com`
   - Password: `uC6w4B9GN3RHL3bP`  ← guardar en gestor de contraseñas
   - ID: `85e7df28-d831-4bac-a781-dc9c6c53b9b4`
+- [x] **RLS habilitado en las 11 tablas** (2026-06-11): `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` aplicado. El backend usa `service_role_key` (bypasea RLS siempre); acceso directo por `anon` key queda bloqueado.
+- [x] **Edge Function source en repositorio** (2026-06-11): `supabase/functions/api/index.ts` + `supabase/functions/api/deno.json` exportados desde Supabase y versionados en git. CI/CD puede redesplegar el backend.
+- [x] **Proyecto `app-dx-api` eliminado de Vercel** (2026-06-11): proyecto obsoleto (intento NestJS fallido) eliminado vía API.
 
 ---
 
@@ -105,27 +108,9 @@ Usuario de prueba: `paciente@botoshop.com` / `Pac123456!`
 
 ---
 
-## ⚠️ Pendiente — IMPORTANTE
-
-### 1. Edge Function source en el repositorio
-
-El código fuente de la Edge Function `api` (Deno/TypeScript) **no está en el repositorio git**. Está desplegado directamente en Supabase pero no versionado localmente.
-
-**Riesgo:** si se necesita modificar el backend, no hay fuente para editar y hacer CI/CD.
-
-**Acción recomendada:** exportar el código desde Supabase y guardarlo en `supabase/functions/api/index.ts` para que el CI/CD lo gestione.
-
----
-
 ## 🔧 Pendiente — MEJORAS (no bloquean producción)
 
-### 2. Row Level Security (RLS) en Supabase
-
-Las 11 tablas tienen RLS deshabilitado. El backend usa `service_role_key` (bypasea RLS), por lo que es seguro funcionalmente. Sin embargo, como buena práctica defense-in-depth se recomienda habilitarlo con políticas apropiadas.
-
-**Advertencia:** habilitar RLS sin políticas bloquea TODO acceso. Solo hacer si se definen las políticas correspondientes.
-
-### 3. PDFs de consentimientos (generación + almacenamiento)
+### 1. PDFs de consentimientos (generación + almacenamiento)
 
 `consentSign` genera HTML (guardado en `documentHtml`). La generación de PDF real no está implementada.
 
@@ -141,11 +126,7 @@ Secrets requeridos en Supabase cuando sea necesario:
 | `R2_SECRET_ACCESS_KEY` | Secret R2 |
 | `R2_PUBLIC_URL` | URL pública del bucket |
 
-### 4. Eliminar proyecto `app-dx-api` de Vercel
-
-Proyecto deshabilitado de un intento anterior de desplegar NestJS. No se usa. Eliminar desde Vercel Dashboard para evitar confusión.
-
-### 5. Dominio personalizado
+### 2. Dominio personalizado
 
 La app corre en `programa-dx-bts-integral.vercel.app`. Si se quiere dominio propio (ej: `app.botoshop.com`), configurar en Vercel Dashboard → Domains.
 
@@ -187,3 +168,4 @@ La app corre en `programa-dx-bts-integral.vercel.app`. Si se quiere dominio prop
 | Single Edge Function vs múltiples | Routing manual en un solo archivo evita cold-start en múltiples funciones y simplifica el despliegue |
 | verify_jwt: false | La Edge Function implementa su propio sistema JWT; no usar Supabase Auth (migrar auth hubiera roto todos los tokens existentes) |
 | Admin via pgcrypto | Se usó `crypt()` de pgcrypto directamente en SQL para evitar depender de un cliente externo para generar el hash bcrypt |
+| RLS sin políticas explícitas | El backend usa `service_role_key` que bypasea RLS siempre. Habilitar RLS sin políticas bloquea `anon`/`authenticated` (bueno — nadie debe acceder la DB directamente) sin afectar el backend. |
