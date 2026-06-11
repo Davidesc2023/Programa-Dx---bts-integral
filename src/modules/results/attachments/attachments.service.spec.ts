@@ -51,7 +51,7 @@ describe('AttachmentsService', () => {
     it('sube un PDF valido para un resultado existente', async () => {
       mockPrisma.result.findFirst.mockResolvedValue({ id: 'uuid-r1' });
       mockPrisma.resultAttachment.create.mockResolvedValue(MOCK_ATTACHMENT);
-      const result = await service.upload('uuid-r1', validFile as any, 'lab-id');
+      const result = await service.upload('uuid-r1', validFile as any, 'lab-id', 'LABORATORIO');
       expect(result.mimeType).toBe('application/pdf');
       expect(mockStorage.put).toHaveBeenCalledWith(expect.stringMatching(/^results\/uuid-r1\//), validFile.buffer, 'application/pdf');
       expect(mockPrisma.resultAttachment.create).toHaveBeenCalled();
@@ -59,22 +59,22 @@ describe('AttachmentsService', () => {
 
     it('lanza ServiceUnavailableException si el storage no esta configurado', async () => {
       mockStorage.enabled = false;
-      await expect(service.upload('uuid-r1', validFile as any, 'lab-id')).rejects.toThrow(ServiceUnavailableException);
+      await expect(service.upload('uuid-r1', validFile as any, 'lab-id', 'LABORATORIO')).rejects.toThrow(ServiceUnavailableException);
     });
 
     it('rechaza archivo con mimeType no permitido', async () => {
-      await expect(service.upload('uuid-r1', { ...validFile, mimetype: 'text/plain' } as any, 'lab-id')).rejects.toThrow(BadRequestException);
+      await expect(service.upload('uuid-r1', { ...validFile, mimetype: 'text/plain' } as any, 'lab-id', 'LABORATORIO')).rejects.toThrow(BadRequestException);
       expect(mockPrisma.resultAttachment.create).not.toHaveBeenCalled();
     });
 
     it('rechaza archivo que supera 10 MB', async () => {
-      await expect(service.upload('uuid-r1', { ...validFile, size: 11 * 1024 * 1024 } as any, 'lab-id')).rejects.toThrow(BadRequestException);
+      await expect(service.upload('uuid-r1', { ...validFile, size: 11 * 1024 * 1024 } as any, 'lab-id', 'LABORATORIO')).rejects.toThrow(BadRequestException);
       expect(mockPrisma.resultAttachment.create).not.toHaveBeenCalled();
     });
 
     it('lanza NotFoundException si el resultado no existe', async () => {
       mockPrisma.result.findFirst.mockResolvedValue(null);
-      await expect(service.upload('no-existe', validFile as any, 'lab-id')).rejects.toThrow(NotFoundException);
+      await expect(service.upload('no-existe', validFile as any, 'lab-id', 'LABORATORIO')).rejects.toThrow(NotFoundException);
       expect(mockPrisma.resultAttachment.create).not.toHaveBeenCalled();
     });
   });
@@ -97,13 +97,13 @@ describe('AttachmentsService', () => {
   describe('download()', () => {
     it('lanza NotFoundException si el adjunto no existe', async () => {
       mockPrisma.resultAttachment.findFirst.mockResolvedValue(null);
-      await expect(service.download('uuid-r1', 'no-existe')).rejects.toThrow(NotFoundException);
+      await expect(service.download('uuid-r1', 'no-existe', 'uuid-user', 'LABORATORIO')).rejects.toThrow(NotFoundException);
     });
 
     it('retorna StreamableFile cuando el adjunto existe en R2', async () => {
       mockPrisma.resultAttachment.findFirst.mockResolvedValue(MOCK_ATTACHMENT);
       mockStorage.getStream.mockResolvedValue({ pipe: jest.fn() });
-      const result = await service.download('uuid-r1', 'uuid-att1');
+      const result = await service.download('uuid-r1', 'uuid-att1', 'uuid-user', 'LABORATORIO');
       expect(mockStorage.getStream).toHaveBeenCalledWith(MOCK_ATTACHMENT.filePath);
       expect(result).toBeDefined();
     });

@@ -25,6 +25,7 @@ const ORDER_RESULT = {
 
 const mockPrisma = {
   patient: { findFirst: jest.fn() },
+  user: { findFirst: jest.fn() },
   order: {
     create: jest.fn(),
     findFirst: jest.fn(),
@@ -38,6 +39,7 @@ const mockPrisma = {
 
 const mockNotifications = {
   notifyResultReady: jest.fn().mockResolvedValue(undefined),
+  notifyOrderUpdated: jest.fn().mockResolvedValue(undefined),
 };
 
 describe('OrdersService', () => {
@@ -68,6 +70,7 @@ describe('OrdersService', () => {
 
     it('crea orden con doctorId cuando se proporciona', async () => {
       mockPrisma.patient.findFirst.mockResolvedValue({ id: 'uuid-p1' });
+      mockPrisma.user.findFirst.mockResolvedValue({ id: 'uuid-doc1' });
       mockPrisma.order.create.mockResolvedValue({ ...ORDER_RESULT, doctorId: 'uuid-doc1' });
 
       const result = await service.create(

@@ -42,14 +42,16 @@ describe('OrderTestsService', () => {
       const result = await service.create('uuid-o1', CREATE_DTO, 'op-id');
 
       expect(result.examCode).toBe('HEM-001');
-      expect(mockPrisma.orderTest.create).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          orderId: 'uuid-o1',
-          examCode: 'HEM-001',
-          examName: 'Hemograma completo',
-          createdBy: 'op-id',
+      expect(mockPrisma.orderTest.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            orderId: 'uuid-o1',
+            examCode: 'HEM-001',
+            examName: 'Hemograma completo',
+            createdBy: 'op-id',
+          }),
         }),
-      });
+      );
     });
 
     it('lanza NotFoundException si la orden no existe', async () => {
