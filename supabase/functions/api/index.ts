@@ -18,6 +18,12 @@ import {
   publicCrearCaso,
   publicSubirResultadoPrevio,
 } from "./routes/formulario.ts"
+import {
+  generarLinkPaciente,
+  invalidarLinkPaciente,
+  obtenerCasoParaAutorizacion,
+  responderAutorizacion,
+} from "./routes/autorizacion.ts"
 
 type RouteParams = Record<string, string>
 
@@ -1014,6 +1020,14 @@ Deno.serve(async (req: Request) => {
                                                                                     res = await publicGetForm(req, pp.tenant, pp.programa)
     else if (m==="POST" && (pp=matchPath("/public/:tenant/:programa/upload",path))) res = await publicSubirResultadoPrevio(req, pp.tenant, pp.programa)
     else if (m==="POST" && (pp=matchPath("/public/:tenant/:programa",path)))        res = await publicCrearCaso(req, pp.tenant, pp.programa)
+
+    // ── v2.0 Magic links (autorización del paciente — sin autenticación) ─────
+    else if (m==="GET"  && (pp=matchPath("/autorizar/:token",path)))  res = await obtenerCasoParaAutorizacion(req, pp.token)
+    else if (m==="POST" && (pp=matchPath("/autorizar/:token",path)))  res = await responderAutorizacion(req, pp.token)
+
+    // ── v2.0 Admin — gestión de links (requiere ADMIN/OPERADOR) ──────────────
+    else if (m==="POST"   && (pp=matchPath("/admin/casos/:id/link-paciente",path))) res = await generarLinkPaciente(req, pp.id)
+    else if (m==="DELETE" && (pp=matchPath("/admin/casos/:id/link-paciente",path))) res = await invalidarLinkPaciente(req, pp.id)
 
     // ── Auth ─────────────────────────────────────────────────────────────────
     else if (m==="POST"  && path==="/auth/login")             res = await authLogin(req)
