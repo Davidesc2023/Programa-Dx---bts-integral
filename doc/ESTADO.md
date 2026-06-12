@@ -1,7 +1,8 @@
 # Estado del Proyecto APP-DX — Junio 2026
 
-> Documento de referencia: resume todo lo implementado, el estado actual de cada componente y los pasos exactos que faltan para tener el sistema al 100 % en producción.
-> Última actualización: 2026-06-11 (rev 5)
+> Última actualización: 2026-06-12 (rev 6 — Rediseño arquitectural v2.0)
+>
+> **PIVOTE MAYOR:** El sistema fue rediseñado para operar con magic links sin cuentas de médico/paciente, arquitectura multi-tenant y soporte multi-país. Ver PRD.md, PLAN.md y STACK.md para el detalle completo.
 
 ---
 

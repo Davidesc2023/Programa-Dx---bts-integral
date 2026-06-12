@@ -1,183 +1,314 @@
-# PRD — APP-DX (BTS Integral)
-## Sistema de Gestión de Diagnósticos y Laboratorios Clínicos
+# PRD — APP-DX v2.0
+## Plataforma Multi-Tenant de Gestión de Programas Diagnósticos
 
 **Versión:** 2.0  
-**Última actualización:** 2026-06-10  
-**Estado:** En producción activa — MVP funcional completo
+**Última actualización:** 2026-06-12  
+**Estado:** En diseño — Rediseño arquitectural completo  
+**Propietario del producto:** BTS Integral / Valentech Pharma Colombia S.A.S.
 
 ---
 
 ## 1. Visión del Producto
 
-APP-DX es una plataforma web SaaS clínica para gestionar el flujo completo de órdenes de laboratorio:
+APP-DX es una plataforma SaaS multi-tenant para gestionar programas de apoyo diagnóstico de enfermedades raras. Conecta médicos, pacientes y equipos administrativos a través de **links públicos y tokens seguros**, sin requerir que médicos ni pacientes creen cuentas de usuario.
+
+### Problema que resuelve
+
+Los programas diagnósticos actuales (Wilson, DAAT, Duchenne) se gestionan con:
+- Formularios dispersos en MoreApp (6 formularios diferentes)
+- Hojas de Excel manuales para rastrear estados (~789 casos DAAT, ~117 Wilson)
+- Reproceso constante al copiar datos entre formularios y Excel
+- Sin trazabilidad de consentimientos ni auditoría legal
+- Sin soporte multi-país para marcos legales de protección de datos
+
+### Solución
+
+Un flujo digital trazable de extremo a extremo:
 
 ```
-Médico crea orden → selecciona exámenes → firma consentimiento digital
-→ paciente autoriza → laboratorio agenda y ejecuta → resultados disponibles
+Médico llena form (link público) → Admin gestiona el caso → Paciente autoriza (link privado)
+→ Admin agenda cita → Admin carga resultado sérico → Evaluación indicación genética
+→ [si aplica] Prueba genética → Resultado final → Seguimiento
 ```
-
-Orientado a clínicas y laboratorios colombianos con cumplimiento legal (Ley 1581/2012 Habeas Data, Res. 1995/1999).
 
 ---
 
-## 2. Identidad Visual — Clinical Sanctuary
+## 2. Actores del Sistema
 
-| Token | Valor |
+### 2.1 Actores internos (con cuenta)
+
+| Rol | Descripción |
+|-----|-------------|
+| **SUPER_ADMIN** | Gestiona todos los tenants, programas globales y configuración de la plataforma |
+| **ADMIN** | Gestiona casos, consentimientos y reportes de un tenant específico |
+| **OPERADOR** | Gestiona casos del día a día: agendamiento, resultados, comunicaciones |
+
+### 2.2 Actores externos (sin cuenta — usan links)
+
+| Actor | Acceso | Descripción |
+|-------|--------|-------------|
+| **Médico** | Link público permanente por programa | Llena la orden médica con datos del paciente y solicita los exámenes |
+| **Paciente** | Link privado único por caso (72h) | Confirma sus datos y autoriza el consentimiento informado |
+
+> Los médicos y pacientes **nunca crean cuentas**. El médico recibe el link público una vez del equipo comercial y lo usa para todos sus pacientes.
+
+---
+
+## 3. Arquitectura Multi-Tenant
+
+Cada **tenant** es una empresa farmacéutica u operadora de programas diagnósticos.
+
+```
+Tenant: BTS Integral
+  ├── Programa: Wilson (ATP7B)
+  ├── Programa: DAAT / Alfa-1 Antitripsina (SERPINA1)
+  └── Programa: Duchenne (DMD)
+
+Tenant: Otra Pharma (futuro)
+  └── Programa: Custom
+```
+
+### 3.1 Aislamiento de datos
+
+- Cada caso, consentimiento y usuario admin pertenece a un `tenant_id`
+- Row Level Security (RLS) en Supabase garantiza que un tenant nunca accede a datos de otro
+- El SUPER_ADMIN tiene vista global sin RLS
+
+### 3.2 Links por tenant y programa
+
+```
+/solicitud/[tenant-slug]/wilson       ← link público del médico
+/solicitud/[tenant-slug]/alfa1        ← link público del médico
+/solicitud/[tenant-slug]/duchenne     ← link público del médico
+/autorizar/[token-64-chars]           ← link privado del paciente
+/resultados/[token-64-chars]          ← link de resultados
+```
+
+### 3.3 Branding por tenant
+
+Cada tenant configura: logo, color primario, nombre del programa, email y teléfono de contacto. El formulario público refleja el branding del tenant.
+
+---
+
+## 4. Programas Diagnósticos
+
+### 4.1 Enfermedad de Wilson (ATP7B)
+
+| Campo | Valor |
 |-------|-------|
-| Color primario (teal) | `#1B7A6B` / `#006053` |
-| Color acento (amarillo) | `#F5C518` / `#d0a600` |
-| Color secundario (azul) | `#4490D9` / `#0061a3` |
-| Fuente headline | Manrope |
-| Fuente body | Inter |
-| Fondo | `#f8fafa` |
-| Sin bordes 1px — solo glassmorphism y sombras suaves |
+| Gen | ATP7B |
+| Prueba sérica | Ceruloplasmina sérica + Cobre en orina 24h |
+| Umbral indicación genética | Ceruloplasmina < 20 mg/dL **ó** Cobre > 60 µg/24h |
+| Prueba genética | Secuenciación gen ATP7B |
+| Laboratorios | Synlab, Gencell, Biotecgen, Mendelics, EPS |
+| Seguimiento post-genética | Negativo / Portador / Positivo / En tratamiento / Formulado / Trasplantado / Drop out / Fallecido |
+
+### 4.2 Déficit de Alfa-1 Antitripsina (DAAT / SERPINA1)
+
+| Campo | Valor |
+|-------|-------|
+| Gen | SERPINA1 |
+| Prueba sérica | Niveles Alfa-1 Antitripsina + PCR |
+| Umbral indicación genética | Alfa-1 ≤ 110 mg/dL |
+| Prueba genética | Secuenciación gen SERPINA1 |
+| Fenotipos posibles | MM, MS, MZ, SZ, ZZ, MMmalton |
+| Laboratorios | Gencell, Colcan, EPS, Synlab |
+
+### 4.3 Distrofia Muscular de Duchenne (DMD)
+
+| Campo | Valor |
+|-------|-------|
+| Gen | DMD |
+| Prueba sérica | Creatinkinasa (CK) sérica |
+| Umbral indicación genética | CK elevada según criterio médico |
+| Prueba genética | MLPA gen DMD |
+| Resultado previo | Valor numérico/texto + PDF adjunto (obligatorio para solicitar genética) |
+
+### 4.4 Extensibilidad
+
+El sistema soporta nuevos programas sin cambios de código, configurables por el ADMIN desde el panel.
 
 ---
 
-## 3. Roles del Sistema
+## 5. Flujo Funcional Completo
 
-| Rol | Permisos principales |
-|-----|---------------------|
-| **ADMIN** | Todo — gestión de usuarios, catálogo, órdenes |
-| **MEDICO** | Crear órdenes, firmar consentimientos, ver resultados |
-| **OPERADOR** | Gestionar órdenes, enviar consentimientos al paciente |
-| **LABORATORIO** | Cargar resultados, ver órdenes asignadas |
-| **PACIENTE** | Portal self-service — ver órdenes, autorizar consentimientos, descargar resultados |
+### Fase 0 — Solicitud del médico
 
----
+1. El equipo comercial comparte el **link público** del programa al médico (WhatsApp/email). El médico lo usa para todos sus pacientes.
+2. El médico abre el link → formulario en 3 bloques:
+   - **Bloque A:** Datos del médico (nombre, especialidad, registro médico, email, WhatsApp, institución, ciudad, país)
+   - **Bloque B:** Datos del paciente (nombre, tipo+número doc, género, EPS, teléfono, email, ciudad, departamento, dirección; opcionalmente representante legal)
+   - **Bloque C:** Exámenes solicitados + consentimiento del médico (texto legal por país, read-only) + autorización
+3. Para Duchenne: selector de país → consentimiento del médico cambia automáticamente. El médico puede adjuntar resultado de CK previo (valor + PDF).
+4. El médico envía → caso creado con estado `SOLICITUD_RECIBIDA`.
+5. El admin recibe notificación.
 
-## 4. Flujo Principal
+### Fase 1 — Autorización del paciente
 
-### 4.1 Crear Orden Médica
-- Médico selecciona paciente + doctor (o crea nuevo paciente)
-- Selecciona exámenes del **catálogo de laboratorio** con:
-  - Búsqueda por nombre/código
-  - Categorías colapsables
-  - Lock icon para exámenes con prerequisito no cumplido
-  - Validación de prerequisitos por paciente (ej. A1A-S requerido antes de A1A-G)
-- Fija prioridad (Normal / Urgente), fecha estimada, diagnóstico, observaciones
-- Botón "Generar Orden y Consentimiento" — crea orden + exámenes en batch
+6. Admin revisa el caso en el panel.
+7. Admin genera **link privado del paciente** (token único, expira 72h).
+8. Admin envía el link al paciente por WhatsApp o email.
+9. Paciente abre el link → vista simplificada (letra grande, lenguaje simple):
+   - Qué exámenes le solicitan y quién
+   - Sus datos (puede reportar un error)
+   - Consentimiento informado (desplegable)
+   - Nombre completo para firmar + botones **AUTORIZO** / **NO AUTORIZO**
+10. Respuesta registrada con timestamp + IP + user-agent.
 
-### 4.2 Firma Médica del Consentimiento
-- Panel "Revisar y Firmar" abre modal con:
-  - **Documento legal completo** visible (Ley 1581, declaración consentimiento, datos paciente/médico)
-  - **Pad de firma digital** canvas (mouse + touch)
-  - Checkbox de aceptación
-  - Notas opcionales
-- Al firmar: backend genera `documentHtml` con firma embebida, estado → `FIRMADO_MEDICO`
+### Fase 2 — Prueba sérica
 
-### 4.3 Envío al Paciente
-- Operador/Médico cambia estado a `ENVIADO_PACIENTE`
-- Paciente recibe notificación in-app
+11. Admin programa toma de muestra (laboratorio + sede + fecha).
+12. Admin registra resultado sérico (valor numérico + unidad + fecha reporte + fechas de envío + medio).
+13. Estado: `RESULTADO_SERICO_DISPONIBLE`.
 
-### 4.4 Autorización del Paciente (Portal)
-- Portal muestra tarjetas de paciente y orden
-- Lista de exámenes solicitados
-- Visor del documento HTML completo (colapsable)
-- **Pad de firma digital** (gate — debe firmar antes de poder aceptar)
-- Botones: Rechazar / Aceptar y Firmar
-- Si acepta: se genera PDF con ambas firmas y se sube a R2/S3
+### Fase 3 — Evaluación indicación genética
 
-### 4.5 Estados de la Orden (State Machine)
+14. Sistema evalúa automáticamente si el resultado supera el umbral del programa.
+15. Admin confirma o ajusta la indicación.
+16. **CON INDICACIÓN** → prueba genética: `GENETICA_PROGRAMADA` → `GENETICA_EN_PROCESAMIENTO` → `GENETICA_RESULTADO_DISPONIBLE`.
+17. **SIN INDICACIÓN** → caso cierra: `SIN_INDICACION_GENETICA`.
+
+### Fase 4 — Resultado genético y seguimiento
+
+18. Admin registra resultado (texto del reporte), gen analizado, fenotipo.
+19. Wilson: admin registra seguimiento clínico.
+20. Admin activa link de resultados para médico y/o paciente.
+21. Estado: `COMPLETADO`.
+
+### Estados del caso (state machine)
 
 ```
-PENDIENTE → CONSENT_PENDING → ACCEPTED → SCHEDULED
-         ↘  RECHAZADA
-ACCEPTED → MUESTRA_RECOLECTADA → EN_ANALISIS → COMPLETADA
-         ↘  CANCELADA
+SOLICITUD_RECIBIDA
+  ↓
+EN_PROGRAMACION
+  ↓
+PENDIENTE_AUTORIZACION
+  ↓              ↓
+AUTORIZADO       NO_ACEPTO
+  ↓
+PROGRAMADO
+  ↓
+MUESTRA_TOMADA
+  ↓
+RESULTADO_SERICO_DISPONIBLE
+  ↓                         ↓
+CON_INDICACION_GENETICA     SIN_INDICACION_GENETICA
+  ↓
+GENETICA_PROGRAMADA → GENETICA_EN_PROCESAMIENTO → GENETICA_RESULTADO_DISPONIBLE
+  ↓
+COMPLETADO
+
+Excepción (cualquier estado):
+  SIN_CONTACTO_EFECTIVO | CANCELADO | FALLECIDO
 ```
 
 ---
 
-## 5. Catálogo de Exámenes
+## 6. Módulo de Consentimientos
 
-### Tipos
-- `NIVEL_SERICO` — medición sérica (requiere toma de sangre)
-- `GENETICO` — estudio genético (puede tener prerequisito sérico)
-- `PANEL` — grupo de exámenes
-- `IMAGEN` — radiografía, ecografía
-- `MICROBIOLOGIA` — cultivos
-- `OTRO`
+- Plantillas por **programa + país + tipo** (MEDICO | PACIENTE), versionadas.
+- Al crear nueva versión, la anterior queda archivada. Los casos firmados mantienen la referencia histórica.
+- Solo una plantilla `activa` por programa + país + tipo.
 
-### Prerequisitos
-- Modelo self-referenciante: `requiresResultFromId`
-- Ejemplo: Alfa-1 Antitripsina Genética (A1A-G) requiere resultado de A1A-S
-- API: `GET /lab-tests/:id/prerequisite/:patientId` — valida si el paciente tiene resultado completado
+**Países soportados inicialmente:**
 
-### Seed incluido (15 exámenes)
-HEM, GLI, COL, TSH, URI, HBA1C, PCR, FER, CUL, RX-TX, ECO-AB, HCV-Ab, VIT-D, A1A-S, A1A-G
+| País | Código | Marco legal principal |
+|------|--------|----------------------|
+| Colombia | CO | Ley 1581/2012 (Habeas Data) |
+| Ecuador | EC | LOPDP 2021 |
+| Panamá | PA | Ley 81/2019 |
+| Costa Rica | CR | Ley 8968 |
+| Guatemala | GT | Normativa aplicable |
+| El Salvador | SV | Normativa aplicable |
+| República Dominicana | DO | Normativa aplicable |
+| Chile | CL | Ley 19.628 |
 
----
-
-## 6. Consentimiento Informado Digital
-
-### Documento HTML
-- Generado server-side en `buildConsentHtml()` (pdf.service.ts)
-- Incluye: datos orden, datos paciente, médico tratante, declaración legal (Ley 1581/2012), espacio de firmas
-- Firma del médico embebida como imagen PNG base64
-- PDF generado con Puppeteer/Chromium cuando paciente acepta → subido a R2
-
-### Compliance colombiano
-- Ley 1581 de 2012 (Protección de Datos Personales)
-- Resolución 1995 de 1999 (Historia Clínica)
-- Ley 527 de 1999 (Comercio Electrónico — validez firma electrónica)
-- Sello de tiempo en cada firma
+**Representante legal:** Si el paciente no puede firmar directamente, el médico registra datos del representante (nombre, doc, parentesco) y este firma el link de autorización.
 
 ---
 
-## 7. Portal del Paciente
+## 7. Módulo de Importación de Datos
 
-- Autenticación con cuenta propia (rol `PACIENTE`)
-- Dashboard: órdenes activas, consentimientos pendientes, resultados disponibles, próxima cita
-- Historial de órdenes con estado visual
-- Descarga de resultados (PDF + imágenes)
-- Gestión de consentimientos (aceptar/rechazar con firma digital)
-- Citas agendadas
+**Propósito:** Migrar registros históricos de Excel (DAAT ~789 casos, Wilson ~117 casos) y permitir importaciones continuas durante la transición.
 
----
+**Formatos:** `.xlsx` y `.csv` (UTF-8).
 
-## 8. Infraestructura
+**Flujo:** Subir archivo → validación previa con reporte → confirmar importación de casos válidos → casos con errores bloqueantes quedan en `DATOS_INCOMPLETOS`.
 
-| Componente | Tecnología | Estado |
-|-----------|-----------|--------|
-| Backend API | NestJS + TypeScript | Railway ✅ |
-| Base de datos | PostgreSQL (Supabase App_DX) | Listo para migrar |
-| ORM | Prisma 5.x | ✅ |
-| Frontend | Next.js 14 (App Router) | Vercel ✅ |
-| Autenticación | JWT (access + refresh tokens) | ✅ |
-| Almacenamiento de archivos | Cloudflare R2 / AWS S3 | ✅ |
-| PDF | Puppeteer + @sparticuz/chromium | ✅ |
-| State management | Zustand + TanStack Query | ✅ |
+**Normalización automática de estados del Excel al importar:**
 
-### Migración Railway → Supabase
-- Schema aplicado en proyecto `App_DX` (wwosggahpasvoexshrdl, us-east-2)
-- Para activar: actualizar `DATABASE_URL` en Railway → `postgresql://postgres:[PASSWORD]@db.wwosggahpasvoexshrdl.supabase.co:5432/postgres`
+| Excel | Plataforma |
+|-------|-----------|
+| Realizado / realizado | `RESULTADO_SERICO_DISPONIBLE` |
+| Programado / programado | `PROGRAMADO` |
+| En programacion | `EN_PROGRAMACION` |
+| Sin contacto efectivo | `SIN_CONTACTO_EFECTIVO` |
+| No acepto / No acepta | `NO_ACEPTO` |
+| SIG | `SIN_INDICACION_GENETICA` |
+| En procesamiento | `GENETICA_EN_PROCESAMIENTO` |
+| N/A | `N_A` |
+
+**Plantilla descargable:** `.xlsx` con encabezados exactos, dropdowns y ejemplos para facilitar importaciones futuras.
 
 ---
 
-## 9. Pendiente / Roadmap
+## 8. Reportes y Exportación
 
-### Alta prioridad
-- Registro de médicos con flujo de aprobación admin
-- Timeline visual del estado de la orden (UX)
-- Agendamiento con calendario UI
-- Firma del paciente embebida en el PDF final
-
-### Media prioridad
-- Notificaciones push (Web Push / WhatsApp simulado)
-- Upload de resultados con drag & drop
-- Multitenancy / branding configurable por cliente
-
-### Deuda técnica
-- Eliminar campo legacy `patientResponseAt` del schema Prisma
-- Tests de integración en frontend (zero cobertura actual)
+- Casos por período / programa / país / estado / laboratorio / médico
+- Tasa de autorización de pacientes
+- Tiempo promedio por etapa
+- Indicación genética vs. sin indicación
+- Costos por laboratorio y período
+- Fenotipos DAAT (MM/MS/MZ/SZ/ZZ) y seguimiento Wilson
+- Exportación a `.xlsx` o `.csv` respetando filtros activos
 
 ---
 
-## 10. Seguridad
+## 9. Requisitos No Funcionales
 
-- 0 vulnerabilidades en npm audit
-- JWT + bcrypt + rate limiting + Helmet + CORS configurado
-- Archivos subidos: validación MIME, límite de tamaño, propietario verificado
-- Soft delete en todas las entidades principales
-- RLS en Supabase (pendiente configurar para App_DX)
+### Seguridad
+
+- Magic links: 64 bytes CSPRNG, hash SHA-256 en DB, un solo uso, expiran 72h
+- Admin auth: JWT httpOnly cookies, bcrypt cost 12
+- RLS en todas las tablas por `tenant_id`
+- `audit_log` para toda acción relevante (actor, acción, timestamp, IP)
+- Rate limiting en formularios públicos (20 req/hora por IP)
+- HTTPS obligatorio
+
+### UX del paciente
+
+- Texto grande, alto contraste, lenguaje simple (sin tecnicismos)
+- Compatible con WhatsApp Web (Android/iOS), sin instalación de apps
+- Carga < 3s en 4G
+
+### Calidad de código
+
+- Cobertura de tests ≥ 80% en funciones críticas de negocio
+- 0 vulnerabilidades críticas (npm audit)
+- Lint + type-check en CI — sin merges sin pasar CI
+
+---
+
+## 10. Cumplimiento Legal
+
+| Ley | País | Aplicación |
+|-----|------|-----------|
+| Ley 1581/2012 | Colombia | Consentimiento explícito, finalidad limitada, derecho de corrección |
+| Ley 527/1999 | Colombia | Validez firma electrónica simple |
+| LOPDP 2021 | Ecuador | Consentimiento libre, informado, específico |
+| Ley 81/2019 | Panamá | Consentimiento documentado, almacenamiento seguro |
+| Ley 8968 | Costa Rica | Protección de datos sensibles de salud |
+
+Cada firma registra: nombre escrito, timestamp UTC, IP, user-agent, ID del caso, versión del consentimiento.
+
+---
+
+## 11. Fuera del Alcance (v2.0)
+
+- Telemedicina / videoconferencia
+- API automática de resultados de laboratorios
+- App nativa iOS/Android
+- Firma con certificado calificado (PKI)
+- Pago en línea / facturación
+- Integración EHR/HIS
+- OTP por SMS (considerado post-MVP)
