@@ -24,6 +24,17 @@ import {
   obtenerCasoParaAutorizacion,
   responderAutorizacion,
 } from "./routes/autorizacion.ts"
+import {
+  listarCasos,
+  obtenerCaso,
+  cambiarEstado,
+  registrarResultadoSerico,
+  setIndicacion,
+  registrarResultadoGenetico,
+  registrarSeguimiento,
+  eliminarCaso,
+  obtenerDashboard,
+} from "./routes/admin-casos.ts"
 
 type RouteParams = Record<string, string>
 
@@ -1028,6 +1039,17 @@ Deno.serve(async (req: Request) => {
     // ── v2.0 Admin — gestión de links (requiere ADMIN/OPERADOR) ──────────────
     else if (m==="POST"   && (pp=matchPath("/admin/casos/:id/link-paciente",path))) res = await generarLinkPaciente(req, pp.id)
     else if (m==="DELETE" && (pp=matchPath("/admin/casos/:id/link-paciente",path))) res = await invalidarLinkPaciente(req, pp.id)
+
+    // ── v2.0 Admin — panel de gestión de casos (Fase 4) ───────────────────────
+    else if (m==="GET"   && path==="/admin/dashboard")                              res = await obtenerDashboard(req)
+    else if (m==="GET"   && path==="/admin/casos")                                  res = await listarCasos(req)
+    else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/estado",path)))         res = await cambiarEstado(req, pp.id)
+    else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/serica",path)))         res = await registrarResultadoSerico(req, pp.id)
+    else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/indicacion",path)))     res = await setIndicacion(req, pp.id)
+    else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/genetica",path)))       res = await registrarResultadoGenetico(req, pp.id)
+    else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/seguimiento",path)))    res = await registrarSeguimiento(req, pp.id)
+    else if (m==="DELETE"&& (pp=matchPath("/admin/casos/:id",path)))                res = await eliminarCaso(req, pp.id)
+    else if (m==="GET"   && (pp=matchPath("/admin/casos/:id",path)))                res = await obtenerCaso(req, pp.id)
 
     // ── Auth ─────────────────────────────────────────────────────────────────
     else if (m==="POST"  && path==="/auth/login")             res = await authLogin(req)
