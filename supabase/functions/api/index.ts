@@ -1,126 +1,30 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 import { createClient } from "npm:@supabase/supabase-js@2"
-import * as jose from "npm:jose@5"
 import bcrypt from "npm:bcryptjs@2"
 import { PDFDocument, rgb, StandardFonts } from "npm:pdf-lib@1.17.1"
 
-// â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-type UserRole = "ADMIN" | "OPERADOR" | "LABORATORIO" | "MEDICO" | "PACIENTE"
-interface AuthUser { sub: string; email?: string; role: UserRole }
+// ── Módulos v2.0 (Fase 2+) ──────────────────────────────────────────────────
+import { getDb }                        from "./utils/db.ts"
+import { ok, created, paginated, err }  from "./utils/responses.ts"
+import { corsHeaders, withCors }        from "./middleware/cors.ts"
+import { matchPath, parsePagination }   from "./utils/router.ts"
+import {
+  signAccess, signRefresh, verifyRefresh,
+  requireAuth, requireRole,
+  type UserRole, type AuthUser,
+} from "./middleware/auth.ts"
+import {
+  publicGetForm,
+  publicCrearCaso,
+  publicSubirResultadoPrevio,
+} from "./routes/formulario.ts"
+
 type RouteParams = Record<string, string>
 
-// â”€â”€ DB Client â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-let _db: ReturnType<typeof createClient> | null = null
-function getDb() {
-  if (!_db) {
-    _db = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-      { auth: { persistSession: false } }
-    )
-  }
-  return _db
-}
-
-// â”€â”€ JWT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const ACCESS_SECRET = new TextEncoder().encode(Deno.env.get("JWT_SECRET") ?? "change-me")
-const REFRESH_SECRET = new TextEncoder().encode(Deno.env.get("JWT_REFRESH_SECRET") ?? "change-me-refresh")
-
-async function signAccess(payload: object): Promise<string> {
-  return new jose.SignJWT(payload as jose.JWTPayload)
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime(Deno.env.get("JWT_EXPIRES_IN") ?? "15m")
-    .setIssuedAt()
-    .sign(ACCESS_SECRET)
-}
-async function signRefresh(payload: object): Promise<string> {
-  return new jose.SignJWT(payload as jose.JWTPayload)
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime(Deno.env.get("JWT_REFRESH_EXPIRES_IN") ?? "7d")
-    .setIssuedAt()
-    .sign(REFRESH_SECRET)
-}
-async function verifyAccess(token: string): Promise<jose.JWTPayload | null> {
-  try { return (await jose.jwtVerify(token, ACCESS_SECRET)).payload } catch { return null }
-}
-async function verifyRefresh(token: string): Promise<jose.JWTPayload | null> {
-  try { return (await jose.jwtVerify(token, REFRESH_SECRET)).payload } catch { return null }
-}
-
-// â”€â”€ Responses â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const CT = { "Content-Type": "application/json" }
-function ok(data: unknown, message = "OK") {
-  return new Response(JSON.stringify({ statusCode: 200, message, data }), { status: 200, headers: CT })
-}
-function created(data: unknown, message = "Created") {
-  return new Response(JSON.stringify({ statusCode: 201, message, data }), { status: 201, headers: CT })
-}
-function paginated(data: unknown[], meta: object, message = "OK") {
-  return new Response(JSON.stringify({ statusCode: 200, message, data, meta }), { status: 200, headers: CT })
-}
-function err(status: number, message: string) {
-  const errors: Record<number,string> = { 400:"Bad Request",401:"Unauthorized",403:"Forbidden",404:"Not Found",409:"Conflict",422:"Unprocessable Entity",500:"Internal Server Error" }
-  return new Response(JSON.stringify({ statusCode: status, message, error: errors[status] ?? "Error" }), { status, headers: CT })
-}
-
-// â”€â”€ Auth middleware â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-async function requireAuth(req: Request): Promise<AuthUser | Response> {
-  const auth = req.headers.get("Authorization")
-  if (!auth?.startsWith("Bearer ")) return err(401, "Missing authorization token")
-  const payload = await verifyAccess(auth.slice(7))
-  if (!payload) return err(401, "Invalid or expired token")
-  return { sub: payload.sub as string, email: payload.email as string | undefined, role: payload.role as UserRole }
-}
-function requireRole(user: AuthUser, ...roles: UserRole[]): Response | null {
-  return roles.includes(user.role) ? null : err(403, "Insufficient permissions")
-}
-
-// â”€â”€ Router helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function matchPath(pattern: string, path: string): RouteParams | null {
-  const pp = pattern.split("/").filter(Boolean)
-  const sp = path.split("/").filter(Boolean)
-  if (pp.length !== sp.length) return null
-  const params: RouteParams = {}
-  for (let i = 0; i < pp.length; i++) {
-    if (pp[i].startsWith(":")) params[pp[i].slice(1)] = sp[i]
-    else if (pp[i] !== sp[i]) return null
-  }
-  return params
-}
-
-function parsePagination(url: URL, defaultLimit = 20, maxLimit = 100) {
-  const page = Math.max(1, parseInt(url.searchParams.get("page") ?? "1"))
-  const limit = Math.min(maxLimit, Math.max(1, parseInt(url.searchParams.get("limit") ?? String(defaultLimit))))
-  const from = (page - 1) * limit
-  const to = from + limit - 1
-  return { page, limit, from, to }
-}
-
-// â”€â”€ CORS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function corsHeaders(req: Request): Headers {
-  const rawOrigin = Deno.env.get("CORS_ORIGIN") ?? "*"
-  const requestOrigin = req.headers.get("origin") ?? ""
-  let origin = "*"
-  if (rawOrigin !== "*") {
-    const allowed = rawOrigin.split(",").map(o => o.trim())
-    origin = allowed.includes(requestOrigin) ? requestOrigin : allowed[0]
-  }
-  const h = new Headers()
-  h.set("Access-Control-Allow-Origin", origin)
-  h.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
-  h.set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-  if (origin !== "*") h.set("Access-Control-Allow-Credentials", "true")
-  return h
-}
-function withCors(res: Response, req: Request): Response {
-  const cors = corsHeaders(req)
-  const headers = new Headers(res.headers)
-  cors.forEach((v, k) => headers.set(k, v))
-  return new Response(res.body, { status: res.status, headers })
-}
-
-// â”€â”€ Notification helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-async function notify(db: ReturnType<typeof getDb>, userId: string, type: string, title: string, message: string, metadata?: object) {
+// ============================================================================
+// NOTIFICATION HELPER
+// ============================================================================
+async function notify(db: ReturnType<typeof createClient>, userId: string, type: string, title: string, message: string, metadata?: object) {
   await db.from("notifications").insert({ userId, type, title, message, metadata: metadata ?? null }).catch(console.error)
 }
 
@@ -476,9 +380,9 @@ async function ordersUpdateStatus(req: Request, id: string, actor: AuthUser): Pr
   await db.from("orders").update({ status: body.status, updatedBy: actor.sub, updatedAt: new Date().toISOString() }).eq("id", id)
   const patUserId = (order.patients as { userId?: string } | null)?.userId
   if (patUserId) {
-    void notify(db, patUserId, "ORDER_UPDATED", "ActualizaciÃ³n de orden", `Tu orden cambiÃ³ a: ${body.status}`)
+    void notify(db, patUserId, "ORDER_UPDATED", "Actualización de orden", `Tu orden cambió a: ${body.status}`)
     if (body.status === "COMPLETADA")
-      void notify(db, patUserId, "RESULT_READY", "Resultados disponibles", "Tus resultados de laboratorio estÃ¡n listos")
+      void notify(db, patUserId, "RESULT_READY", "Resultados disponibles", "Tus resultados de laboratorio están listos")
   }
   return ok({ id, status: body.status }, "Status updated")
 }
@@ -527,7 +431,6 @@ async function consentsGet(req: Request, orderId: string): Promise<Response> {
   return ok(data)
 }
 
-// ── PDF generation ────────────────────────────────────────────────────────────
 async function generateConsentPdf(
   db: ReturnType<typeof createClient>,
   opts: {
@@ -558,7 +461,6 @@ async function generateConsentPdf(
       y -= 2
     }
 
-    // Header
     page.drawText("CONSENTIMIENTO INFORMADO", { x: m, y, size: 20, font: bold, color: rgb(0.1, 0.2, 0.5) })
     y -= 28
     const dateStr = opts.signedAt.toLocaleString("es-CO", { timeZone: "America/Bogota" })
@@ -580,7 +482,6 @@ async function generateConsentPdf(
 
     if (opts.notes) {
       section("NOTAS")
-      // Simple word-wrap at 80 chars
       const words = opts.notes.split(" ")
       let line = ""
       for (const w of words) {
@@ -688,7 +589,7 @@ async function consentRespond(req: Request, orderId: string, actor: AuthUser): P
     updatedBy: actor.sub, updatedAt: now }).eq("id", consent.id)
   await db.from("orders").update({ status: accepted ? "ACCEPTED" : "RECHAZADA", updatedBy: actor.sub }).eq("id", orderId)
   const { data: order } = await db.from("orders").select("doctorId").eq("id", orderId).single()
-  if (order?.doctorId) void notify(db, order.doctorId, "CONSENT_RESPONDED", "Respuesta al consentimiento", `El paciente ${accepted ? "aceptÃ³" : "rechazÃ³"} el consentimiento`)
+  if (order?.doctorId) void notify(db, order.doctorId, "CONSENT_RESPONDED", "Respuesta al consentimiento", `El paciente ${accepted ? "aceptó" : "rechazó"} el consentimiento`)
   return ok({ id: consent.id, status: body.response }, "Response recorded")
 }
 
@@ -771,6 +672,7 @@ async function labTestsCreate(req: Request, actor: AuthUser): Promise<Response> 
       requiresResultFromId: body.requiresResultFromId??null })
     .select().single()
   if (error) return err(500, error.message)
+  void actor
   return created(data, "Lab test created")
 }
 
@@ -1014,6 +916,7 @@ async function portalDashboard(req: Request, actor: AuthUser): Promise<Response>
     db.from("appointments").select("id, scheduledAt, status").eq("patientId",pat.id).is("deletedAt",null)
       .gte("scheduledAt",new Date().toISOString()).order("scheduledAt").limit(1),
   ])
+  void req
   return ok({ activeOrders: a.data??[], pendingConsents: c.data??[], recentResults: r.data??[], nextAppointment: ap.data?.[0]??null })
 }
 
@@ -1063,7 +966,8 @@ async function portalConsentRespond(req: Request, consentId: string, response: "
   const now = new Date().toISOString()
   await db.from("consents").update({ status: response, accepted, patientResponseAt: now, patientSignedAt: accepted?now:null, updatedAt: now }).eq("id", consentId)
   await db.from("orders").update({ status: accepted?"ACCEPTED":"RECHAZADA" }).eq("id", consent.orderId)
-  if (ord.doctorId) void notify(db, ord.doctorId, "CONSENT_RESPONDED", "Respuesta al consentimiento", `Paciente ${accepted?"aceptÃ³":"rechazÃ³"} el consentimiento`)
+  if (ord.doctorId) void notify(db, ord.doctorId, "CONSENT_RESPONDED", "Respuesta al consentimiento", `Paciente ${accepted?"aceptó":"rechazó"} el consentimiento`)
+  void req
   return ok({ id: consentId, status: response }, "Response recorded")
 }
 
@@ -1104,137 +1008,138 @@ Deno.serve(async (req: Request) => {
     const m = req.method
     let res: Response
 
-    // Auth
-    if      (m==="POST"  && path==="/auth/login")             res = await authLogin(req)
+    // ── v2.0 Rutas públicas (formulario médico — sin autenticación) ──────────
+    let pp: RouteParams | null
+    if      (m==="GET"  && (pp=matchPath("/public/:tenant/:programa",path))       && !path.endsWith("/upload"))
+                                                                                    res = await publicGetForm(req, pp.tenant, pp.programa)
+    else if (m==="POST" && (pp=matchPath("/public/:tenant/:programa/upload",path))) res = await publicSubirResultadoPrevio(req, pp.tenant, pp.programa)
+    else if (m==="POST" && (pp=matchPath("/public/:tenant/:programa",path)))        res = await publicCrearCaso(req, pp.tenant, pp.programa)
+
+    // ── Auth ─────────────────────────────────────────────────────────────────
+    else if (m==="POST"  && path==="/auth/login")             res = await authLogin(req)
     else if (m==="POST"  && path==="/auth/register")          res = await authRegister(req)
     else if (m==="POST"  && path==="/auth/register-patient")  res = await authRegisterPatient(req)
     else if (m==="POST"  && path==="/auth/refresh")           res = await authRefresh(req)
     else if (m==="POST"  && path==="/auth/logout")            res = await authLogout(req)
     else if (m==="GET"   && path==="/auth/me")                res = await authMe(req)
 
-    // Users
+    // ── Users ─────────────────────────────────────────────────────────────────
     else if (m==="POST"  && path==="/users")                  res = await usersCreate(req)
     else if (m==="GET"   && path==="/users")                  res = await usersFind(req)
-    else if (m==="GET"   && matchPath("/users/:id",path))     { const p=matchPath("/users/:id",path)!; res=await usersGetOne(req,p.id) }
-    else if (m==="PATCH" && matchPath("/users/:id",path))     { const p=matchPath("/users/:id",path)!; res=await usersUpdate(req,p.id) }
-    else if (m==="DELETE"&& matchPath("/users/:id",path))     { const p=matchPath("/users/:id",path)!; res=await usersDelete(req,p.id) }
+    else if (m==="GET"   && (pp=matchPath("/users/:id",path)))    res = await usersGetOne(req, pp.id)
+    else if (m==="PATCH" && (pp=matchPath("/users/:id",path)))    res = await usersUpdate(req, pp.id)
+    else if (m==="DELETE"&& (pp=matchPath("/users/:id",path)))    res = await usersDelete(req, pp.id)
 
-    // Patients
+    // ── Patients ──────────────────────────────────────────────────────────────
     else if (m==="POST"  && path==="/patients") {
       const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR");res=d??await patientsCreate(req,a)}
     }
     else if (m==="GET"   && path==="/patients")               res = await patientsFind(req)
-    else if (m==="GET"   && matchPath("/patients/:id",path))  { const p=matchPath("/patients/:id",path)!; res=await patientsGetOne(req,p.id) }
-    else if (m==="PATCH" && matchPath("/patients/:id",path))  {
-      const p=matchPath("/patients/:id",path)!; const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR");res=d??await patientsUpdate(req,p.id,a)}
+    else if (m==="GET"   && (pp=matchPath("/patients/:id",path))) res = await patientsGetOne(req, pp.id)
+    else if (m==="PATCH" && (pp=matchPath("/patients/:id",path))) {
+      const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR");res=d??await patientsUpdate(req,pp.id,a)}
     }
-    else if (m==="DELETE"&& matchPath("/patients/:id",path))  { const p=matchPath("/patients/:id",path)!; res=await patientsDelete(req,p.id) }
+    else if (m==="DELETE"&& (pp=matchPath("/patients/:id",path))) res = await patientsDelete(req, pp.id)
 
-    // Orders â€” more-specific paths first
+    // ── Orders (more-specific paths first) ────────────────────────────────────
     else if (m==="POST"  && path==="/orders") {
       const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR","MEDICO");res=d??await ordersCreate(req,a)}
     }
-    else if (m==="GET"   && path==="/orders")                  res = await ordersFind(req)
-    else if (m==="PATCH" && matchPath("/orders/:id/status",path)) {
-      const p=matchPath("/orders/:id/status",path)!; const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR","LABORATORIO","MEDICO");res=d??await ordersUpdateStatus(req,p.id,a)}
+    else if (m==="GET"   && path==="/orders")                 res = await ordersFind(req)
+    else if (m==="PATCH" && (pp=matchPath("/orders/:id/status",path))) {
+      const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR","LABORATORIO","MEDICO");res=d??await ordersUpdateStatus(req,pp.id,a)}
     }
-    else if (m==="GET"   && matchPath("/orders/:id",path))     { const p=matchPath("/orders/:id",path)!; res=await ordersGetOne(req,p.id) }
-    else if (m==="PATCH" && matchPath("/orders/:id",path))     {
-      const p=matchPath("/orders/:id",path)!; const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR","MEDICO");res=d??await ordersUpdate(req,p.id,a)}
+    else if (m==="GET"   && (pp=matchPath("/orders/:id",path)))   res = await ordersGetOne(req, pp.id)
+    else if (m==="PATCH" && (pp=matchPath("/orders/:id",path))) {
+      const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR","MEDICO");res=d??await ordersUpdate(req,pp.id,a)}
     }
-    else if (m==="DELETE"&& matchPath("/orders/:id",path))     { const p=matchPath("/orders/:id",path)!; res=await ordersDelete(req,p.id) }
+    else if (m==="DELETE"&& (pp=matchPath("/orders/:id",path)))   res = await ordersDelete(req, pp.id)
 
-    // Consents â€” 4-part before 3-part
-    else if (m==="PATCH" && matchPath("/orders/:orderId/consent/sign",path)) {
-      const p=matchPath("/orders/:orderId/consent/sign",path)!; const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","MEDICO");res=d??await consentSign(req,p.orderId,a)}
+    // ── Consents (4-part before 3-part) ───────────────────────────────────────
+    else if (m==="PATCH" && (pp=matchPath("/orders/:orderId/consent/sign",path))) {
+      const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","MEDICO");res=d??await consentSign(req,pp.orderId,a)}
     }
-    else if (m==="PATCH" && matchPath("/orders/:orderId/consent/send",path)) {
-      const p=matchPath("/orders/:orderId/consent/send",path)!; const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR","MEDICO");res=d??await consentSend(req,p.orderId,a)}
+    else if (m==="PATCH" && (pp=matchPath("/orders/:orderId/consent/send",path))) {
+      const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR","MEDICO");res=d??await consentSend(req,pp.orderId,a)}
     }
-    else if (m==="PATCH" && matchPath("/orders/:orderId/consent/respond",path)) {
-      const p=matchPath("/orders/:orderId/consent/respond",path)!; const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR");res=d??await consentRespond(req,p.orderId,a)}
+    else if (m==="PATCH" && (pp=matchPath("/orders/:orderId/consent/respond",path))) {
+      const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR");res=d??await consentRespond(req,pp.orderId,a)}
     }
-    else if (m==="POST"  && matchPath("/orders/:orderId/consent",path)) {
-      const p=matchPath("/orders/:orderId/consent",path)!; const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR","MEDICO");res=d??await consentsCreate(req,p.orderId,a)}
+    else if (m==="POST"  && (pp=matchPath("/orders/:orderId/consent",path))) {
+      const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR","MEDICO");res=d??await consentsCreate(req,pp.orderId,a)}
     }
-    else if (m==="GET"   && matchPath("/orders/:orderId/consent",path)) {
-      const p=matchPath("/orders/:orderId/consent",path)!; res=await consentsGet(req,p.orderId)
-    }
+    else if (m==="GET"   && (pp=matchPath("/orders/:orderId/consent",path)))  res = await consentsGet(req, pp.orderId)
 
-    // Order Tests
-    else if (m==="POST"  && matchPath("/orders/:orderId/tests",path)) {
-      const p=matchPath("/orders/:orderId/tests",path)!; const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR","MEDICO");res=d??await orderTestsCreate(req,p.orderId,a)}
+    // ── Order Tests ───────────────────────────────────────────────────────────
+    else if (m==="POST"  && (pp=matchPath("/orders/:orderId/tests",path))) {
+      const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR","MEDICO");res=d??await orderTestsCreate(req,pp.orderId,a)}
     }
-    else if (m==="DELETE"&& matchPath("/orders/:orderId/tests/:testId",path)) {
-      const p=matchPath("/orders/:orderId/tests/:testId",path)!; res=await orderTestsDelete(req,p.orderId,p.testId)
-    }
+    else if (m==="DELETE"&& (pp=matchPath("/orders/:orderId/tests/:testId",path))) res = await orderTestsDelete(req, pp.orderId, pp.testId)
 
-    // Lab Tests
+    // ── Lab Tests ─────────────────────────────────────────────────────────────
     else if (m==="GET"   && path==="/lab-tests")              res = await labTestsFind(req)
     else if (m==="POST"  && path==="/lab-tests") {
       const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN");res=d??await labTestsCreate(req,a)}
     }
-    else if (m==="GET"   && matchPath("/lab-tests/:id/prerequisite/:patientId",path)) {
-      const p=matchPath("/lab-tests/:id/prerequisite/:patientId",path)!; res=await labTestsPrerequisite(req,p.id,p.patientId)
+    else if (m==="GET"   && (pp=matchPath("/lab-tests/:id/prerequisite/:patientId",path))) res = await labTestsPrerequisite(req, pp.id, pp.patientId)
+    else if (m==="GET"   && (pp=matchPath("/lab-tests/:id",path))) res = await labTestsGetOne(req, pp.id)
+    else if (m==="PATCH" && (pp=matchPath("/lab-tests/:id",path))) {
+      const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN");res=d??await labTestsUpdate(req,pp.id,a)}
     }
-    else if (m==="GET"   && matchPath("/lab-tests/:id",path)) { const p=matchPath("/lab-tests/:id",path)!; res=await labTestsGetOne(req,p.id) }
-    else if (m==="PATCH" && matchPath("/lab-tests/:id",path)) {
-      const p=matchPath("/lab-tests/:id",path)!; const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN");res=d??await labTestsUpdate(req,p.id,a)}
-    }
-    else if (m==="DELETE"&& matchPath("/lab-tests/:id",path)) { const p=matchPath("/lab-tests/:id",path)!; res=await labTestsDeactivate(req,p.id) }
+    else if (m==="DELETE"&& (pp=matchPath("/lab-tests/:id",path))) res = await labTestsDeactivate(req, pp.id)
 
-    // Results
+    // ── Results ───────────────────────────────────────────────────────────────
     else if (m==="POST"  && path==="/results") {
       const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","LABORATORIO","MEDICO");res=d??await resultsCreate(req,a)}
     }
     else if (m==="GET"   && path==="/results")                res = await resultsFind(req)
-    else if (m==="GET"   && matchPath("/results/:id",path))   { const p=matchPath("/results/:id",path)!; res=await resultsGetOne(req,p.id) }
-    else if (m==="PATCH" && matchPath("/results/:id",path))   {
-      const p=matchPath("/results/:id",path)!; const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","LABORATORIO","MEDICO");res=d??await resultsUpdate(req,p.id,a)}
+    else if (m==="GET"   && (pp=matchPath("/results/:id",path)))  res = await resultsGetOne(req, pp.id)
+    else if (m==="PATCH" && (pp=matchPath("/results/:id",path))) {
+      const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","LABORATORIO","MEDICO");res=d??await resultsUpdate(req,pp.id,a)}
     }
-    else if (m==="DELETE"&& matchPath("/results/:id",path))   { const p=matchPath("/results/:id",path)!; res=await resultsDelete(req,p.id) }
+    else if (m==="DELETE"&& (pp=matchPath("/results/:id",path))) res = await resultsDelete(req, pp.id)
 
-    // Appointments
+    // ── Appointments ──────────────────────────────────────────────────────────
     else if (m==="POST"  && path==="/appointments") {
       const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR");res=d??await appointmentsCreate(req,a)}
     }
     else if (m==="GET"   && path==="/appointments")           res = await appointmentsFind(req)
-    else if (m==="PATCH" && matchPath("/appointments/:id/status",path)) {
-      const p=matchPath("/appointments/:id/status",path)!; const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR");res=d??await appointmentsUpdateStatus(req,p.id,a)}
+    else if (m==="PATCH" && (pp=matchPath("/appointments/:id/status",path))) {
+      const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR");res=d??await appointmentsUpdateStatus(req,pp.id,a)}
     }
-    else if (m==="GET"   && matchPath("/appointments/:id",path)) { const p=matchPath("/appointments/:id",path)!; res=await appointmentsGetOne(req,p.id) }
-    else if (m==="PATCH" && matchPath("/appointments/:id",path)) {
-      const p=matchPath("/appointments/:id",path)!; const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR");res=d??await appointmentsUpdate(req,p.id,a)}
+    else if (m==="GET"   && (pp=matchPath("/appointments/:id",path))) res = await appointmentsGetOne(req, pp.id)
+    else if (m==="PATCH" && (pp=matchPath("/appointments/:id",path))) {
+      const a=await requireAuth(req); if(a instanceof Response){res=a}else{const d=requireRole(a,"ADMIN","OPERADOR");res=d??await appointmentsUpdate(req,pp.id,a)}
     }
-    else if (m==="DELETE"&& matchPath("/appointments/:id",path)) { const p=matchPath("/appointments/:id",path)!; res=await appointmentsDelete(req,p.id) }
+    else if (m==="DELETE"&& (pp=matchPath("/appointments/:id",path))) res = await appointmentsDelete(req, pp.id)
 
-    // Notifications â€” literal paths before dynamic
+    // ── Notifications (literal before dynamic) ────────────────────────────────
     else if (m==="GET"   && path==="/notifications")                    res = await notificationsFind(req)
     else if (m==="GET"   && path==="/notifications/unread-count")       res = await notificationsUnreadCount(req)
     else if (m==="PATCH" && path==="/notifications/read-all")           res = await notificationsMarkAllRead(req)
-    else if (m==="PATCH" && matchPath("/notifications/:id/read",path))  { const p=matchPath("/notifications/:id/read",path)!; res=await notificationsMarkRead(req,p.id) }
+    else if (m==="PATCH" && (pp=matchPath("/notifications/:id/read",path))) res = await notificationsMarkRead(req, pp.id)
 
-    // Patient Portal
+    // ── Patient Portal ────────────────────────────────────────────────────────
     else if (path.startsWith("/portal")) {
       const a=await requireAuth(req)
       if (a instanceof Response) { res=a }
       else {
         const d=requireRole(a,"PACIENTE")
         if (d) { res=d }
-        else if (m==="GET"  && path==="/portal/me")                                  res=await portalMe(req,a)
-        else if (m==="GET"  && path==="/portal/dashboard")                           res=await portalDashboard(req,a)
-        else if (m==="GET"  && path==="/portal/orders")                              res=await portalOrders(req,a)
-        else if (m==="GET"  && path==="/portal/results")                             res=await portalResults(req,a)
-        else if (m==="GET"  && path==="/portal/appointments")                        res=await portalAppointments(req,a)
-        else if (m==="GET"  && matchPath("/portal/orders/:orderId/consent",path))    { const p=matchPath("/portal/orders/:orderId/consent",path)!; res=await portalOrderConsent(req,p.orderId,a) }
-        else if (m==="GET"  && matchPath("/portal/orders/:orderId",path))            { const p=matchPath("/portal/orders/:orderId",path)!; res=await portalOrderDetail(req,p.orderId,a) }
-        else if (m==="POST" && matchPath("/portal/consents/:consentId/accept",path)) { const p=matchPath("/portal/consents/:consentId/accept",path)!; res=await portalConsentRespond(req,p.consentId,"ACEPTADO",a) }
-        else if (m==="POST" && matchPath("/portal/consents/:consentId/reject",path)) { const p=matchPath("/portal/consents/:consentId/reject",path)!; res=await portalConsentRespond(req,p.consentId,"RECHAZADO",a) }
+        else if (m==="GET"  && path==="/portal/me")                                   res=await portalMe(req,a)
+        else if (m==="GET"  && path==="/portal/dashboard")                            res=await portalDashboard(req,a)
+        else if (m==="GET"  && path==="/portal/orders")                               res=await portalOrders(req,a)
+        else if (m==="GET"  && path==="/portal/results")                              res=await portalResults(req,a)
+        else if (m==="GET"  && path==="/portal/appointments")                         res=await portalAppointments(req,a)
+        else if (m==="GET"  && (pp=matchPath("/portal/orders/:orderId/consent",path))) res=await portalOrderConsent(req,pp.orderId,a)
+        else if (m==="GET"  && (pp=matchPath("/portal/orders/:orderId",path)))         res=await portalOrderDetail(req,pp.orderId,a)
+        else if (m==="POST" && (pp=matchPath("/portal/consents/:consentId/accept",path))) res=await portalConsentRespond(req,pp.consentId,"ACEPTADO",a)
+        else if (m==="POST" && (pp=matchPath("/portal/consents/:consentId/reject",path))) res=await portalConsentRespond(req,pp.consentId,"RECHAZADO",a)
         else res=err(404, "Portal route not found")
       }
     }
 
-    // Health
+    // ── Health ────────────────────────────────────────────────────────────────
     else if (path==="/" || path==="/health") res = ok({ status:"ok", version:"2.0.0" })
     else res = err(404, `${m} ${path} not found`)
 
