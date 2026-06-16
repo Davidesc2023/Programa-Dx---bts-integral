@@ -18,7 +18,6 @@ export default async function SolicitudPage({ params }: Props) {
   if (!res || res.status === 404) notFound();
   if (!res.ok) notFound();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const json: { data: PublicFormData } = await res.json().catch(() => null);
   if (!json?.data) notFound();
 
