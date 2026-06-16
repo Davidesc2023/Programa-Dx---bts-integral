@@ -202,7 +202,33 @@ Usuario de prueba: `dr.garcia@botoshop.com` / `Medico123!`
 
 ---
 
+## ✅ Fase 9 — Tests + CI/CD (2026-06-16)
+
+- **164 tests unitarios** Jest pasan (14 suites) — servicios, utils, componentes
+- **5 suites Deno** cubren: state machine, magic link tokens, lógica de rutas admin
+- **CI/CD GitHub Actions** (`.github/workflows/ci-cd.yml`): lint + type-check + Jest + Deno tests → deploy automático a Supabase y Vercel en cada push a `main`
+- `frontend/.eslintrc.json` configurado con `next/core-web-vitals`
+
+## ✅ Fase 10 — Consentimientos en DB (2026-06-16)
+
+- 48 consentimientos cargados en Supabase (verificado): CO, EC, PA, CL, CR, SV, DO, GT
+- 3 programas × 8 países × 2 tipos (MEDICO + PACIENTE) = 48
+- SQL seed disponible en `scripts/` para replicar en otros proyectos
+
+## 🚀 Estado de despliegue (2026-06-16)
+
+| Componente | Estado |
+|-----------|--------|
+| DB Supabase | ✅ Online — tenant + programas + consentimientos listos |
+| Backend Edge Function | ⏳ Pendiente push → CI/CD despliega automáticamente |
+| Frontend Vercel | ⏳ Pendiente push → CI/CD despliega automáticamente |
+
+**Para desplegar:** `git push origin main` → GitHub Actions ejecuta la pipeline completa.
+
 ## 🔧 Pendiente — MEJORAS (no bloquean producción)
+
+### 1. Importar datos históricos
+Excel DAAT (~789 casos) y Wilson (~117 casos) listos en `doc/files/` — usar módulo `/dx/importar`.
 
 ### 2. Dominio personalizado
 
