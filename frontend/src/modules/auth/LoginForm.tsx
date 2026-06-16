@@ -4,22 +4,23 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  Loader2, ArrowRight, AtSign, KeyRound, Eye, EyeOff,
-  ShieldCheck, Globe, FlaskConical,
-} from 'lucide-react';
+import { Loader2, ArrowRight, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { loginSchema, type LoginFormValues } from '@/lib/validators';
 import { useAuth } from './useAuth';
 import { RegisterPatientForm } from './RegisterPatientForm';
 import { getApiErrorMessage } from '@/services/api';
 
+// ─── Constantes de marca ─────────────────────────────────────────────────────
+
 const PROGRAMS = [
-  { code: 'Wilson',    color: '#1B7A6B' },
-  { code: 'DAAT',      color: '#2563eb' },
-  { code: 'Duchenne',  color: '#7c3aed' },
+  { label: 'Wilson',   color: '#1B7A6B' },
+  { label: 'DAAT',     color: '#2563eb' },
+  { label: 'Duchenne', color: '#7c3aed' },
 ];
 
-const COUNTRIES = ['CO', 'EC', 'PA', 'CL', 'CR', 'SV', 'DO', 'GT'];
+const PAISES = ['CO', 'EC', 'PA', 'CL', 'CR', 'SV', 'DO', 'GT'];
+
+// ─── Componente principal ────────────────────────────────────────────────────
 
 export function LoginForm() {
   const { login } = useAuth();
@@ -27,9 +28,11 @@ export function LoginForm() {
   const [serverError, setServerError]   = useState<string | null>(null);
   const [showRegister, setShowRegister] = useState(false);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-  });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) });
 
   const onSubmit = async (values: LoginFormValues) => {
     setServerError(null);
@@ -50,363 +53,493 @@ export function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex overflow-hidden" style={{ background: '#f2f4f4' }}>
+    <div className="min-h-screen md:min-h-dvh flex flex-col md:flex-row overflow-hidden">
 
       {/* ═══════════════════════════════════════════════════════════
-          LEFT PANEL — BTS INTEGRAL hero (desktop)
+          PANEL IZQUIERDO — brand hero (md+)
       ════════════════════════════════════════════════════════════ */}
-      <section
-        className="hidden md:flex flex-col items-center justify-between w-1/2 lg:w-3/5 py-14 px-10 relative overflow-hidden"
+      <aside
+        aria-hidden="true"
+        className="hidden md:flex flex-col w-[46%] lg:w-[52%] xl:w-[55%] relative overflow-hidden"
         style={{
-          background: 'linear-gradient(165deg, #001f1a 0%, #003028 25%, #004d3d 55%, #1B7A6B 100%)',
+          background:
+            'linear-gradient(155deg, #001208 0%, #001a12 18%, #002e20 42%, #00432f 62%, #1B7A6B 100%)',
         }}
       >
-        {/* Blob decorativo superior derecho */}
+        {/* ── Decoración: anillos abstractos (ADN) ── */}
         <div
-          className="absolute top-0 right-0 rounded-full pointer-events-none"
+          className="absolute rounded-full pointer-events-none"
           style={{
-            width: 640, height: 640,
-            background: 'radial-gradient(circle, rgba(176,255,237,0.12) 0%, transparent 65%)',
-            transform: 'translate(35%, -35%)',
+            width: 700, height: 700,
+            top: -200, right: -200,
+            border: '1px solid rgba(255,255,255,0.04)',
           }}
         />
-        {/* Blob decorativo inferior izquierdo */}
         <div
-          className="absolute bottom-0 left-0 rounded-full pointer-events-none"
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            width: 520, height: 520,
+            top: -140, right: -140,
+            border: '1px solid rgba(255,255,255,0.055)',
+          }}
+        />
+        <div
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            width: 340, height: 340,
+            top: -80, right: -80,
+            border: '1px solid rgba(255,255,255,0.07)',
+          }}
+        />
+        <div
+          className="absolute rounded-full pointer-events-none"
+          style={{
+            width: 560, height: 560,
+            bottom: -200, left: -200,
+            border: '1px solid rgba(255,255,255,0.035)',
+          }}
+        />
+        {/* Glow verde tenue */}
+        <div
+          className="absolute pointer-events-none"
           style={{
             width: 480, height: 480,
-            background: 'radial-gradient(circle, rgba(176,255,237,0.08) 0%, transparent 65%)',
-            transform: 'translate(-35%, 35%)',
+            bottom: -80, right: -80,
+            background: 'radial-gradient(circle, rgba(27,122,107,0.18) 0%, transparent 70%)',
           }}
         />
-        {/* Textura de rejilla */}
+        {/* Textura cuadrícula sutil */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            opacity: 0.035,
+            opacity: 0.028,
             backgroundImage:
-              'linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px)',
-            backgroundSize: '48px 48px',
+              'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), ' +
+              'linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)',
+            backgroundSize: '52px 52px',
           }}
         />
 
-        {/* ── HERO central: logo + nombre ─────────────────────── */}
-        <div className="relative z-10 flex flex-col items-center text-center gap-8 w-full max-w-md">
+        {/* ── Contenido centrado ── */}
+        <div className="relative z-10 flex flex-col justify-between flex-1 px-10 xl:px-14 py-12">
 
-          {/* Logo grande con glow */}
-          <div className="relative">
-            <div
-              className="absolute inset-0 rounded-[36px] blur-2xl"
-              style={{ background: 'rgba(27,122,107,0.35)', transform: 'scale(1.15)' }}
-            />
-            <div
-              className="relative w-36 h-36 rounded-[36px] flex items-center justify-center"
-              style={{
-                background: 'rgba(255,255,255,0.13)',
-                backdropFilter: 'blur(16px)',
-                border: '1.5px solid rgba(255,255,255,0.22)',
-                boxShadow: '0 24px 60px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.15)',
-              }}
-            >
-              <Image
-                src="/logo.png"
-                alt="BTS Integral"
-                width={96}
-                height={96}
-                className="object-contain"
-                priority
+          {/* Bloque hero: logo + nombre */}
+          <div className="flex flex-col items-center text-center gap-8 mt-4">
+
+            {/* Logo con glow + glassmorphism */}
+            <div className="relative">
+              {/* Glow exterior */}
+              <div
+                className="absolute inset-0 rounded-[40px] pointer-events-none"
+                style={{
+                  background: 'rgba(27,122,107,0.30)',
+                  filter: 'blur(28px)',
+                  transform: 'scale(1.2)',
+                }}
               />
+              {/* Contenedor del logo */}
+              <div
+                className="relative flex items-center justify-center"
+                style={{
+                  width: 200,
+                  height: 200,
+                  borderRadius: 44,
+                  background:
+                    'linear-gradient(140deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.07) 100%)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1.5px solid rgba(255,255,255,0.18)',
+                  boxShadow:
+                    '0 32px 64px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.18)',
+                }}
+              >
+                <Image
+                  src="/logo.png"
+                  alt="BTS Integral"
+                  width={128}
+                  height={128}
+                  className="object-contain"
+                  priority
+                />
+              </div>
+            </div>
+
+            {/* Nombre + subtítulo */}
+            <div className="space-y-2">
+              <h1
+                className="text-white font-black leading-none tracking-tight"
+                style={{ fontSize: '3rem', fontFamily: 'Manrope, sans-serif' }}
+              >
+                BTS INTEGRAL
+              </h1>
+              <p
+                className="text-[11px] font-bold tracking-[0.3em] uppercase"
+                style={{ color: 'rgba(255,255,255,0.40)' }}
+              >
+                Programa DX · Diagnóstico Genético
+              </p>
+            </div>
+
+            {/* Separador */}
+            <div
+              className="w-12 h-[1px]"
+              style={{ background: 'rgba(255,255,255,0.15)' }}
+            />
+
+            {/* Descripción */}
+            <p
+              className="text-[15px] leading-relaxed font-medium max-w-[260px]"
+              style={{ color: 'rgba(255,255,255,0.58)' }}
+            >
+              Seguimiento integral de pacientes en programas de diagnóstico genético en LATAM.
+            </p>
+
+            {/* Programas */}
+            <div className="flex items-center gap-2.5 flex-wrap justify-center">
+              {PROGRAMS.map((p) => (
+                <div
+                  key={p.label}
+                  className="flex items-center gap-2 rounded-2xl px-4 py-2"
+                  style={{
+                    background: 'rgba(255,255,255,0.07)',
+                    border: '1px solid rgba(255,255,255,0.10)',
+                  }}
+                >
+                  <div
+                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                    style={{ background: p.color }}
+                  />
+                  <span
+                    className="text-xs font-bold"
+                    style={{ color: 'rgba(255,255,255,0.70)' }}
+                  >
+                    {p.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Países */}
+            <div className="flex flex-wrap justify-center gap-1.5">
+              {PAISES.map((c) => (
+                <span
+                  key={c}
+                  className="text-[10px] font-bold tracking-wider rounded-lg px-2.5 py-1"
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    color: 'rgba(255,255,255,0.35)',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                  }}
+                >
+                  {c}
+                </span>
+              ))}
             </div>
           </div>
 
-          {/* Nombre de marca */}
-          <div className="space-y-2">
-            <h1
-              className="font-black text-white leading-none tracking-tight"
-              style={{ fontSize: '2.75rem', fontFamily: 'Manrope, sans-serif' }}
+          {/* Badge inferior de confianza */}
+          <div className="flex items-center justify-center gap-3 mt-8">
+            <div
+              className="flex items-center gap-2 rounded-2xl px-4 py-2.5"
+              style={{
+                background: 'rgba(255,255,255,0.07)',
+                border: '1px solid rgba(255,255,255,0.10)',
+                backdropFilter: 'blur(8px)',
+              }}
             >
-              BTS INTEGRAL
-            </h1>
-            <p className="text-white/50 text-[11px] font-bold tracking-[0.28em] uppercase">
-              Programa DX · Diagnóstico Genético
-            </p>
-          </div>
-
-          {/* Separador */}
-          <div className="w-14 h-px" style={{ background: 'rgba(255,255,255,0.18)' }} />
-
-          {/* Descripción */}
-          <p className="text-white/65 text-[15px] leading-relaxed font-medium max-w-[260px]">
-            Seguimiento integral de pacientes en programas de diagnóstico genético en LATAM.
-          </p>
-
-          {/* Programas */}
-          <div className="flex items-center gap-3">
-            {PROGRAMS.map((p) => (
-              <div
-                key={p.code}
-                className="flex items-center gap-1.5 rounded-xl px-3 py-1.5"
-                style={{
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                }}
-              >
-                <div className="w-2 h-2 rounded-full" style={{ background: p.color }} />
-                <span className="text-xs font-semibold text-white/70">{p.code}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Países */}
-          <div className="flex items-center gap-1.5 flex-wrap justify-center">
-            {COUNTRIES.map((c) => (
+              <ShieldCheck size={14} style={{ color: 'rgba(255,255,255,0.55)' }} />
               <span
-                key={c}
-                className="text-[10px] font-bold rounded-lg px-2 py-0.5"
-                style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.45)' }}
+                className="text-xs font-semibold"
+                style={{ color: 'rgba(255,255,255,0.65)' }}
               >
-                {c}
+                Grado Médico
               </span>
-            ))}
+            </div>
+            <div
+              className="flex items-center gap-2 rounded-2xl px-4 py-2.5"
+              style={{
+                background: 'rgba(255,255,255,0.07)',
+                border: '1px solid rgba(255,255,255,0.10)',
+                backdropFilter: 'blur(8px)',
+              }}
+            >
+              <span
+                className="text-xs font-bold font-mono"
+                style={{ color: 'rgba(255,255,255,0.50)' }}
+              >
+                HIPAA
+              </span>
+              <span
+                className="text-xs font-semibold"
+                style={{ color: 'rgba(255,255,255,0.55)' }}
+              >
+                Compliant
+              </span>
+            </div>
           </div>
         </div>
-
-        {/* ── Badges de confianza ───────────────────────────────── */}
-        <div className="relative z-10 flex items-center gap-3">
-          <div
-            className="flex items-center gap-2 rounded-2xl px-4 py-2.5"
-            style={{
-              background: 'rgba(255,255,255,0.08)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255,255,255,0.12)',
-            }}
-          >
-            <ShieldCheck size={15} className="text-white/65" />
-            <span className="text-white/75 text-sm font-semibold">Grado Médico</span>
-          </div>
-          <div
-            className="flex items-center gap-2 rounded-2xl px-4 py-2.5"
-            style={{
-              background: 'rgba(255,255,255,0.08)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255,255,255,0.12)',
-            }}
-          >
-            <Globe size={15} className="text-white/65" />
-            <span className="text-white/75 text-sm font-semibold">8 países LATAM</span>
-          </div>
-          <div
-            className="flex items-center gap-2 rounded-2xl px-4 py-2.5"
-            style={{
-              background: 'rgba(255,255,255,0.08)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255,255,255,0.12)',
-            }}
-          >
-            <FlaskConical size={15} className="text-white/65" />
-            <span className="text-white/75 text-sm font-semibold">900+ casos</span>
-          </div>
-        </div>
-      </section>
+      </aside>
 
       {/* ═══════════════════════════════════════════════════════════
-          RIGHT PANEL — formulario
+          PANEL DERECHO — formulario
       ════════════════════════════════════════════════════════════ */}
-      <section className="flex-1 flex flex-col bg-white">
-
-        {/* Header móvil */}
+      <main
+        className="flex-1 flex flex-col"
+        style={{ background: '#f4f6f5' }}
+      >
+        {/* ── Header móvil (solo <md) ── */}
         <div
-          className="flex md:hidden flex-col items-center pt-12 pb-8 px-6"
+          className="flex md:hidden flex-col items-center pt-14 pb-10 px-6"
           style={{
-            background: 'linear-gradient(160deg, #001f1a 0%, #1B7A6B 100%)',
+            background:
+              'linear-gradient(160deg, #001208 0%, #002e20 50%, #1B7A6B 100%)',
           }}
         >
           <div
-            className="w-24 h-24 rounded-[28px] flex items-center justify-center mb-4"
+            className="flex items-center justify-center mb-5"
             style={{
-              background: 'rgba(255,255,255,0.14)',
-              border: '1.5px solid rgba(255,255,255,0.2)',
-              boxShadow: '0 16px 40px rgba(0,0,0,0.2)',
+              width: 96, height: 96,
+              borderRadius: 28,
+              background: 'rgba(255,255,255,0.13)',
+              border: '1.5px solid rgba(255,255,255,0.18)',
+              boxShadow: '0 16px 40px rgba(0,0,0,0.22)',
             }}
           >
-            <Image src="/logo.png" alt="BTS Integral" width={60} height={60} className="object-contain" priority />
+            <Image
+              src="/logo.png"
+              alt="BTS Integral"
+              width={60}
+              height={60}
+              className="object-contain"
+              priority
+            />
           </div>
           <h1
-            className="text-2xl font-black text-white tracking-tight"
+            className="text-white font-black text-2xl tracking-tight"
             style={{ fontFamily: 'Manrope, sans-serif' }}
           >
             BTS INTEGRAL
           </h1>
-          <p className="text-white/55 text-[11px] font-bold mt-1.5 tracking-widest uppercase">
+          <p
+            className="text-[11px] font-bold tracking-[0.25em] uppercase mt-2"
+            style={{ color: 'rgba(255,255,255,0.45)' }}
+          >
             Programa DX
           </p>
         </div>
 
-        {/* Área del formulario */}
-        <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 sm:px-12 lg:px-16">
-          <div className="w-full max-w-sm">
+        {/* ── Área del formulario centrada ── */}
+        <div className="flex-1 flex items-center justify-center px-5 py-10 sm:px-8">
+          <div className="w-full max-w-md">
 
-            {/* Encabezado del formulario */}
-            <div className="mb-9 space-y-1.5">
-              <h2
-                className="text-3xl font-black tracking-tight"
-                style={{ color: '#191c1d', fontFamily: 'Manrope, sans-serif' }}
+            {/* Tarjeta del formulario */}
+            <div
+              className="rounded-3xl px-8 py-10 sm:px-10"
+              style={{
+                background: '#ffffff',
+                boxShadow:
+                  '0 4px 6px rgba(0,0,0,0.03), 0 20px 60px rgba(0,0,0,0.08)',
+              }}
+            >
+              {/* Encabezado */}
+              <div className="mb-9">
+                <h2
+                  className="text-[1.75rem] font-black tracking-tight"
+                  style={{ color: '#101c19', fontFamily: 'Manrope, sans-serif' }}
+                >
+                  Bienvenido
+                </h2>
+                <p
+                  className="text-sm mt-1.5 font-medium"
+                  style={{ color: '#6e7976', lineHeight: 1.6 }}
+                >
+                  Ingresa tus credenciales para acceder al portal clínico.
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+
+                {/* ── Email ── */}
+                <div className="space-y-1.5">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-semibold"
+                    style={{ color: '#2e3d3a' }}
+                  >
+                    Correo electrónico
+                    <span className="ml-1" style={{ color: '#ba1a1a' }} aria-hidden="true">*</span>
+                  </label>
+                  <div
+                    className={`flex rounded-xl transition-all ${
+                      errors.email
+                        ? 'border border-[#ba1a1a]'
+                        : 'border border-transparent bg-[#f2f5f4] focus-within:border-[#1B7A6B] focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(27,122,107,0.12)]'
+                    }`}
+                    style={errors.email ? { background: 'rgba(186,26,26,0.03)' } : undefined}
+                  >
+                    <input
+                      id="email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="usuario@bts-integral.com"
+                      aria-required="true"
+                      aria-invalid={Boolean(errors.email)}
+                      aria-describedby={errors.email ? 'email-error' : undefined}
+                      className="w-full bg-transparent rounded-xl px-4 text-sm font-medium focus:outline-none"
+                      style={{ height: 52, color: '#101c19' }}
+                      {...register('email')}
+                    />
+                  </div>
+                  {errors.email && (
+                    <p
+                      id="email-error"
+                      role="alert"
+                      className="text-xs font-medium"
+                      style={{ color: '#ba1a1a' }}
+                    >
+                      {errors.email.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* ── Contraseña ── */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label
+                      htmlFor="password"
+                      className="text-sm font-semibold"
+                      style={{ color: '#2e3d3a' }}
+                    >
+                      Contraseña
+                      <span className="ml-1" style={{ color: '#ba1a1a' }} aria-hidden="true">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      className="text-xs font-semibold hover:underline underline-offset-2 transition-colors"
+                      style={{ color: '#006053' }}
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </button>
+                  </div>
+                  <div
+                    className={`relative flex rounded-xl transition-all ${
+                      errors.password
+                        ? 'border border-[#ba1a1a]'
+                        : 'border border-transparent bg-[#f2f5f4] focus-within:border-[#1B7A6B] focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(27,122,107,0.12)]'
+                    }`}
+                    style={errors.password ? { background: 'rgba(186,26,26,0.03)' } : undefined}
+                  >
+                    <input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
+                      placeholder="••••••••••"
+                      aria-required="true"
+                      aria-invalid={Boolean(errors.password)}
+                      aria-describedby={errors.password ? 'password-error' : undefined}
+                      className="w-full bg-transparent rounded-xl px-4 pr-14 text-sm font-medium focus:outline-none"
+                      style={{ height: 52, color: '#101c19' }}
+                      {...register('password')}
+                    />
+                    <button
+                      type="button"
+                      aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                      onClick={() => setShowPassword((p) => !p)}
+                      className="absolute right-0 top-0 h-full flex items-center justify-center rounded-r-xl transition-colors hover:text-[#6e7976]"
+                      style={{ width: 52, color: '#9eaaa7' }}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p
+                      id="password-error"
+                      role="alert"
+                      className="text-xs font-medium"
+                      style={{ color: '#ba1a1a' }}
+                    >
+                      {errors.password.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* ── Error del servidor ── */}
+                {serverError && (
+                  <div
+                    role="alert"
+                    aria-live="assertive"
+                    className="rounded-xl px-4 py-3 text-sm font-medium"
+                    style={{
+                      background: 'rgba(186,26,26,0.07)',
+                      border: '1px solid rgba(186,26,26,0.18)',
+                      color: '#9b1515',
+                    }}
+                  >
+                    {serverError}
+                  </div>
+                )}
+
+                {/* ── Botón de entrar ── */}
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  aria-label="Iniciar sesión"
+                  className="group w-full flex items-center justify-center gap-2.5 rounded-2xl font-bold text-[15px] transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+                  style={{
+                    height: 56,
+                    background: isSubmitting
+                      ? '#006053'
+                      : 'linear-gradient(135deg, #005c4e 0%, #1B7A6B 55%, #22907e 100%)',
+                    color: '#ffffff',
+                    fontFamily: 'Manrope, sans-serif',
+                    boxShadow: isSubmitting
+                      ? 'none'
+                      : '0 4px 24px rgba(27,122,107,0.35), 0 1px 3px rgba(0,0,0,0.15)',
+                  }}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      <span>Verificando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Entrar al portal</span>
+                      <ArrowRight
+                        size={18}
+                        className="group-hover:translate-x-1 transition-transform duration-200"
+                      />
+                    </>
+                  )}
+                </button>
+              </form>
+
+              {/* ── Enlace de registro ── */}
+              <p
+                className="mt-7 text-center text-sm"
+                style={{ color: '#6e7976' }}
               >
-                Bienvenido
-              </h2>
-              <p className="text-sm font-medium" style={{ color: '#6e7976' }}>
-                Ingresa tus credenciales para acceder al portal clínico.
+                ¿Nuevo en la plataforma?{' '}
+                <button
+                  type="button"
+                  onClick={() => setShowRegister(true)}
+                  className="font-bold hover:underline underline-offset-2 transition-colors"
+                  style={{ color: '#006053' }}
+                >
+                  Solicitar acceso
+                </button>
               </p>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
-
-              {/* Email */}
-              <div className="space-y-1.5">
-                <label
-                  className="text-sm font-semibold"
-                  style={{ color: '#3e4946' }}
-                  htmlFor="email"
-                >
-                  Correo Electrónico
-                </label>
-                <div className="relative">
-                  <AtSign
-                    size={15}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
-                    style={{ color: '#9eaaa7' }}
-                  />
-                  <input
-                    id="email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="usuario@bts-integral.com"
-                    className="w-full pl-11 pr-4 py-3.5 bg-[#f2f4f4] rounded-2xl text-on-surface placeholder:text-outline/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all text-sm font-medium"
-                    aria-invalid={Boolean(errors.email)}
-                    {...register('email')}
-                  />
-                </div>
-                {errors.email && (
-                  <p className="text-xs font-medium" style={{ color: '#ba1a1a' }} role="alert">
-                    {errors.email.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Contraseña */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label
-                    className="text-sm font-semibold"
-                    style={{ color: '#3e4946' }}
-                    htmlFor="password"
-                  >
-                    Contraseña
-                  </label>
-                  <button
-                    type="button"
-                    className="text-xs font-semibold hover:underline transition-colors"
-                    style={{ color: '#006053' }}
-                  >
-                    ¿Olvidaste tu contraseña?
-                  </button>
-                </div>
-                <div className="relative">
-                  <KeyRound
-                    size={15}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
-                    style={{ color: '#9eaaa7' }}
-                  />
-                  <input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete="current-password"
-                    placeholder="••••••••••"
-                    className="w-full pl-11 pr-12 py-3.5 bg-[#f2f4f4] rounded-2xl text-on-surface placeholder:text-outline/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all text-sm font-medium"
-                    aria-invalid={Boolean(errors.password)}
-                    {...register('password')}
-                  />
-                  <button
-                    type="button"
-                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-                    onClick={() => setShowPassword((p) => !p)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors"
-                    style={{ color: '#9eaaa7' }}
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-                {errors.password && (
-                  <p className="text-xs font-medium" style={{ color: '#ba1a1a' }} role="alert">
-                    {errors.password.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Error de servidor */}
-              {serverError && (
-                <div
-                  role="alert"
-                  className="text-sm rounded-xl px-4 py-3 font-medium"
-                  style={{
-                    background: 'rgba(186,26,26,0.08)',
-                    color: '#ba1a1a',
-                    border: '1px solid rgba(186,26,26,0.15)',
-                  }}
-                >
-                  {serverError}
-                </div>
-              )}
-
-              {/* Botón de entrar */}
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full py-4 rounded-2xl font-bold text-base flex items-center justify-center gap-2 group transition-all disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.98]"
-                style={{
-                  background: 'linear-gradient(135deg, #006053 0%, #1B7A6B 100%)',
-                  color: '#ffffff',
-                  fontFamily: 'Manrope, sans-serif',
-                  boxShadow: '0 4px 20px rgba(0,96,83,0.30)',
-                }}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" />
-                    <span>Verificando...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Entrar</span>
-                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </button>
-            </form>
-
-            {/* Link de registro */}
-            <p className="mt-8 text-center text-sm" style={{ color: '#6e7976' }}>
-              ¿Nuevo en la plataforma?{' '}
-              <button
-                type="button"
-                onClick={() => setShowRegister(true)}
-                className="font-bold hover:underline"
-                style={{ color: '#006053' }}
-              >
-                Solicitar acceso
-              </button>
+            {/* Pie de página */}
+            <p
+              className="text-center text-[10px] font-bold uppercase tracking-widest mt-7"
+              style={{ color: '#b0bab7' }}
+            >
+              Seguridad de Grado Médico · HIPAA Compliant
             </p>
           </div>
         </div>
-
-        {/* Footer escritorio */}
-        <p
-          className="hidden md:block text-center text-[10px] uppercase tracking-widest font-bold py-5 border-t"
-          style={{ color: '#bec9c5', borderColor: '#f2f4f4' }}
-        >
-          Seguridad de Grado Médico · HIPAA Compliant
-        </p>
-      </section>
+      </main>
     </div>
   );
 }
