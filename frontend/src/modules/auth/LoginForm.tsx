@@ -61,18 +61,33 @@ export function LoginForm() {
       <aside
         aria-hidden="true"
         className="hidden md:flex flex-col w-[46%] lg:w-[52%] xl:w-[55%] relative overflow-hidden"
-        style={{
-          background:
-            'linear-gradient(155deg, #001208 0%, #001a12 18%, #002e20 42%, #00432f 62%, #1B7A6B 100%)',
-        }}
+        style={{ background: '#0d1614' }}
       >
-        {/* ── Decoración: anillos abstractos (ADN) ── */}
+        {/* ── Gradiente radial sutil desde esquina inferior ── */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            inset: 0,
+            background:
+              'radial-gradient(ellipse 80% 60% at 110% 110%, rgba(27,122,107,0.22) 0%, transparent 65%)',
+          }}
+        />
+        {/* ── Gradiente radial superior izquierdo ── */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            inset: 0,
+            background:
+              'radial-gradient(ellipse 60% 50% at -10% 0%, rgba(27,122,107,0.10) 0%, transparent 60%)',
+          }}
+        />
+        {/* ── Anillos decorativos (ADN) ── */}
         <div
           className="absolute rounded-full pointer-events-none"
           style={{
             width: 700, height: 700,
             top: -200, right: -200,
-            border: '1px solid rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.035)',
           }}
         />
         <div
@@ -80,7 +95,7 @@ export function LoginForm() {
           style={{
             width: 520, height: 520,
             top: -140, right: -140,
-            border: '1px solid rgba(255,255,255,0.055)',
+            border: '1px solid rgba(255,255,255,0.05)',
           }}
         />
         <div
@@ -88,31 +103,14 @@ export function LoginForm() {
           style={{
             width: 340, height: 340,
             top: -80, right: -80,
-            border: '1px solid rgba(255,255,255,0.07)',
+            border: '1px solid rgba(255,255,255,0.065)',
           }}
         />
-        <div
-          className="absolute rounded-full pointer-events-none"
-          style={{
-            width: 560, height: 560,
-            bottom: -200, left: -200,
-            border: '1px solid rgba(255,255,255,0.035)',
-          }}
-        />
-        {/* Glow verde tenue */}
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            width: 480, height: 480,
-            bottom: -80, right: -80,
-            background: 'radial-gradient(circle, rgba(27,122,107,0.18) 0%, transparent 70%)',
-          }}
-        />
-        {/* Textura cuadrícula sutil */}
+        {/* ── Textura cuadrícula sutil ── */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            opacity: 0.028,
+            opacity: 0.022,
             backgroundImage:
               'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), ' +
               'linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)',
@@ -126,37 +124,35 @@ export function LoginForm() {
           {/* Bloque hero: logo + nombre */}
           <div className="flex flex-col items-center text-center gap-8 mt-4">
 
-            {/* Logo con glow + glassmorphism */}
+            {/* Logo sobre fondo oscuro con borde teal sutil */}
             <div className="relative">
-              {/* Glow exterior */}
+              {/* Glow exterior tenue */}
               <div
-                className="absolute inset-0 rounded-[40px] pointer-events-none"
+                className="absolute inset-0 rounded-[44px] pointer-events-none"
                 style={{
-                  background: 'rgba(27,122,107,0.30)',
-                  filter: 'blur(28px)',
-                  transform: 'scale(1.2)',
+                  background: 'rgba(27,122,107,0.20)',
+                  filter: 'blur(32px)',
+                  transform: 'scale(1.18)',
                 }}
               />
-              {/* Contenedor del logo */}
+              {/* Contenedor del logo — fondo oscuro para contrastar con logo */}
               <div
                 className="relative flex items-center justify-center"
                 style={{
                   width: 200,
                   height: 200,
                   borderRadius: 44,
-                  background:
-                    'linear-gradient(140deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.07) 100%)',
-                  backdropFilter: 'blur(20px)',
-                  border: '1.5px solid rgba(255,255,255,0.18)',
+                  background: '#162220',
+                  border: '1.5px solid rgba(27,122,107,0.40)',
                   boxShadow:
-                    '0 32px 64px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.18)',
+                    '0 0 0 1px rgba(255,255,255,0.04), 0 32px 64px rgba(0,0,0,0.50)',
                 }}
               >
                 <Image
                   src="/logo.png"
                   alt="BTS Integral"
-                  width={128}
-                  height={128}
+                  width={132}
+                  height={132}
                   className="object-contain"
                   priority
                 />
@@ -289,19 +285,16 @@ export function LoginForm() {
         {/* ── Header móvil (solo <md) ── */}
         <div
           className="flex md:hidden flex-col items-center pt-14 pb-10 px-6"
-          style={{
-            background:
-              'linear-gradient(160deg, #001208 0%, #002e20 50%, #1B7A6B 100%)',
-          }}
+          style={{ background: '#0d1614' }}
         >
           <div
             className="flex items-center justify-center mb-5"
             style={{
               width: 96, height: 96,
               borderRadius: 28,
-              background: 'rgba(255,255,255,0.13)',
-              border: '1.5px solid rgba(255,255,255,0.18)',
-              boxShadow: '0 16px 40px rgba(0,0,0,0.22)',
+              background: '#162220',
+              border: '1.5px solid rgba(27,122,107,0.40)',
+              boxShadow: '0 16px 40px rgba(0,0,0,0.40)',
             }}
           >
             <Image
