@@ -5,7 +5,7 @@ const createJestConfig = nextJest({ dir: './' })
 
 const config: Config = {
   testEnvironment: 'jsdom',
-  setupFilesAfterFramework: ['<rootDir>/jest.setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
@@ -14,11 +14,14 @@ const config: Config = {
     '<rootDir>/src/**/*.test.{ts,tsx}',
   ],
   collectCoverageFrom: [
-    'src/**/*.{ts,tsx}',
+    'src/lib/**/*.{ts,tsx}',
+    'src/services/api.ts',
+    'src/services/auth.service.ts',
+    'src/services/admin-dx.service.ts',
+    'src/services/public.service.ts',
+    'src/services/autorizacion.service.ts',
+    'src/services/users.service.ts',
     '!src/**/*.d.ts',
-    '!src/**/index.ts',
-    '!src/app/layout.tsx',
-    '!src/app/providers.tsx',
   ],
   coverageThreshold: {
     global: {

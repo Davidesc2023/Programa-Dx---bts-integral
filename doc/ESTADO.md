@@ -1,6 +1,6 @@
 # Estado del Proyecto APP-DX — Junio 2026
 
-> Última actualización: 2026-06-12 (rev 6 — Rediseño arquitectural v2.0)
+> Última actualización: 2026-06-16 (rev 7 — Dashboard analytics BI completo)
 >
 > **PIVOTE MAYOR:** El sistema fue rediseñado para operar con magic links sin cuentas de médico/paciente, arquitectura multi-tenant y soporte multi-país. Ver PRD.md, PLAN.md y STACK.md para el detalle completo.
 
@@ -163,6 +163,42 @@ Usuario de prueba: `dr.garcia@botoshop.com` / `Medico123!`
 - Storage: bucket `consents-pdf` (privado), path `{orderId}/{consentId}.pdf`
 - URL firmada: validez 1 año (31 536 000 s)
 - Contenido del PDF: médico, especialidad, licencia, paciente, diagnóstico, notas, fecha firma, línea de firma
+
+---
+
+## ✅ Dashboard Analytics BI — IMPLEMENTADO (2026-06-16)
+
+### Panel DX — Analytics completo (`/dx/dashboard`)
+
+**Backend:** `GET /admin/dashboard` expandido con una query maestra de agregación en TS.
+
+| Métrica nueva | Descripción |
+|--------------|-------------|
+| `por_departamento` | Top 20 departamentos/regiones por volumen de casos |
+| `por_ano` | Solicitudes por año (tendencia histórica) |
+| `por_mes_programa` | Solicitudes por mes agrupadas por programa (Wilson/DAAT/Duchenne) |
+| `estado_genetico_dist` | Distribución del estado de la prueba genética |
+| `seguimiento_dist` | Distribución de seguimiento clínico (positivo/negativo/portador/etc.) |
+| `tasa_autorizacion` | Autorizados vs No autorizados vs Pendientes |
+| `por_medico` | Desglose completo por médico (top 50): pendientes, en proceso, con/sin indicación, positivos, negativos, no aceptaron, % conversión, % completado |
+| `heatmap_medico_mes` | Actividad top-10 médicos × últimos 12 meses (CSS grid heatmap) |
+| `conversion_funnel` | Embudo: Total → Autorizó → Muestra → Sérico → Con indicación → Genética → Completado |
+
+**Frontend:** Reescritura completa de `DxDashboard.tsx` con 9 secciones:
+1. **6 KPIs** — Total, pendientes autorización, con indicación genética, completados, % conversión sérica, % autorización
+2. **Temporal agrupado** — barras por mes × programa (últimos 12 meses)
+3. **Embudo de conversión** — progresivo con % en cada etapa
+4. **Distribución estados** — estado del caso + estado genético + seguimiento clínico (3 columnas)
+5. **Autorización + año + programa** — 3 tarjetas compactas
+6. **Por departamento** — top 20 barras horizontales
+7. **Por país** — badges
+8. **Heatmap médico × mes** — CSS grid con gradiente verde, escala de intensidad
+9. **Tabla de médicos sortable** — 11 columnas, ordenable por cualquier métrica, con colores semánticos (positivos en rojo, % conversión en verde)
+
+**Archivos modificados:**
+- `frontend/src/types/dx.types.ts` — 9 nuevas interfaces + expansión de `DxDashboardData`
+- `supabase/functions/api/routes/admin-casos.ts` — `obtenerDashboard` expandido (~130 líneas)
+- `frontend/src/modules/dx/DxDashboard.tsx` — reescritura completa (~450 líneas)
 
 ---
 

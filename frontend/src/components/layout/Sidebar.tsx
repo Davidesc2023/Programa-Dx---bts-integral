@@ -13,6 +13,9 @@ import {
   UserCog,
   LogOut,
   PlusCircle,
+  Microscope,
+  ScrollText,
+  Upload,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useAuthStore } from '@/modules/auth/authStore';
@@ -71,12 +74,36 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
+const DX_NAV_ITEMS: NavItem[] = [
+  {
+    label: 'Panel DX',
+    href: '/dx/dashboard',
+    icon: Microscope,
+    roles: [UserRole.ADMIN, UserRole.OPERADOR],
+  },
+  {
+    label: 'Casos DX',
+    href: '/dx/casos',
+    icon: ScrollText,
+    roles: [UserRole.ADMIN, UserRole.OPERADOR],
+  },
+  {
+    label: 'Importar DX',
+    href: '/dx/importar',
+    icon: Upload,
+    roles: [UserRole.ADMIN],
+  },
+];
+
 export function Sidebar() {
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
   const { logout } = useAuth();
 
   const visibleItems = NAV_ITEMS.filter(
+    (item) => user?.role && item.roles.includes(user.role),
+  );
+  const visibleDxItems = DX_NAV_ITEMS.filter(
     (item) => user?.role && item.roles.includes(user.role),
   );
 
@@ -123,7 +150,6 @@ export function Sidebar() {
           const isActive =
             pathname === item.href || pathname.startsWith(item.href + '/');
           const Icon = item.icon;
-
           return (
             <Link
               key={item.href}
@@ -137,15 +163,43 @@ export function Sidebar() {
                   : { color: '#3e4946' }
               }
             >
-              <Icon
-                size={18}
-                className="shrink-0"
-                style={{ color: isActive ? '#1B7A6B' : '#6e7976' }}
-              />
+              <Icon size={18} className="shrink-0" style={{ color: isActive ? '#1B7A6B' : '#6e7976' }} />
               {item.label}
             </Link>
           );
         })}
+
+        {visibleDxItems.length > 0 && (
+          <>
+            <div className="pt-4 pb-1 px-4">
+              <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#9eaaa7' }}>
+                Programa DX
+              </span>
+            </div>
+            {visibleDxItems.map((item) => {
+              const isActive =
+                pathname === item.href || pathname.startsWith(item.href + '/');
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200',
+                  )}
+                  style={
+                    isActive
+                      ? { background: 'rgba(27,122,107,0.10)', color: '#1B7A6B' }
+                      : { color: '#3e4946' }
+                  }
+                >
+                  <Icon size={18} className="shrink-0" style={{ color: isActive ? '#1B7A6B' : '#6e7976' }} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </>
+        )}
       </nav>
 
       {/* CTA Nueva Orden */}

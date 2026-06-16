@@ -43,3 +43,11 @@ prisma/*.db
 # ─── Uploads (user-generated content, not source code) ───────────────────────
 uploads/
 .vercel
+
+# ─── Archivos binarios de referencia (Excel, PDFs de datos históricos) ───────
+*.xlsx
+*.xls
+doc/files/data/
+
+# ─── Agentes de IA (Claude Code — no son código fuente del proyecto) ─────────
+.agents/

@@ -4,6 +4,7 @@
 import { getDb } from "../utils/db.ts"
 import { ok, created, err } from "../utils/responses.ts"
 import { checkRateLimit, clientIp } from "../middleware/rate-limit.ts"
+import { notificarCasoCreado } from "../utils/email.ts"
 
 // Mapa de slug de URL → código interno del programa
 const PROGRAMA_SLUGS: Record<string, string> = {
@@ -154,18 +155,30 @@ export async function publicCrearCaso(req: Request, tenantSlug: string, programa
 
   if (error) return err(500, error.message)
 
-  // Registro en audit_log (no bloquea la respuesta si falla)
-  await db.from("audit_log").insert({
-    tenant_id:  tenant.id,
-    actor_tipo: "MEDICO_LINK",
-    actor_id:   null,
-    accion:     "CASO_CREADO",
-    entidad:    "casos",
-    entidad_id: caso.id,
-    datos_json: { programa: prog.codigo, pais: body.pais_codigo, consecutivo },
-    ip,
-    user_agent: req.headers.get("user-agent") ?? null,
-  }).catch(console.error)
+  // Audit log y notificación al médico (no bloquean la respuesta)
+  await Promise.all([
+    db.from("audit_log").insert({
+      tenant_id:  tenant.id,
+      actor_tipo: "MEDICO_LINK",
+      actor_id:   null,
+      accion:     "CASO_CREADO",
+      entidad:    "casos",
+      entidad_id: caso.id,
+      datos_json: { programa: prog.codigo, pais: body.pais_codigo, consecutivo },
+      ip,
+      user_agent: req.headers.get("user-agent") ?? null,
+    }).catch(console.error),
+
+    notificarCasoCreado({
+      medicoEmail:       body.medico_email,
+      medicoNombre:      body.medico_nombre,
+      consecutivo,
+      programa:          prog.codigo,
+      pais:              body.pais_codigo,
+      pacienteNombre:    body.paciente_nombre,
+      pacienteIniciales: iniciales,
+    }).catch(console.error),
+  ])
 
   return created({ caso }, "Solicitud registrada exitosamente")
 }

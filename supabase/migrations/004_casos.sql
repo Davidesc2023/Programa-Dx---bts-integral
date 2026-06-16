@@ -22,7 +22,7 @@ CREATE TABLE casos (
   medico_ip              TEXT,
   medico_ua              TEXT,
 
-  -- Paciente (capturado por el médico en el formulario)
+  -- Paciente
   paciente_nombre       TEXT,
   paciente_tipo_doc     TEXT,
   paciente_num_doc      TEXT,
@@ -34,17 +34,17 @@ CREATE TABLE casos (
   paciente_departamento TEXT,
   paciente_pais         TEXT,
   paciente_direccion    TEXT,
-  paciente_iniciales    TEXT,  -- auto-calculado: primeras letras de cada nombre/apellido
+  paciente_iniciales    TEXT,
 
   -- Representante legal (opcional)
   rep_nombre     TEXT,
   rep_doc        TEXT,
   rep_parentesco TEXT,
 
-  -- Resultado sérico previo adjunto por el médico (si aplica — Duchenne principalmente)
+  -- Resultado sérico previo adjunto por el médico
   resultado_previo_valor          TEXT,
   resultado_previo_pdf_url        TEXT,
-  resultado_previo_interpretacion TEXT,  -- POSITIVO | NEGATIVO | BORDERLINE
+  resultado_previo_interpretacion TEXT,
 
   -- Estado del caso (state machine)
   estado TEXT NOT NULL DEFAULT 'SOLICITUD_RECIBIDA'
@@ -55,62 +55,54 @@ CREATE TABLE casos (
       'SIN_INDICACION_GENETICA', 'GENETICA_PROGRAMADA',
       'GENETICA_EN_PROCESAMIENTO', 'GENETICA_RESULTADO_DISPONIBLE',
       'COMPLETADO', 'SIN_CONTACTO_EFECTIVO', 'CANCELADO', 'FALLECIDO',
-      'DATOS_INCOMPLETOS'  -- casos importados con datos faltantes
+      'DATOS_INCOMPLETOS'
     )),
+
+  -- Indicación genética
   tiene_indicacion_genetica BOOLEAN,
+  indicacion_motivo          TEXT,
+  indicacion_registrada_at   TIMESTAMPTZ,
 
-  -- Fase sérica
-  laboratorio          TEXT,
-  sede                 TEXT,
-  fecha_programacion   DATE,
-  fecha_toma_muestra   DATE,
-  resultado_1_valor    TEXT,         -- Ceruloplasmina / Alfa-1 / CK
-  resultado_1_unidad   TEXT,
-  resultado_2_valor    TEXT,         -- Cobre en orina / PCR / —
-  resultado_2_unidad   TEXT,
-  valores_referencia   TEXT,
-  fecha_reporte_lab    DATE,
-  fecha_envio_medico   DATE,
-  fecha_envio_paciente DATE,
-  medio_envio          TEXT,         -- WHATSAPP | CORREO | AMBOS
-  costo_serico         NUMERIC(10,2),
-  observaciones_serica TEXT,
+  -- Resultado sérico registrado por el operador
+  resultado_serico_1    TEXT,
+  resultado_serico_2    TEXT,
+  interpretacion_serico TEXT,
+  notas_serico          TEXT,
+  serica_registrada_at  TIMESTAMPTZ,
 
-  -- Fase genética
-  lab_genetico             TEXT,
-  costo_genetico           NUMERIC(10,2),
-  fecha_toma_genetica      DATE,
-  fecha_resultado_genetica DATE,
-  gen_analizado            TEXT,
-  resultado_genetico       TEXT,     -- texto completo del reporte
-  fenotipo                 TEXT,     -- MM/MZ/SZ/ZZ (DAAT) | portador/positivo (Wilson)
-  estado_genetico          TEXT
+  -- Resultado genético
+  estado_genetico TEXT
     CHECK (estado_genetico IN (
       'PROGRAMADO', 'EN_PROCESAMIENTO', 'REALIZADO',
       'SIN_INDICACION_GENETICA', 'N_A', 'NO_ACEPTA', NULL
     )),
-  observaciones_genetica TEXT,
+  resultado_genetico    TEXT,
+  laboratorio_genetico  TEXT,
+  fecha_genetica        DATE,
+  genetica_registrada_at TIMESTAMPTZ,
 
   -- Seguimiento clínico (Wilson principalmente)
-  seguimiento TEXT
-    CHECK (seguimiento IN (
+  seguimiento_clinico TEXT
+    CHECK (seguimiento_clinico IN (
       'NEGATIVO', 'PORTADOR', 'POSITIVO', 'EN_TRATAMIENTO',
       'FORMULADO', 'TRASPLANTADO', 'DROP_OUT', 'FALLECIDO', 'N_A', NULL
     )),
+  notas_seguimiento         TEXT,
+  seguimiento_registrado_at TIMESTAMPTZ,
 
   -- Autorización del paciente
-  paciente_autorizacion    TEXT NOT NULL DEFAULT 'PENDIENTE'
+  paciente_autorizacion     TEXT NOT NULL DEFAULT 'PENDIENTE'
     CHECK (paciente_autorizacion IN ('PENDIENTE', 'AUTORIZADO', 'NO_AUTORIZADO')),
-  paciente_autorizo_at     TIMESTAMPTZ,
-  paciente_ip              TEXT,
-  paciente_ua              TEXT,
-  paciente_nombre_firmado  TEXT,     -- nombre que escribió el paciente al firmar
-  paciente_correccion_datos TEXT,    -- texto libre si reportó un error en sus datos
+  paciente_autorizo_at      TIMESTAMPTZ,
+  paciente_ip               TEXT,
+  paciente_ua               TEXT,
+  paciente_nombre_firmado   TEXT,
+  paciente_correccion_datos TEXT,
 
   -- Metadatos
-  mes_solicitud  TEXT,               -- '2026-06' para agrupación en reportes
-  migrado_de     TEXT,               -- 'excel:consecutivo' si fue importado del Excel
-  deleted_at     TIMESTAMPTZ,        -- soft delete
+  mes_solicitud  TEXT,
+  migrado_de     TEXT,
+  deleted_at     TIMESTAMPTZ,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
@@ -121,8 +113,7 @@ CREATE TRIGGER casos_updated_at
   BEFORE UPDATE ON casos
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
--- Índices para queries frecuentes
-CREATE INDEX casos_tenant_estado ON casos(tenant_id, estado);
+CREATE INDEX casos_tenant_estado   ON casos(tenant_id, estado);
 CREATE INDEX casos_tenant_programa ON casos(tenant_id, programa_id);
-CREATE INDEX casos_tenant_fecha ON casos(tenant_id, created_at DESC);
-CREATE INDEX casos_paciente_doc ON casos(tenant_id, paciente_num_doc);
+CREATE INDEX casos_tenant_fecha    ON casos(tenant_id, created_at DESC);
+CREATE INDEX casos_paciente_doc    ON casos(tenant_id, paciente_num_doc);

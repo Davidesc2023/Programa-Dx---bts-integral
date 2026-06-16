@@ -34,9 +34,10 @@ async function proxy(req: NextRequest, ctx: Ctx): Promise<NextResponse> {
     }
   });
 
-  let body: string | undefined;
+  let body: BodyInit | undefined;
   if (req.method !== 'GET' && req.method !== 'HEAD') {
-    body = await req.text();
+    // arrayBuffer preserves binary data (multipart uploads), works equally for JSON
+    body = await req.arrayBuffer();
   }
 
   const upstream = await fetch(target, {

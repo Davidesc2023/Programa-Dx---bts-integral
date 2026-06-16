@@ -7,16 +7,20 @@ import { parsePagination }            from "../utils/router.ts"
 import { requireAuth, requireRole }   from "../middleware/auth.ts"
 import { clientIp }                   from "../middleware/rate-limit.ts"
 import { validarTransicion, evaluarUmbral, type UmbralJson } from "../utils/states.ts"
+import {
+  notificarResultadoSerico,
+  notificarCasoCompletado,
+  notificarIndicacionGenetica,
+} from "../utils/email.ts"
 
 // Campos que se devuelven en el listado (sin campos de resultado pesados)
-const COLS_LISTA = [
-  "id", "consecutivo", "pais_codigo",
-  "medico_nombre", "medico_email",
-  "paciente_nombre", "paciente_tipo_doc", "paciente_num_doc", "paciente_iniciales",
-  "paciente_autorizacion", "estado", "tiene_indicacion_genetica",
-  "mes_solicitud", "fecha_toma_muestra", "fecha_resultado_genetica",
-  "created_at", "updated_at",
-].join(", ")
+const COLS_LISTA =
+  "id, consecutivo, pais_codigo, " +
+  "medico_nombre, medico_email, " +
+  "paciente_nombre, paciente_tipo_doc, paciente_num_doc, paciente_iniciales, " +
+  "paciente_autorizacion, estado, tiene_indicacion_genetica, " +
+  "mes_solicitud, created_at, updated_at, " +
+  "programas(nombre, codigo)"
 
 const ROLES_ADMIN = ["ADMIN", "OPERADOR"] as const
 
@@ -31,13 +35,22 @@ export async function listarCasos(req: Request): Promise<Response> {
   const { page, limit, from, to } = parsePagination(url, 20, 100)
 
   const estado    = url.searchParams.get("estado")
-  const programa  = url.searchParams.get("programa")      // ID de programa
+  const programa  = url.searchParams.get("programa")      // código: WILSON | DAAT | DUCHENNE
   const pais      = url.searchParams.get("pais")
   const mes       = url.searchParams.get("mes")           // formato YYYY-MM
   const busqueda  = url.searchParams.get("q")
   const autorizacion = url.searchParams.get("autorizacion")
 
   const db = getDb()
+
+  // Resolver código → ID para el filtro de programa
+  let programaId: string | null = null
+  if (programa) {
+    const { data: prog } = await db.from("programas")
+      .select("id").eq("codigo", programa).single()
+    programaId = prog?.id ?? null
+  }
+
   let q = db.from("casos")
     .select(COLS_LISTA, { count: "exact" })
     .is("deleted_at", null)
@@ -45,7 +58,7 @@ export async function listarCasos(req: Request): Promise<Response> {
     .order("created_at", { ascending: false })
 
   if (estado)       q = q.eq("estado", estado)
-  if (programa)     q = q.eq("programa_id", programa)
+  if (programaId)   q = q.eq("programa_id", programaId)
   if (pais)         q = q.eq("pais_codigo", pais)
   if (mes)          q = q.eq("mes_solicitud", mes)
   if (autorizacion) q = q.eq("paciente_autorizacion", autorizacion)
@@ -110,7 +123,7 @@ export async function cambiarEstado(req: Request, casoId: string): Promise<Respo
   const db = getDb()
 
   const { data: caso } = await db.from("casos")
-    .select("id, estado, tenant_id")
+    .select("id, estado, tenant_id, consecutivo, medico_email, medico_nombre, paciente_iniciales, tiene_indicacion_genetica, estado_genetico, seguimiento_clinico, programas(nombre, codigo)")
     .eq("id", casoId)
     .is("deleted_at", null)
     .single()
@@ -125,17 +138,35 @@ export async function cambiarEstado(req: Request, casoId: string): Promise<Respo
     updated_at: new Date().toISOString(),
   }).eq("id", casoId)
 
-  await db.from("audit_log").insert({
-    tenant_id:  caso.tenant_id,
-    actor_tipo: "ADMIN",
-    actor_id:   null,
-    accion:     "ESTADO_CAMBIADO",
-    entidad:    "casos",
-    entidad_id: casoId,
-    datos_json: { estado_anterior: caso.estado, estado_nuevo: body.estado, motivo: body.motivo ?? null },
-    ip:         clientIp(req),
-    user_agent: req.headers.get("user-agent") ?? null,
-  }).catch(console.error)
+  const prog = (caso.programas as { nombre: string; codigo: string } | null)
+
+  await Promise.all([
+    db.from("audit_log").insert({
+      tenant_id:  caso.tenant_id,
+      actor_tipo: "ADMIN",
+      actor_id:   null,
+      accion:     "ESTADO_CAMBIADO",
+      entidad:    "casos",
+      entidad_id: casoId,
+      datos_json: { estado_anterior: caso.estado, estado_nuevo: body.estado, motivo: body.motivo ?? null },
+      ip:         clientIp(req),
+      user_agent: req.headers.get("user-agent") ?? null,
+    }).catch(console.error),
+
+    // Notificar al médico si el caso llega a COMPLETADO
+    body.estado === "COMPLETADO" && caso.medico_email
+      ? notificarCasoCompletado({
+          medicoEmail:            caso.medico_email,
+          medicoNombre:           caso.medico_nombre ?? "",
+          consecutivo:            caso.consecutivo,
+          programa:               prog?.codigo ?? "",
+          pacienteIniciales:      caso.paciente_iniciales ?? "",
+          tieneIndicacionGenetica: caso.tiene_indicacion_genetica,
+          estadoGenetico:          caso.estado_genetico,
+          seguimientoClinico:      caso.seguimiento_clinico,
+        }).catch(console.error)
+      : Promise.resolve(),
+  ])
 
   return ok({ id: casoId, estado: body.estado }, "Estado actualizado")
 }
@@ -152,26 +183,23 @@ export async function registrarResultadoSerico(req: Request, casoId: string): Pr
   const db = getDb()
 
   const { data: caso } = await db.from("casos")
-    .select("id, estado, tenant_id, programa_id, resultado_1_valor, resultado_2_valor")
+    .select("id, estado, tenant_id, programa_id, resultado_serico_1, resultado_serico_2, medico_email, medico_nombre, paciente_iniciales, consecutivo, programas(nombre, codigo)")
     .eq("id", casoId)
     .is("deleted_at", null)
     .single()
   if (!caso) return err(404, "Caso no encontrado")
 
   const CAMPOS = [
-    "laboratorio", "sede", "fecha_programacion", "fecha_toma_muestra",
-    "resultado_1_valor", "resultado_1_unidad",
-    "resultado_2_valor", "resultado_2_unidad",
-    "valores_referencia", "fecha_reporte_lab",
-    "fecha_envio_medico", "fecha_envio_paciente", "medio_envio",
-    "costo_serico", "observaciones_serica",
+    "resultado_serico_1", "resultado_serico_2",
+    "interpretacion_serico", "notas_serico",
   ]
-  const update: Record<string, unknown> = { updated_at: new Date().toISOString() }
+  const now = new Date().toISOString()
+  const update: Record<string, unknown> = { updated_at: now, serica_registrada_at: now }
   for (const k of CAMPOS) if (body[k] !== undefined) update[k] = body[k] || null
 
   // Evaluar umbral automáticamente si hay valores séricos
-  const r1 = (update.resultado_1_valor ?? caso.resultado_1_valor) as string | null
-  const r2 = (update.resultado_2_valor ?? caso.resultado_2_valor) as string | null
+  const r1 = (update.resultado_serico_1 ?? caso.resultado_serico_1) as string | null
+  const r2 = (update.resultado_serico_2 ?? caso.resultado_serico_2) as string | null
 
   let indicacion: boolean | null = null
   let umbralEval: { resultado: string; automatico: boolean } | null = null
@@ -206,21 +234,39 @@ export async function registrarResultadoSerico(req: Request, casoId: string): Pr
   const { error } = await db.from("casos").update(update).eq("id", casoId)
   if (error) return err(500, error.message)
 
-  await db.from("audit_log").insert({
-    tenant_id:  caso.tenant_id,
-    actor_tipo: "ADMIN",
-    actor_id:   null,
-    accion:     "RESULTADO_SERICO_REGISTRADO",
-    entidad:    "casos",
-    entidad_id: casoId,
-    datos_json: { r1, r2, indicacion, estado_nuevo: update.estado ?? caso.estado },
-    ip:         clientIp(req),
-    user_agent: req.headers.get("user-agent") ?? null,
-  }).catch(console.error)
+  const sericoProg = (caso.programas as { nombre: string; codigo: string } | null)
+  const estadoFinalSerico = (update.estado ?? caso.estado) as string
+
+  await Promise.all([
+    db.from("audit_log").insert({
+      tenant_id:  caso.tenant_id,
+      actor_tipo: "ADMIN",
+      actor_id:   null,
+      accion:     "RESULTADO_SERICO_REGISTRADO",
+      entidad:    "casos",
+      entidad_id: casoId,
+      datos_json: { r1, r2, indicacion, estado_nuevo: estadoFinalSerico },
+      ip:         clientIp(req),
+      user_agent: req.headers.get("user-agent") ?? null,
+    }).catch(console.error),
+
+    // Notificar al médico cuando el resultado sérico está disponible
+    estadoFinalSerico === "RESULTADO_SERICO_DISPONIBLE" && caso.medico_email
+      ? notificarResultadoSerico({
+          medicoEmail:       caso.medico_email,
+          medicoNombre:      caso.medico_nombre ?? "",
+          consecutivo:       caso.consecutivo,
+          programa:          sericoProg?.codigo ?? "",
+          pacienteIniciales: caso.paciente_iniciales ?? "",
+          resultado:         r1 ?? "",
+          interpretacion:    (update.interpretacion_serico ?? null) as string | null,
+        }).catch(console.error)
+      : Promise.resolve(),
+  ])
 
   return ok({
     id:          casoId,
-    estado:      update.estado ?? caso.estado,
+    estado:      estadoFinalSerico,
     indicacion:  umbralEval,
   }, "Resultado sérico registrado")
 }
@@ -242,7 +288,7 @@ export async function setIndicacion(req: Request, casoId: string): Promise<Respo
   const db = getDb()
 
   const { data: caso } = await db.from("casos")
-    .select("id, estado, tenant_id")
+    .select("id, estado, tenant_id, consecutivo, medico_email, medico_nombre, paciente_iniciales, programas(nombre, codigo)")
     .eq("id", casoId)
     .is("deleted_at", null)
     .single()
@@ -254,23 +300,42 @@ export async function setIndicacion(req: Request, casoId: string): Promise<Respo
     return err(422, `El estado actual (${caso.estado}) no permite establecer indicación genética`)
   }
 
+  const nowI = new Date().toISOString()
   await db.from("casos").update({
     tiene_indicacion_genetica: tieneIndicacion,
+    indicacion_motivo:         body.motivo ?? null,
+    indicacion_registrada_at:  nowI,
     estado:                    estadoNuevo,
-    updated_at:                new Date().toISOString(),
+    updated_at:                nowI,
   }).eq("id", casoId)
 
-  await db.from("audit_log").insert({
-    tenant_id:  caso.tenant_id,
-    actor_tipo: "ADMIN",
-    actor_id:   null,
-    accion:     "INDICACION_GENETICA_ESTABLECIDA",
-    entidad:    "casos",
-    entidad_id: casoId,
-    datos_json: { tiene_indicacion_genetica: tieneIndicacion, estado_nuevo: estadoNuevo, motivo: body.motivo ?? null },
-    ip:         clientIp(req),
-    user_agent: req.headers.get("user-agent") ?? null,
-  }).catch(console.error)
+  const indicProg = (caso.programas as { nombre: string; codigo: string } | null)
+
+  await Promise.all([
+    db.from("audit_log").insert({
+      tenant_id:  caso.tenant_id,
+      actor_tipo: "ADMIN",
+      actor_id:   null,
+      accion:     "INDICACION_GENETICA_ESTABLECIDA",
+      entidad:    "casos",
+      entidad_id: casoId,
+      datos_json: { tiene_indicacion_genetica: tieneIndicacion, estado_nuevo: estadoNuevo, motivo: body.motivo ?? null },
+      ip:         clientIp(req),
+      user_agent: req.headers.get("user-agent") ?? null,
+    }).catch(console.error),
+
+    caso.medico_email
+      ? notificarIndicacionGenetica({
+          medicoEmail:       caso.medico_email,
+          medicoNombre:      caso.medico_nombre ?? "",
+          consecutivo:       caso.consecutivo,
+          programa:          indicProg?.codigo ?? "",
+          pacienteIniciales: caso.paciente_iniciales ?? "",
+          tieneIndicacion:   tieneIndicacion,
+          motivo:            body.motivo ?? null,
+        }).catch(console.error)
+      : Promise.resolve(),
+  ])
 
   return ok({ id: casoId, estado: estadoNuevo, tiene_indicacion_genetica: tieneIndicacion })
 }
@@ -293,17 +358,16 @@ export async function registrarResultadoGenetico(req: Request, casoId: string): 
   if (!caso) return err(404, "Caso no encontrado")
 
   const CAMPOS = [
-    "lab_genetico", "costo_genetico",
-    "fecha_toma_genetica", "fecha_resultado_genetica",
-    "gen_analizado", "resultado_genetico", "fenotipo",
-    "estado_genetico", "observaciones_genetica",
+    "laboratorio_genetico", "fecha_genetica",
+    "resultado_genetico", "estado_genetico",
   ]
   const ESTADOS_GENETICO_VALIDOS = new Set([
     "PROGRAMADO", "EN_PROCESAMIENTO", "REALIZADO",
     "SIN_INDICACION_GENETICA", "N_A", "NO_ACEPTA",
   ])
 
-  const update: Record<string, unknown> = { updated_at: new Date().toISOString() }
+  const nowG = new Date().toISOString()
+  const update: Record<string, unknown> = { updated_at: nowG, genetica_registrada_at: nowG }
   for (const k of CAMPOS) if (body[k] !== undefined) update[k] = body[k] || null
 
   if (update.estado_genetico && !ESTADOS_GENETICO_VALIDOS.has(update.estado_genetico as string)) {
@@ -346,14 +410,14 @@ export async function registrarSeguimiento(req: Request, casoId: string): Promis
   if (denied) return denied
 
   const body = await req.json().catch(() => null)
-  if (!body?.seguimiento) return err(400, "Campo requerido: seguimiento")
+  if (!body?.seguimiento_clinico) return err(400, "Campo requerido: seguimiento_clinico")
 
   const VALORES_VALIDOS = new Set([
     "NEGATIVO", "PORTADOR", "POSITIVO", "EN_TRATAMIENTO",
     "FORMULADO", "TRASPLANTADO", "DROP_OUT", "FALLECIDO", "N_A",
   ])
-  if (!VALORES_VALIDOS.has(body.seguimiento)) {
-    return err(400, `Valor inválido: ${body.seguimiento}`)
+  if (!VALORES_VALIDOS.has(body.seguimiento_clinico)) {
+    return err(400, `Valor inválido: ${body.seguimiento_clinico}`)
   }
 
   const db = getDb()
@@ -365,9 +429,12 @@ export async function registrarSeguimiento(req: Request, casoId: string): Promis
     .single()
   if (!caso) return err(404, "Caso no encontrado")
 
+  const nowS = new Date().toISOString()
   await db.from("casos").update({
-    seguimiento: body.seguimiento,
-    updated_at:  new Date().toISOString(),
+    seguimiento_clinico:      body.seguimiento_clinico,
+    notas_seguimiento:        body.notas_seguimiento ?? null,
+    seguimiento_registrado_at: nowS,
+    updated_at:               nowS,
   }).eq("id", casoId)
 
   await db.from("audit_log").insert({
@@ -377,12 +444,12 @@ export async function registrarSeguimiento(req: Request, casoId: string): Promis
     accion:     "SEGUIMIENTO_REGISTRADO",
     entidad:    "casos",
     entidad_id: casoId,
-    datos_json: { seguimiento: body.seguimiento },
+    datos_json: { seguimiento_clinico: body.seguimiento_clinico, notas: body.notas_seguimiento ?? null },
     ip:         clientIp(req),
     user_agent: req.headers.get("user-agent") ?? null,
   }).catch(console.error)
 
-  return ok({ id: casoId, seguimiento: body.seguimiento })
+  return ok({ id: casoId, seguimiento_clinico: body.seguimiento_clinico })
 }
 
 // ─── DELETE /admin/casos/:id ──────────────────────────────────────────────────
@@ -420,7 +487,7 @@ export async function eliminarCaso(req: Request, casoId: string): Promise<Respon
 }
 
 // ─── GET /admin/dashboard ─────────────────────────────────────────────────────
-// Métricas del panel principal
+// Métricas del panel principal + analytics completos para BI
 export async function obtenerDashboard(req: Request): Promise<Response> {
   const auth = await requireAuth(req)
   if (auth instanceof Response) return auth
@@ -429,7 +496,7 @@ export async function obtenerDashboard(req: Request): Promise<Response> {
 
   const db = getDb()
 
-  // Ejecutar queries en paralelo
+  // Queries base (conteos directos vía PostgREST aggregate) + query maestra para analytics
   const [
     porEstado,
     porPrograma,
@@ -437,23 +504,20 @@ export async function obtenerDashboard(req: Request): Promise<Response> {
     porMes,
     pendienteAutorizacion,
     casosRecientes,
+    rawCasos,           // datos planos para todas las agregaciones BI
   ] = await Promise.all([
-    // Conteo por estado
     db.from("casos")
       .select("estado, count:id.count()")
       .is("deleted_at", null),
 
-    // Conteo por programa (join a nombre)
     db.from("casos")
       .select("programas(codigo, nombre), count:id.count()")
       .is("deleted_at", null),
 
-    // Conteo por país
     db.from("casos")
       .select("pais_codigo, count:id.count()")
       .is("deleted_at", null),
 
-    // Conteo por mes (últimos 12 meses)
     db.from("casos")
       .select("mes_solicitud, count:id.count()")
       .is("deleted_at", null)
@@ -461,19 +525,187 @@ export async function obtenerDashboard(req: Request): Promise<Response> {
       .order("mes_solicitud", { ascending: false })
       .limit(12),
 
-    // Casos pendientes de autorización
     db.from("casos")
       .select("id", { count: "exact", head: true })
       .eq("estado", "PENDIENTE_AUTORIZACION")
       .is("deleted_at", null),
 
-    // Casos recientes
     db.from("casos")
-      .select("id, consecutivo, paciente_iniciales, estado, medico_nombre, created_at")
+      .select("id, consecutivo, pais_codigo, mes_solicitud, paciente_iniciales, estado, medico_nombre, medico_email, created_at, updated_at, programas(nombre, codigo)")
       .is("deleted_at", null)
       .order("created_at", { ascending: false })
       .limit(10),
+
+    // Query maestra: todos los campos necesarios para analytics (sin datos clínicos pesados)
+    db.from("casos")
+      .select("medico_email, medico_nombre, estado, tiene_indicacion_genetica, seguimiento_clinico, paciente_autorizacion, mes_solicitud, paciente_departamento, estado_genetico, programas(codigo)")
+      .is("deleted_at", null),
   ])
+
+  const rows = (rawCasos.data ?? []) as Array<{
+    medico_email:             string | null
+    medico_nombre:            string | null
+    estado:                   string
+    tiene_indicacion_genetica: boolean | null
+    seguimiento_clinico:      string | null
+    paciente_autorizacion:    string
+    mes_solicitud:            string | null
+    paciente_departamento:    string | null
+    estado_genetico:          string | null
+    programas:                { codigo: string } | null
+  }>
+
+  // ── Por departamento (top 20, excluyendo nulos) ───────────────────────────
+  const deptMap = new Map<string, number>()
+  for (const r of rows) {
+    const d = r.paciente_departamento?.trim() || "Sin especificar"
+    deptMap.set(d, (deptMap.get(d) ?? 0) + 1)
+  }
+  const por_departamento = [...deptMap.entries()]
+    .map(([departamento, count]) => ({ departamento, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 20)
+
+  // ── Por año (derivado de mes_solicitud YYYY-MM) ───────────────────────────
+  const anoMap = new Map<string, number>()
+  for (const r of rows) {
+    const ano = r.mes_solicitud?.slice(0, 4)
+    if (ano) anoMap.set(ano, (anoMap.get(ano) ?? 0) + 1)
+  }
+  const por_ano = [...anoMap.entries()]
+    .map(([ano, count]) => ({ ano, count }))
+    .sort((a, b) => a.ano.localeCompare(b.ano))
+
+  // ── Por mes × programa (últimos 18 meses para gráfica agrupada) ───────────
+  const mpmMap = new Map<string, number>()
+  for (const r of rows) {
+    const programa = (r.programas as { codigo: string } | null)?.codigo
+    if (r.mes_solicitud && programa) {
+      const k = `${r.mes_solicitud}::${programa}`
+      mpmMap.set(k, (mpmMap.get(k) ?? 0) + 1)
+    }
+  }
+  const allMeses = [...new Set(rows.map(r => r.mes_solicitud).filter(Boolean) as string[])]
+    .sort().slice(-18)
+  const por_mes_programa = [...mpmMap.entries()]
+    .map(([k, count]) => { const [mes, programa] = k.split("::"); return { mes, programa, count } })
+    .filter(x => allMeses.includes(x.mes))
+    .sort((a, b) => a.mes.localeCompare(b.mes))
+
+  // ── Distribución estado_genetico ─────────────────────────────────────────
+  const egMap = new Map<string, number>()
+  for (const r of rows) {
+    const eg = r.estado_genetico ?? "N_A"
+    egMap.set(eg, (egMap.get(eg) ?? 0) + 1)
+  }
+  const estado_genetico_dist = [...egMap.entries()]
+    .map(([estado_genetico, count]) => ({ estado_genetico, count }))
+    .sort((a, b) => b.count - a.count)
+
+  // ── Distribución seguimiento clínico ──────────────────────────────────────
+  const sgMap = new Map<string, number>()
+  for (const r of rows) {
+    const sg = r.seguimiento_clinico ?? "N_A"
+    if (sg !== "N_A") sgMap.set(sg, (sgMap.get(sg) ?? 0) + 1)
+  }
+  const seguimiento_dist = [...sgMap.entries()]
+    .map(([seguimiento_clinico, count]) => ({ seguimiento_clinico, count }))
+    .sort((a, b) => b.count - a.count)
+
+  // ── Tasas de autorización del paciente ────────────────────────────────────
+  let autorizadoN = 0, noAutorizadoN = 0, pendienteN = 0
+  for (const r of rows) {
+    if (r.paciente_autorizacion === "AUTORIZADO")    autorizadoN++
+    else if (r.paciente_autorizacion === "NO_AUTORIZADO") noAutorizadoN++
+    else                                              pendienteN++
+  }
+  const tasa_autorizacion = { autorizado: autorizadoN, no_autorizado: noAutorizadoN, pendiente: pendienteN }
+
+  // ── Embudo de conversión ──────────────────────────────────────────────────
+  // Cada nivel es un subconjunto del anterior en el flujo clínico
+  const ESTADOS_AUTH    = new Set(["AUTORIZADO","PROGRAMADO","MUESTRA_TOMADA","RESULTADO_SERICO_DISPONIBLE","CON_INDICACION_GENETICA","SIN_INDICACION_GENETICA","GENETICA_PROGRAMADA","GENETICA_EN_PROCESAMIENTO","GENETICA_RESULTADO_DISPONIBLE","COMPLETADO"])
+  const ESTADOS_MUESTRA = new Set(["MUESTRA_TOMADA","RESULTADO_SERICO_DISPONIBLE","CON_INDICACION_GENETICA","SIN_INDICACION_GENETICA","GENETICA_PROGRAMADA","GENETICA_EN_PROCESAMIENTO","GENETICA_RESULTADO_DISPONIBLE","COMPLETADO"])
+  const ESTADOS_SERICO  = new Set(["RESULTADO_SERICO_DISPONIBLE","CON_INDICACION_GENETICA","SIN_INDICACION_GENETICA","GENETICA_PROGRAMADA","GENETICA_EN_PROCESAMIENTO","GENETICA_RESULTADO_DISPONIBLE","COMPLETADO"])
+  const ESTADOS_GEN_DONE = new Set(["GENETICA_RESULTADO_DISPONIBLE","COMPLETADO"])
+
+  let total = 0, fAutorizados = 0, fMuestra = 0, fSerico = 0
+  let fConIndicacion = 0, fSinIndicacion = 0, fGenetica = 0, fCompletados = 0, fNoAcepto = 0
+  for (const r of rows) {
+    total++
+    if (ESTADOS_AUTH.has(r.estado))    fAutorizados++
+    if (ESTADOS_MUESTRA.has(r.estado)) fMuestra++
+    if (ESTADOS_SERICO.has(r.estado))  fSerico++
+    if (r.tiene_indicacion_genetica === true)  fConIndicacion++
+    if (r.tiene_indicacion_genetica === false) fSinIndicacion++
+    if (ESTADOS_GEN_DONE.has(r.estado)) fGenetica++
+    if (r.estado === "COMPLETADO")      fCompletados++
+    if (r.estado === "NO_ACEPTO" || r.paciente_autorizacion === "NO_AUTORIZADO") fNoAcepto++
+  }
+  const conversion_funnel = {
+    total, autorizados: fAutorizados, muestra_tomada: fMuestra,
+    con_resultado_serico: fSerico, con_indicacion: fConIndicacion,
+    sin_indicacion: fSinIndicacion, genetica_realizada: fGenetica,
+    completados: fCompletados, no_acepto: fNoAcepto,
+  }
+
+  // ── Estadísticas por médico ───────────────────────────────────────────────
+  const ESTADOS_PENDIENTE = new Set(["SOLICITUD_RECIBIDA","EN_PROGRAMACION","PENDIENTE_AUTORIZACION"])
+  const ESTADOS_EN_PROCESO = new Set(["AUTORIZADO","PROGRAMADO","MUESTRA_TOMADA","RESULTADO_SERICO_DISPONIBLE","CON_INDICACION_GENETICA","GENETICA_PROGRAMADA","GENETICA_EN_PROCESAMIENTO","GENETICA_RESULTADO_DISPONIBLE"])
+
+  const medicoMap = new Map<string, {
+    medico_email: string; medico_nombre: string
+    total: number; pendientes: number; en_proceso: number
+    sin_indicacion: number; con_indicacion: number
+    positivos: number; negativos: number; no_acepto: number; completados: number
+  }>()
+
+  for (const r of rows) {
+    const key = r.medico_email ?? "sin-email"
+    if (!medicoMap.has(key)) {
+      medicoMap.set(key, {
+        medico_email: r.medico_email ?? "", medico_nombre: r.medico_nombre ?? "Sin nombre",
+        total: 0, pendientes: 0, en_proceso: 0, sin_indicacion: 0,
+        con_indicacion: 0, positivos: 0, negativos: 0, no_acepto: 0, completados: 0,
+      })
+    }
+    const m = medicoMap.get(key)!
+    m.total++
+    if (ESTADOS_PENDIENTE.has(r.estado))  m.pendientes++
+    if (ESTADOS_EN_PROCESO.has(r.estado)) m.en_proceso++
+    if (r.tiene_indicacion_genetica === true)  m.con_indicacion++
+    if (r.tiene_indicacion_genetica === false) m.sin_indicacion++
+    if (r.seguimiento_clinico === "POSITIVO")  m.positivos++
+    if (r.seguimiento_clinico === "NEGATIVO")  m.negativos++
+    if (r.estado === "NO_ACEPTO" || r.paciente_autorizacion === "NO_AUTORIZADO") m.no_acepto++
+    if (r.estado === "COMPLETADO") m.completados++
+  }
+
+  const por_medico = [...medicoMap.values()]
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 50)
+    .map(m => {
+      const base = m.con_indicacion + m.sin_indicacion
+      return {
+        ...m,
+        tasa_conversion: base > 0 ? Math.round((m.con_indicacion / base) * 100) : 0,
+        tasa_completado:  m.total > 0 ? Math.round((m.completados / m.total) * 100) : 0,
+      }
+    })
+
+  // ── Heatmap: top 10 médicos × últimos 12 meses ────────────────────────────
+  const top10Emails = new Set(por_medico.slice(0, 10).map(m => m.medico_email))
+  const heatKeys = new Map<string, { medico_email: string; medico_nombre: string; mes: string; count: number }>()
+  for (const r of rows) {
+    if (!r.mes_solicitud || !r.medico_email) continue
+    if (!top10Emails.has(r.medico_email)) continue
+    const k = `${r.medico_email}::${r.mes_solicitud}`
+    if (!heatKeys.has(k)) {
+      heatKeys.set(k, { medico_email: r.medico_email, medico_nombre: r.medico_nombre ?? "", mes: r.mes_solicitud, count: 0 })
+    }
+    heatKeys.get(k)!.count++
+  }
+  const last12 = allMeses.slice(-12)
+  const heatmap_medico_mes = [...heatKeys.values()].filter(h => last12.includes(h.mes))
 
   return ok({
     por_estado:             porEstado.data ?? [],
@@ -482,5 +714,14 @@ export async function obtenerDashboard(req: Request): Promise<Response> {
     por_mes:                porMes.data ?? [],
     pendientes_autorizacion: pendienteAutorizacion.count ?? 0,
     casos_recientes:        casosRecientes.data ?? [],
+    por_departamento,
+    por_ano,
+    por_mes_programa,
+    estado_genetico_dist,
+    seguimiento_dist,
+    tasa_autorizacion,
+    por_medico,
+    heatmap_medico_mes,
+    conversion_funnel,
   })
 }

@@ -35,6 +35,8 @@ import {
   eliminarCaso,
   obtenerDashboard,
 } from "./routes/admin-casos.ts"
+import { importarCasos }   from "./routes/admin-import.ts"
+import { generarReporte }  from "./routes/admin-reporte.ts"
 
 type RouteParams = Record<string, string>
 
@@ -1042,12 +1044,14 @@ Deno.serve(async (req: Request) => {
 
     // ── v2.0 Admin — panel de gestión de casos (Fase 4) ───────────────────────
     else if (m==="GET"   && path==="/admin/dashboard")                              res = await obtenerDashboard(req)
+    else if (m==="GET"   && path==="/admin/reporte")                               res = await generarReporte(req)
     else if (m==="GET"   && path==="/admin/casos")                                  res = await listarCasos(req)
     else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/estado",path)))         res = await cambiarEstado(req, pp.id)
     else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/serica",path)))         res = await registrarResultadoSerico(req, pp.id)
     else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/indicacion",path)))     res = await setIndicacion(req, pp.id)
     else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/genetica",path)))       res = await registrarResultadoGenetico(req, pp.id)
     else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/seguimiento",path)))    res = await registrarSeguimiento(req, pp.id)
+    else if (m==="POST"  && (pp=matchPath("/admin/import/:tenant/:programa",path)))  res = await importarCasos(req, pp.tenant, pp.programa)
     else if (m==="DELETE"&& (pp=matchPath("/admin/casos/:id",path)))                res = await eliminarCaso(req, pp.id)
     else if (m==="GET"   && (pp=matchPath("/admin/casos/:id",path)))                res = await obtenerCaso(req, pp.id)
 

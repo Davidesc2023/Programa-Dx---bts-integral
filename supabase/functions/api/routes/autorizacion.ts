@@ -6,6 +6,7 @@ import { ok, created, err }            from "../utils/responses.ts"
 import { checkRateLimit, clientIp }    from "../middleware/rate-limit.ts"
 import { requireAuth, requireRole }    from "../middleware/auth.ts"
 import { generarTokenHex, sha256Hex, calcularExpiracion, tokenEstaExpirado } from "../services/token.ts"
+import { notificarNoAutorizacion }     from "../utils/email.ts"
 
 const EXPIRY_HOURS = parseInt(Deno.env.get("MAGIC_LINK_EXPIRY_HOURS") ?? "72")
 const FRONTEND_URL = Deno.env.get("FRONTEND_URL") ?? "https://programa-dx-bts-integral.vercel.app"
@@ -208,7 +209,7 @@ export async function responderAutorizacion(req: Request, tokenPlano: string): P
   if (tokenEstaExpirado(new Date(link.expira_at))) return err(410, "Este link ha expirado.")
 
   const { data: caso } = await db.from("casos")
-    .select("id, estado, tenant_id, consecutivo")
+    .select("id, estado, tenant_id, consecutivo, medico_email, medico_nombre, paciente_iniciales, programas(nombre, codigo)")
     .eq("id", link.caso_id)
     .is("deleted_at", null)
     .single()
@@ -242,22 +243,35 @@ export async function responderAutorizacion(req: Request, tokenPlano: string): P
     updated_at:               now.toISOString(),
   }).eq("id", caso.id)
 
-  // Audit log
-  await db.from("audit_log").insert({
-    tenant_id:  caso.tenant_id,
-    actor_tipo: "PACIENTE_LINK",
-    actor_id:   null,
-    accion:     respuesta === "AUTORIZADO" ? "PACIENTE_AUTORIZO" : "PACIENTE_RECHAZO",
-    entidad:    "casos",
-    entidad_id: caso.id,
-    datos_json: {
-      respuesta,
-      nombre_firmado: String(nombre_firmado).trim(),
-      tiene_correccion: !!correccion_datos,
-    },
-    ip,
-    user_agent: ua,
-  }).catch(console.error)
+  // Audit log + notificación al médico si el paciente NO autorizó
+  const programa = (caso.programas as { nombre: string; codigo: string } | null)
+  await Promise.all([
+    db.from("audit_log").insert({
+      tenant_id:  caso.tenant_id,
+      actor_tipo: "PACIENTE_LINK",
+      actor_id:   null,
+      accion:     respuesta === "AUTORIZADO" ? "PACIENTE_AUTORIZO" : "PACIENTE_RECHAZO",
+      entidad:    "casos",
+      entidad_id: caso.id,
+      datos_json: {
+        respuesta,
+        nombre_firmado: String(nombre_firmado).trim(),
+        tiene_correccion: !!correccion_datos,
+      },
+      ip,
+      user_agent: ua,
+    }).catch(console.error),
+
+    respuesta === "NO_AUTORIZADO" && caso.medico_email
+      ? notificarNoAutorizacion({
+          medicoEmail:       caso.medico_email,
+          medicoNombre:      caso.medico_nombre ?? "",
+          consecutivo:       caso.consecutivo,
+          programa:          programa?.codigo ?? "",
+          pacienteIniciales: caso.paciente_iniciales ?? "",
+        }).catch(console.error)
+      : Promise.resolve(),
+  ])
 
   return ok({
     caso_id:     caso.id,
