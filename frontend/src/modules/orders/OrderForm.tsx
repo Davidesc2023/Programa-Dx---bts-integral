@@ -305,7 +305,7 @@ export function OrderForm({
       </div>
 
       {/* ── RIGHT: Exam catalog + Summary ── */}
-      <div className="lg:w-[380px] xl:w-[420px] shrink-0 flex flex-col gap-4">
+      <div className="lg:w-[380px] xl:w-[420px] shrink-0 flex flex-col gap-4 lg:sticky lg:top-4 lg:self-start">
 
         {/* Catalog */}
         <div
@@ -336,7 +336,7 @@ export function OrderForm({
             </div>
           </div>
 
-          <div className="overflow-y-auto" style={{ maxHeight: '380px' }}>
+          <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 260px)', minHeight: 200 }}>
             {catalogLoading ? (
               <div className="flex items-center justify-center py-10 gap-2 text-outline text-sm">
                 <Loader2 size={16} className="animate-spin" />

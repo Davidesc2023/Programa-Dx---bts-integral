@@ -300,7 +300,7 @@ interface ConsentPanelProps { orderId: string }
 
 export function ConsentPanel({ orderId }: ConsentPanelProps) {
   const user = useAuthStore((s) => s.user);
-  const { data: consent, isLoading, isError } = useConsent(orderId);
+  const { data: consent, isLoading, isError, error } = useConsent(orderId);
 
   const createMutation  = useCreateConsent(orderId);
   const signMutation    = useSignConsent(orderId);
@@ -315,7 +315,9 @@ export function ConsentPanel({ orderId }: ConsentPanelProps) {
   const isOperador = user?.role === UserRole.OPERADOR;
   const isMedico   = user?.role === UserRole.MEDICO;
 
-  const canCreate  = !consent && !isLoading && !isError && (isAdmin || isOperador || isMedico);
+  // 404 significa que no existe consentimiento aún (no es un error real)
+  const isNotFound = isError && (error as { response?: { status?: number } })?.response?.status === 404;
+  const canCreate  = !consent && !isLoading && (!isError || isNotFound) && (isAdmin || isOperador || isMedico);
   const canSign    = (isAdmin || isMedico)               && consent?.status === ConsentStatus.PENDIENTE_FIRMA_MEDICO;
   const canSend    = (isAdmin || isMedico || isOperador) && consent?.status === ConsentStatus.FIRMADO_MEDICO;
   const canRespond = (isAdmin || isOperador)             && consent?.status === ConsentStatus.ENVIADO_PACIENTE;
@@ -344,23 +346,33 @@ export function ConsentPanel({ orderId }: ConsentPanelProps) {
   return (
     <>
       <Card padding="lg">
-        <CardHeader
-          title="Consentimiento informado"
-          action={
-            canCreate ? (
-              <Button variant="outline" size="sm" loading={createMutation.isPending}
-                onClick={() => createMutation.mutate()}>
-                <Plus size={14} className="mr-1" />Crear consentimiento
-              </Button>
-            ) : undefined
-          }
-        />
+        <CardHeader title="Consentimiento informado" />
 
         {isLoading ? (
           <div className="mt-4"><LoadingSkeleton rows={3} /></div>
-        ) : isError || !consent ? (
-          <div className="mt-4 flex items-center gap-2 text-sm" style={{ color: '#6e7976' }}>
-            <FileText size={16} /><span>Sin consentimiento registrado.</span>
+        ) : isError && !isNotFound ? (
+          <div className="mt-4 rounded-xl p-4" style={{ background: 'rgba(186,26,26,0.06)', border: '1px solid rgba(186,26,26,0.15)' }}>
+            <p className="text-sm font-medium" style={{ color: '#ba1a1a' }}>Error al cargar el consentimiento.</p>
+          </div>
+        ) : !consent ? (
+          <div className="mt-4 rounded-2xl p-6 flex flex-col items-center gap-4 text-center"
+            style={{ background: '#f8fafa', border: '1.5px dashed #bec9c5' }}>
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center"
+              style={{ background: 'rgba(27,122,107,0.08)' }}>
+              <FileText size={22} style={{ color: '#1B7A6B' }} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: '#191c1d' }}>Sin consentimiento registrado</p>
+              <p className="text-xs mt-1" style={{ color: '#6e7976' }}>
+                Crea el documento de consentimiento informado para esta orden médica.
+              </p>
+            </div>
+            {canCreate && (
+              <Button variant="primary" size="sm" loading={createMutation.isPending}
+                onClick={() => createMutation.mutate()}>
+                <Plus size={14} className="mr-1.5" />Crear consentimiento
+              </Button>
+            )}
           </div>
         ) : (
           <div className="mt-5 space-y-5">
