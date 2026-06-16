@@ -1,6 +1,6 @@
 # Estado del Proyecto APP-DX — Junio 2026
 
-> Última actualización: 2026-06-16 (rev 7 — Dashboard analytics BI completo)
+> Última actualización: 2026-06-16 (rev 8 — UI/UX DX: Sidebar DX-first, responsividad, thresholds genéticos, notificaciones, login premium)
 >
 > **PIVOTE MAYOR:** El sistema fue rediseñado para operar con magic links sin cuentas de médico/paciente, arquitectura multi-tenant y soporte multi-país. Ver PRD.md, PLAN.md y STACK.md para el detalle completo.
 
@@ -215,12 +215,29 @@ Usuario de prueba: `dr.garcia@botoshop.com` / `Medico123!`
 - 3 programas × 8 países × 2 tipos (MEDICO + PACIENTE) = 48
 - SQL seed disponible en `scripts/` para replicar en otros proyectos
 
+## ✅ UI/UX rev 8 — Mejoras DX completas (2026-06-16)
+
+### Cambios implementados
+- **Login premium**: Split-screen con glassmorphism, anillos ADN CSS, logo 200px con glow, focus-within CSS puro (sin conflicto rhf)
+- **Sidebar DX-first**: Eliminado flujo viejo (Pacientes/Ordenes/Resultados/Citas) del nav de ADMIN/OPERADOR. Nav principal: Panel DX, Casos DX, Importar DX, Usuarios. Links públicos para médicos (copy con un clic) integrados directamente en sidebar.
+- **AppLayout responsivo**: Drawer mobile con overlay, hamburger menu en header, state centralizado
+- **Header mejorado**: Títulos correctos para rutas `/dx/*`, notification bell visible en fondo claro, avatar del usuario
+- **BottomNav DX**: Reemplazado flujo viejo por Panel DX / Casos / Importar / Usuarios
+- **NotificationBell**: Rediseñado para fondo claro (prop `theme`), colores semánticos por tipo, icono visible
+- **CasoDetail**: Panel de umbrales genéticos por programa (Wilson/DAAT/Duchenne) visible antes de ingresar resultado sérico. Sección "Consentimiento del médico" con datos de país/programa/fecha y descarga del PDF previo si existe.
+- **ESTADO.md**: Actualizado
+
+### Arquitectura confirmada (PRD v2.0)
+- Médicos y pacientes **NO tienen cuentas** — usan links públicos y magic links
+- Solo ADMIN y OPERADOR acceden al panel con JWT
+- El sidebar solo muestra módulos DX relevantes para estos roles
+
 ## 🚀 Estado de despliegue (2026-06-16)
 
 | Componente | Estado |
 |-----------|--------|
 | DB Supabase | ✅ Online — tenant + programas + consentimientos listos |
-| Backend Edge Function | ⏳ Pendiente push → CI/CD despliega automáticamente |
+| Backend Edge Function | ✅ Desplegado — CI/CD activo |
 | Frontend Vercel | ⏳ Pendiente push → CI/CD despliega automáticamente |
 
 **Para desplegar:** `git push origin main` → GitHub Actions ejecuta la pipeline completa.

@@ -1,16 +1,19 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { ArrowLeft, Copy, Check, ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
+import {
+  ArrowLeft, Copy, Check, ChevronDown, ChevronUp, ExternalLink,
+  AlertCircle, Download,
+} from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import {
   getCaso, cambiarEstado, registrarSerica, setIndicacion,
   registrarGenetica, registrarSeguimiento,
-  generarLinkPaciente, invalidarLinkPaciente, eliminarCaso,
+  generarLinkPaciente, invalidarLinkPaciente,
   getDxError,
 } from '@/services/admin-dx.service';
 import type { DxCasoDetalle, DxAuditEntry } from '@/types/dx.types';
@@ -115,6 +118,56 @@ function SectionCard({
 
 const selectCls = 'w-full px-3.5 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(27,122,107,0.20)]';
 const selectStyle = { background: '#f2f4f4', border: '1px solid #bec9c5', color: '#191c1d' };
+
+// ─── Umbrales de indicación genética por programa ─────────────────────────────
+
+const UMBRALES: Record<string, { criterios: string[]; nota?: string }> = {
+  WILSON: {
+    criterios: [
+      'Ceruloplasmina sérica < 20 mg/dL',
+      'Cobre en orina > 60 µg/24h',
+    ],
+    nota: 'Con al menos uno de estos criterios, el sistema indicará prueba genética.',
+  },
+  DAAT: {
+    criterios: ['Alfa-1 antitripsina ≤ 110 mg/dL'],
+    nota: 'Si el valor es igual o inferior al umbral, el sistema indicará prueba genética.',
+  },
+  DUCHENNE: {
+    criterios: ['CK sérica elevada según criterio médico'],
+    nota: 'Duchenne se evalúa individualmente — el sistema solicitará confirmación manual.',
+  },
+};
+
+function ThresholdBanner({ codigo }: { codigo?: string }) {
+  const info = codigo ? UMBRALES[codigo] : null;
+  if (!info) return null;
+  return (
+    <div
+      className="rounded-xl px-4 py-3 mb-4"
+      style={{
+        background: 'rgba(27,122,107,0.05)',
+        border: '1px solid rgba(27,122,107,0.15)',
+      }}
+    >
+      <p className="flex items-center gap-1.5 text-xs font-semibold mb-1.5" style={{ color: '#1B7A6B' }}>
+        <AlertCircle size={13} />
+        Umbrales de indicación genética — {codigo}
+      </p>
+      <ul className="space-y-1">
+        {info.criterios.map((c) => (
+          <li key={c} className="text-xs flex items-center gap-2" style={{ color: '#3e4946' }}>
+            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#1B7A6B' }} />
+            {c}
+          </li>
+        ))}
+      </ul>
+      {info.nota && (
+        <p className="text-[10px] mt-2" style={{ color: '#9eaaa7' }}>{info.nota}</p>
+      )}
+    </div>
+  );
+}
 
 // ─── Section: Estado ──────────────────────────────────────────────────────────
 
@@ -314,6 +367,8 @@ function SericaSection({ caso, onMutate }: { caso: DxCasoDetalle; onMutate: () =
 
   return (
     <SectionCard title="Resultado sérico" collapsible defaultOpen>
+      <ThresholdBanner codigo={caso.programas?.codigo} />
+
       {caso.serica_registrada_at && !open && (
         <div className="space-y-3 mb-3">
           <Field label={field1} value={caso.resultado_serico_1} />
@@ -331,7 +386,7 @@ function SericaSection({ caso, onMutate }: { caso: DxCasoDetalle; onMutate: () =
         <div className="space-y-3">
           <Input label={field1} required value={v1} onChange={(e) => setV1(e.target.value)} />
           {field2 && <Input label={field2} value={v2} onChange={(e) => setV2(e.target.value)} />}
-          <Input label="Interpretación" value={interp} onChange={(e) => setInterp(e.target.value)} />
+          <Input label="Interpretación clínica" value={interp} onChange={(e) => setInterp(e.target.value)} />
           <Input label="Notas adicionales" value={notas} onChange={(e) => setNotas(e.target.value)} />
           <div className="flex gap-2">
             <Button size="sm" loading={saving} onClick={handleSave}>Guardar resultado</Button>
@@ -343,7 +398,7 @@ function SericaSection({ caso, onMutate }: { caso: DxCasoDetalle; onMutate: () =
       )}
 
       {!caso.serica_registrada_at && !open && (
-        <p className="text-xs" style={{ color: '#9eaaa7' }}>Sin resultado registrado.</p>
+        <p className="text-xs" style={{ color: '#9eaaa7' }}>Sin resultado registrado aún.</p>
       )}
     </SectionCard>
   );
@@ -544,6 +599,47 @@ function SeguimientoSection({ caso, onMutate }: { caso: DxCasoDetalle; onMutate:
   );
 }
 
+// ─── Section: Consentimiento del médico ──────────────────────────────────────
+
+function ConsentimientoMedicoSection({ caso }: { caso: DxCasoDetalle }) {
+  return (
+    <SectionCard title="Consentimiento del médico" collapsible defaultOpen={false}>
+      <div className="space-y-3">
+        <div
+          className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm"
+          style={{ background: 'rgba(22,163,74,0.07)', border: '1px solid rgba(22,163,74,0.2)' }}
+        >
+          <Check size={15} style={{ color: '#16a34a' }} />
+          <span className="font-medium" style={{ color: '#16a34a' }}>
+            Médico aceptó el consentimiento informado al enviar la solicitud
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="País" value={PAIS_LABELS[caso.pais_codigo] ?? caso.pais_codigo} />
+          <Field label="Programa" value={caso.programas?.nombre} />
+          <Field label="Fecha solicitud" value={new Date(caso.created_at).toLocaleDateString('es-CO')} />
+        </div>
+        {caso.resultado_previo_pdf_url && (
+          <a
+            href={caso.resultado_previo_pdf_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
+            style={{
+              background: 'rgba(27,122,107,0.07)',
+              color: '#1B7A6B',
+              border: '1px solid rgba(27,122,107,0.2)',
+            }}
+          >
+            <Download size={14} />
+            Descargar resultado previo (PDF adjunto por médico)
+          </a>
+        )}
+      </div>
+    </SectionCard>
+  );
+}
+
 // ─── Section: Audit log ───────────────────────────────────────────────────────
 
 function AuditLog({ entries }: { entries: DxAuditEntry[] }) {
@@ -699,6 +795,7 @@ export function CasoDetail({ casoId }: { casoId: string }) {
           {showIndicacion && <IndicacionSection caso={caso} onMutate={invalidate} />}
           {showGenetica   && <GeneticaSection caso={caso} onMutate={invalidate} />}
           {showSeguimiento && <SeguimientoSection caso={caso} onMutate={invalidate} />}
+          <ConsentimientoMedicoSection caso={caso} />
           <AuditLog entries={caso.audit_log ?? []} />
         </div>
       </div>

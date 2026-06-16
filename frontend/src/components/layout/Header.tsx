@@ -1,87 +1,84 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { Menu } from 'lucide-react';
 import { useAuthStore } from '@/modules/auth/authStore';
 import { NotificationBell } from '@/components/ui/NotificationBell';
 
 const PAGE_TITLES: Record<string, string> = {
-  '/dashboard':    'Panel de Control',
-  '/patients':     'Pacientes',
-  '/orders':       'Órdenes Médicas',
-  '/consents':     'Consentimientos',
-  '/results':      'Resultados',
-  '/appointments': 'Citas',
-  '/users':        'Usuarios',
+  '/dx/dashboard':  'Panel DX — Analytics',
+  '/dx/casos':      'Casos DX',
+  '/dx/importar':   'Importar casos',
+  '/users':         'Usuarios del sistema',
+  '/dashboard':     'Panel de Control',
+  '/patients':      'Pacientes',
+  '/orders':        'Órdenes Médicas',
+  '/consents':      'Consentimientos',
+  '/results':       'Resultados',
+  '/appointments':  'Citas',
 };
 
 function getPageTitle(pathname: string): string {
-  const exactMatch = PAGE_TITLES[pathname];
-  if (exactMatch) return exactMatch;
-  const segment = '/' + pathname.split('/')[1];
-  return PAGE_TITLES[segment] ?? 'BTS Integral';
+  const exact = PAGE_TITLES[pathname];
+  if (exact) return exact;
+  // Match prefix (e.g. /dx/casos/[id])
+  const match = Object.entries(PAGE_TITLES).find(([k]) => pathname.startsWith(k + '/'));
+  return match ? match[1] : 'BTS Integral';
 }
 
-export function Header() {
+interface HeaderProps {
+  onMenuClick?: () => void;
+}
+
+export function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
   const initial = user?.email?.charAt(0).toUpperCase() ?? '?';
 
   return (
     <header
-      className="sticky top-0 z-40 flex items-center justify-between w-full px-4 py-3 sm:px-6 sm:py-4 lg:px-8 shrink-0 border-b"
+      className="sticky top-0 z-40 flex items-center justify-between w-full px-4 sm:px-6 lg:px-8 shrink-0 border-b"
       style={{
-        background: 'rgba(248,250,250,0.85)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        borderColor: '#e6e8e9',
-        boxShadow: '0px 4px 20px rgba(25,28,29,0.04)',
+        height: 60,
+        background: '#ffffff',
+        borderColor: '#e0e8e5',
+        boxShadow: '0 1px 0 #e0e8e5',
       }}
     >
-      {/* Mobile: avatar + brand | Desktop: page title */}
+      {/* Left: hamburger (mobile) + title */}
       <div className="flex items-center gap-3">
-        {/* Avatar — visible on mobile only */}
-        <div
-          className="lg:hidden w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ring-2 ring-white"
-          style={{ background: 'rgba(27,122,107,0.15)', color: '#1B7A6B' }}
+        <button
+          type="button"
+          onClick={onMenuClick}
+          className="lg:hidden p-2 rounded-xl transition-colors"
+          style={{ color: '#6e7976' }}
+          aria-label="Abrir menú"
         >
-          {initial}
-        </div>
+          <Menu size={20} />
+        </button>
 
-        {/* Brand on mobile / Page title on desktop */}
-        <span
-          className="font-extrabold tracking-tight lg:hidden text-xl"
-          style={{ fontFamily: 'Manrope, sans-serif', color: '#1B7A6B' }}
-        >
-          BTS Integral
-        </span>
-        <span
-          className="hidden lg:block font-semibold tracking-tight text-xl"
-          style={{ fontFamily: 'Manrope, sans-serif', color: '#191c1d' }}
-        >
-          {getPageTitle(pathname)}
-        </span>
+        <div>
+          <span
+            className="font-bold text-base"
+            style={{ fontFamily: 'Manrope, sans-serif', color: '#101c19' }}
+          >
+            {getPageTitle(pathname)}
+          </span>
+        </div>
       </div>
 
-      {/* Right — notifications + desktop user info */}
-      <div className="flex items-center gap-3 lg:gap-5">
-        {/* Bell */}
-        <NotificationBell />
+      {/* Right: notifications + user */}
+      <div className="flex items-center gap-2">
+        <NotificationBell theme="light" />
 
-        {/* Desktop: divider + user info */}
-        <div className="hidden lg:flex items-center gap-3">
-          <div className="h-6 w-px" style={{ background: '#e6e8e9' }} />
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-semibold leading-tight" style={{ color: '#191c1d', fontFamily: 'Manrope, sans-serif' }}>
-              {user?.email ?? '—'}
-            </p>
-            <p className="text-xs" style={{ color: '#6e7976' }}>Portal Clínico</p>
-          </div>
-          <div
-            className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ring-2 ring-white"
-            style={{ background: 'rgba(27,122,107,0.15)', color: '#1B7A6B' }}
-          >
-            {initial}
-          </div>
+        <div className="h-5 w-px mx-1 hidden sm:block" style={{ background: '#e0e8e5' }} />
+
+        <div
+          className="flex items-center justify-center w-9 h-9 rounded-full text-sm font-bold shrink-0"
+          style={{ background: 'rgba(27,122,107,0.12)', color: '#1B7A6B' }}
+          title={user?.email ?? ''}
+        >
+          {initial}
         </div>
       </div>
     </header>
