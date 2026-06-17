@@ -165,15 +165,26 @@ export interface DxConversionFunnel {
   no_acepto:           number;
 }
 
+export interface DxFiltrosActivos {
+  programa: string | null;
+  pais:     string | null;
+  ano:      string | null;
+  medico:   string | null;
+  estado:   string | null;
+}
+
+export interface DxMedicoLista {
+  email:  string;
+  nombre: string;
+}
+
 export interface DxDashboardData {
-  // existentes
   por_estado:              DxEstadoCount[];
   por_programa:            DxProgramaCount[];
   por_pais:                DxPaisCount[];
   por_mes:                 DxMesCount[];
   pendientes_autorizacion: number;
   casos_recientes:         DxCasoItem[];
-  // nuevos — Fase 7 analytics
   por_departamento:        DxDepartamentoCount[];
   por_ano:                 DxAnoCount[];
   por_mes_programa:        DxMesProgramaCount[];
@@ -183,6 +194,8 @@ export interface DxDashboardData {
   por_medico:              DxMedicoStats[];
   heatmap_medico_mes:      DxHeatmapCell[];
   conversion_funnel:       DxConversionFunnel;
+  medicos_lista:           DxMedicoLista[];
+  filtros_activos:         DxFiltrosActivos;
 }
 
 export interface DxCasoItem {

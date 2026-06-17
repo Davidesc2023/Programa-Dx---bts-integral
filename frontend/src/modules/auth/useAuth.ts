@@ -36,7 +36,7 @@ export function useAuth() {
       setUserFromToken(tokens.accessToken);
       const decoded = decodeJwtPayload<JwtPayload>(tokens.accessToken);
       const destination =
-        decoded?.role === UserRole.PACIENTE ? '/portal/dashboard' : '/dashboard';
+        decoded?.role === UserRole.PACIENTE ? '/portal/dashboard' : '/dx/dashboard';
       router.push(destination);
     },
     [router, setUserFromToken],

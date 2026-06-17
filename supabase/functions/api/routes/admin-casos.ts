@@ -488,15 +488,41 @@ export async function eliminarCaso(req: Request, casoId: string): Promise<Respon
 
 // ─── GET /admin/dashboard ─────────────────────────────────────────────────────
 // Métricas del panel principal + analytics completos para BI
+// Query params opcionales: programa, pais, ano, medico, estado
 export async function obtenerDashboard(req: Request): Promise<Response> {
   const auth = await requireAuth(req)
   if (auth instanceof Response) return auth
   const denied = requireRole(auth, ...ROLES_ADMIN)
   if (denied) return denied
 
+  const url     = new URL(req.url)
+  const fProg   = url.searchParams.get("programa")   // WILSON | DAAT | DUCHENNE
+  const fPais   = url.searchParams.get("pais")        // CO | EC | PA …
+  const fAno    = url.searchParams.get("ano")         // 2024
+  const fMedico = url.searchParams.get("medico")      // búsqueda por email o nombre
+  const fEstado = url.searchParams.get("estado")      // estado del caso
+
   const db = getDb()
 
-  // Queries base (conteos directos vía PostgREST aggregate) + query maestra para analytics
+  // Resolver código de programa → id
+  let fProgramaId: string | null = null
+  if (fProg) {
+    const { data: prog } = await db.from("programas").select("id").eq("codigo", fProg).single()
+    fProgramaId = prog?.id ?? null
+  }
+
+  // Aplicar filtros comunes a cualquier query sobre la tabla casos
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function withFilters(q: any) {
+    q = q.is("deleted_at", null)
+    if (fProgramaId) q = q.eq("programa_id", fProgramaId)
+    if (fPais)       q = q.eq("pais_codigo", fPais)
+    if (fAno)        q = q.like("mes_solicitud", `${fAno}-%`)
+    if (fEstado)     q = q.eq("estado", fEstado)
+    if (fMedico)     q = q.or(`medico_email.ilike.%${fMedico}%,medico_nombre.ilike.%${fMedico}%`)
+    return q
+  }
+
   const [
     porEstado,
     porPrograma,
@@ -504,42 +530,30 @@ export async function obtenerDashboard(req: Request): Promise<Response> {
     porMes,
     pendienteAutorizacion,
     casosRecientes,
-    rawCasos,           // datos planos para todas las agregaciones BI
+    rawCasos,
   ] = await Promise.all([
-    db.from("casos")
-      .select("estado, count:id.count()")
-      .is("deleted_at", null),
+    withFilters(db.from("casos").select("estado, count:id.count()")),
 
-    db.from("casos")
-      .select("programas(codigo, nombre), count:id.count()")
-      .is("deleted_at", null),
+    withFilters(db.from("casos").select("programas(codigo, nombre), count:id.count()")),
 
-    db.from("casos")
-      .select("pais_codigo, count:id.count()")
-      .is("deleted_at", null),
+    withFilters(db.from("casos").select("pais_codigo, count:id.count()")),
 
-    db.from("casos")
-      .select("mes_solicitud, count:id.count()")
-      .is("deleted_at", null)
-      .not("mes_solicitud", "is", null)
-      .order("mes_solicitud", { ascending: false })
-      .limit(12),
+    withFilters(
+      db.from("casos").select("mes_solicitud, count:id.count()")
+    ).not("mes_solicitud", "is", null).order("mes_solicitud", { ascending: false }).limit(12),
 
-    db.from("casos")
-      .select("id", { count: "exact", head: true })
-      .eq("estado", "PENDIENTE_AUTORIZACION")
-      .is("deleted_at", null),
+    withFilters(
+      db.from("casos").select("id", { count: "exact", head: true })
+    ).eq("estado", "PENDIENTE_AUTORIZACION"),
 
-    db.from("casos")
-      .select("id, consecutivo, pais_codigo, mes_solicitud, paciente_iniciales, estado, medico_nombre, medico_email, created_at, updated_at, programas(nombre, codigo)")
-      .is("deleted_at", null)
-      .order("created_at", { ascending: false })
-      .limit(10),
+    withFilters(
+      db.from("casos").select("id, consecutivo, pais_codigo, mes_solicitud, paciente_iniciales, estado, medico_nombre, medico_email, created_at, updated_at, programas(nombre, codigo)")
+    ).order("created_at", { ascending: false }).limit(10),
 
-    // Query maestra: todos los campos necesarios para analytics (sin datos clínicos pesados)
-    db.from("casos")
-      .select("medico_email, medico_nombre, estado, tiene_indicacion_genetica, seguimiento_clinico, paciente_autorizacion, mes_solicitud, paciente_departamento, estado_genetico, programas(codigo)")
-      .is("deleted_at", null),
+    // Query maestra para todas las agregaciones BI
+    withFilters(
+      db.from("casos").select("medico_email, medico_nombre, estado, tiene_indicacion_genetica, seguimiento_clinico, paciente_autorizacion, mes_solicitud, paciente_departamento, estado_genetico, programas(codigo)")
+    ),
   ])
 
   const rows = (rawCasos.data ?? []) as Array<{
@@ -707,13 +721,30 @@ export async function obtenerDashboard(req: Request): Promise<Response> {
   const last12 = allMeses.slice(-12)
   const heatmap_medico_mes = [...heatKeys.values()].filter(h => last12.includes(h.mes))
 
+  // ── Lista de médicos únicos (para filtro en frontend) ─────────────────────
+  const medicos_lista = [...new Set(rows.map(r => r.medico_email).filter(Boolean))]
+    .map(email => {
+      const r = rows.find(x => x.medico_email === email)
+      return { email, nombre: r?.medico_nombre ?? email }
+    })
+    .sort((a, b) => (a.nombre ?? "").localeCompare(b.nombre ?? ""))
+
+  // ── Filtros activos (para que el frontend refleje el estado) ───────────────
+  const filtros_activos = {
+    programa: fProg ?? null,
+    pais:     fPais ?? null,
+    ano:      fAno  ?? null,
+    medico:   fMedico ?? null,
+    estado:   fEstado ?? null,
+  }
+
   return ok({
-    por_estado:             porEstado.data ?? [],
-    por_programa:           porPrograma.data ?? [],
-    por_pais:               porPais.data ?? [],
-    por_mes:                porMes.data ?? [],
+    por_estado:              porEstado.data ?? [],
+    por_programa:            porPrograma.data ?? [],
+    por_pais:                porPais.data ?? [],
+    por_mes:                 porMes.data ?? [],
     pendientes_autorizacion: pendienteAutorizacion.count ?? 0,
-    casos_recientes:        casosRecientes.data ?? [],
+    casos_recientes:         casosRecientes.data ?? [],
     por_departamento,
     por_ano,
     por_mes_programa,
@@ -723,5 +754,7 @@ export async function obtenerDashboard(req: Request): Promise<Response> {
     por_medico,
     heatmap_medico_mes,
     conversion_funnel,
+    medicos_lista,
+    filtros_activos,
   })
 }

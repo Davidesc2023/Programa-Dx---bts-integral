@@ -28,8 +28,22 @@ interface Paginated<T> {
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
-export async function getDxDashboard(): Promise<DxDashboardData> {
-  const r = await api.get<Envelope<DxDashboardData>>('/admin/dashboard');
+export interface DashboardFilters {
+  programa?: string;
+  pais?:     string;
+  ano?:      string;
+  medico?:   string;
+  estado?:   string;
+}
+
+export async function getDxDashboard(filters?: DashboardFilters): Promise<DxDashboardData> {
+  const params: Record<string, string> = {};
+  if (filters?.programa) params.programa = filters.programa;
+  if (filters?.pais)     params.pais     = filters.pais;
+  if (filters?.ano)      params.ano      = filters.ano;
+  if (filters?.medico)   params.medico   = filters.medico;
+  if (filters?.estado)   params.estado   = filters.estado;
+  const r = await api.get<Envelope<DxDashboardData>>('/admin/dashboard', { params });
   return r.data.data;
 }
 

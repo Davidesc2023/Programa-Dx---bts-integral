@@ -41,8 +41,8 @@ export function Header({ onMenuClick }: HeaderProps) {
       style={{
         height: 60,
         background: '#ffffff',
-        borderColor: '#e0e8e5',
-        boxShadow: '0 1px 0 #e0e8e5',
+        borderColor: '#dde8e5',
+        boxShadow: '0 1px 0 #dde8e5',
       }}
     >
       {/* Left: hamburger (mobile) + title */}
@@ -75,7 +75,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
         <div
           className="flex items-center justify-center w-9 h-9 rounded-full text-sm font-bold shrink-0"
-          style={{ background: 'rgba(27,122,107,0.12)', color: '#1B7A6B' }}
+          style={{ background: 'rgba(49,99,88,0.14)', color: '#316358' }}
           title={user?.email ?? ''}
         >
           {initial}

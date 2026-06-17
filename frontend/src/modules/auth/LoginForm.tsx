@@ -4,23 +4,34 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, ArrowRight, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { Loader2, ArrowRight, Eye, EyeOff, ShieldCheck, Dna } from 'lucide-react';
 import { loginSchema, type LoginFormValues } from '@/lib/validators';
 import { useAuth } from './useAuth';
 import { RegisterPatientForm } from './RegisterPatientForm';
 import { getApiErrorMessage } from '@/services/api';
 
-// ─── Constantes de marca ─────────────────────────────────────────────────────
+// ─── Brand colors (logo palette) ─────────────────────────────────────────────
+const C = {
+  teal:    '#316358',   // teal oscuro — color base del logo
+  tealDk:  '#224843',   // teal más oscuro para hover/sombras
+  yellow:  '#f3e159',   // amarillo acento del logo
+  blue:    '#3977e9',   // azul acento del logo
+  white:   '#fafcfd',   // blanco/off-white
+  dark:    '#0d1a17',   // texto oscuro
+  muted:   'rgba(250,252,253,0.55)',
+  border:  'rgba(250,252,253,0.12)',
+  err:     '#ff6b6b',
+};
 
 const PROGRAMS = [
-  { label: 'Wilson',   color: '#1B7A6B' },
-  { label: 'DAAT',     color: '#2563eb' },
-  { label: 'Duchenne', color: '#7c3aed' },
+  { label: 'Wilson',   color: C.yellow },
+  { label: 'DAAT',     color: C.blue },
+  { label: 'Duchenne', color: '#c084fc' },
 ];
 
 const PAISES = ['CO', 'EC', 'PA', 'CL', 'CR', 'SV', 'DO', 'GT'];
 
-// ─── Componente principal ────────────────────────────────────────────────────
+// ─── Componente principal ─────────────────────────────────────────────────────
 
 export function LoginForm() {
   const { login } = useAuth();
@@ -56,135 +67,91 @@ export function LoginForm() {
     <div className="min-h-screen md:min-h-dvh flex flex-col md:flex-row overflow-hidden">
 
       {/* ═══════════════════════════════════════════════════════════
-          PANEL IZQUIERDO — brand hero (md+)
+          PANEL IZQUIERDO — brand hero en teal oscuro
       ════════════════════════════════════════════════════════════ */}
       <aside
         aria-hidden="true"
-        className="hidden md:flex flex-col w-[46%] lg:w-[52%] xl:w-[55%] relative overflow-hidden"
-        style={{ background: '#0d1614' }}
+        className="hidden md:flex flex-col w-[46%] lg:w-[50%] xl:w-[52%] relative overflow-hidden"
+        style={{ background: C.teal }}
       >
-        {/* ── Gradiente radial sutil desde esquina inferior ── */}
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            inset: 0,
-            background:
-              'radial-gradient(ellipse 80% 60% at 110% 110%, rgba(27,122,107,0.22) 0%, transparent 65%)',
-          }}
-        />
-        {/* ── Gradiente radial superior izquierdo ── */}
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            inset: 0,
-            background:
-              'radial-gradient(ellipse 60% 50% at -10% 0%, rgba(27,122,107,0.10) 0%, transparent 60%)',
-          }}
-        />
-        {/* ── Anillos decorativos (ADN) ── */}
-        <div
-          className="absolute rounded-full pointer-events-none"
-          style={{
-            width: 700, height: 700,
-            top: -200, right: -200,
-            border: '1px solid rgba(255,255,255,0.035)',
-          }}
-        />
-        <div
-          className="absolute rounded-full pointer-events-none"
-          style={{
-            width: 520, height: 520,
-            top: -140, right: -140,
-            border: '1px solid rgba(255,255,255,0.05)',
-          }}
-        />
-        <div
-          className="absolute rounded-full pointer-events-none"
-          style={{
-            width: 340, height: 340,
-            top: -80, right: -80,
-            border: '1px solid rgba(255,255,255,0.065)',
-          }}
-        />
-        {/* ── Textura cuadrícula sutil ── */}
+        {/* ── Patrón de puntos sutil ── */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            opacity: 0.022,
-            backgroundImage:
-              'linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), ' +
-              'linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)',
-            backgroundSize: '52px 52px',
+            backgroundImage: 'radial-gradient(rgba(250,252,253,0.07) 1px, transparent 1px)',
+            backgroundSize: '28px 28px',
           }}
         />
 
+        {/* ── Gradiente superior (brillo) ── */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            inset: 0,
+            background: `radial-gradient(ellipse 70% 50% at 50% -10%, rgba(243,225,89,0.18) 0%, transparent 65%)`,
+          }}
+        />
+
+        {/* ── Anillos decorativos (ADN) bottom-right ── */}
+        <div className="absolute rounded-full pointer-events-none"
+          style={{ width: 560, height: 560, bottom: -200, right: -200,
+            border: '1px solid rgba(250,252,253,0.08)' }} />
+        <div className="absolute rounded-full pointer-events-none"
+          style={{ width: 380, height: 380, bottom: -140, right: -140,
+            border: '1px solid rgba(250,252,253,0.10)' }} />
+        <div className="absolute rounded-full pointer-events-none"
+          style={{ width: 220, height: 220, bottom: -80, right: -80,
+            border: '1px solid rgba(250,252,253,0.14)' }} />
+
         {/* ── Contenido centrado ── */}
-        <div className="relative z-10 flex flex-col justify-between flex-1 px-10 xl:px-14 py-12">
+        <div className="relative z-10 flex flex-col justify-between flex-1 px-10 xl:px-14 py-14">
 
-          {/* Bloque hero: logo + nombre */}
-          <div className="flex flex-col items-center text-center gap-8 mt-4">
+          {/* Logo + nombre */}
+          <div className="flex flex-col items-center text-center gap-8">
 
-            {/* Logo sobre fondo oscuro con borde teal sutil */}
-            <div className="relative">
-              {/* Glow exterior tenue */}
-              <div
-                className="absolute inset-0 rounded-[44px] pointer-events-none"
-                style={{
-                  background: 'rgba(27,122,107,0.20)',
-                  filter: 'blur(32px)',
-                  transform: 'scale(1.18)',
-                }}
+            {/* Logo sobre fondo teal — visible y contrastado */}
+            <div
+              className="rounded-3xl flex items-center justify-center"
+              style={{
+                width: 108, height: 108,
+                background: 'rgba(250,252,253,0.10)',
+                border: '1px solid rgba(250,252,253,0.18)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
+              }}
+            >
+              <Image
+                src="/logo.png"
+                alt="BTS Integral"
+                width={72}
+                height={72}
+                className="object-contain"
+                priority
               />
-              {/* Contenedor del logo — fondo oscuro para contrastar con logo */}
-              <div
-                className="relative flex items-center justify-center"
-                style={{
-                  width: 200,
-                  height: 200,
-                  borderRadius: 44,
-                  background: '#162220',
-                  border: '1.5px solid rgba(27,122,107,0.40)',
-                  boxShadow:
-                    '0 0 0 1px rgba(255,255,255,0.04), 0 32px 64px rgba(0,0,0,0.50)',
-                }}
-              >
-                <Image
-                  src="/logo.png"
-                  alt="BTS Integral"
-                  width={132}
-                  height={132}
-                  className="object-contain"
-                  priority
-                />
-              </div>
             </div>
 
-            {/* Nombre + subtítulo */}
+            {/* Nombre */}
             <div className="space-y-2">
               <h1
-                className="text-white font-black leading-none tracking-tight"
-                style={{ fontSize: '3rem', fontFamily: 'Manrope, sans-serif' }}
+                className="font-black leading-none tracking-tight"
+                style={{ fontSize: '2.6rem', fontFamily: 'Manrope, sans-serif', color: C.white }}
               >
                 BTS INTEGRAL
               </h1>
               <p
                 className="text-[11px] font-bold tracking-[0.3em] uppercase"
-                style={{ color: 'rgba(255,255,255,0.40)' }}
+                style={{ color: C.muted }}
               >
                 Programa DX · Diagnóstico Genético
               </p>
             </div>
 
-            {/* Separador */}
-            <div
-              className="w-12 h-[1px]"
-              style={{ background: 'rgba(255,255,255,0.15)' }}
-            />
+            {/* Separador amarillo */}
+            <div style={{ width: 40, height: 3, background: C.yellow, borderRadius: 2 }} />
 
             {/* Descripción */}
             <p
               className="text-[15px] leading-relaxed font-medium max-w-[260px]"
-              style={{ color: 'rgba(255,255,255,0.58)' }}
+              style={{ color: 'rgba(250,252,253,0.70)' }}
             >
               Seguimiento integral de pacientes en programas de diagnóstico genético en LATAM.
             </p>
@@ -196,20 +163,12 @@ export function LoginForm() {
                   key={p.label}
                   className="flex items-center gap-2 rounded-2xl px-4 py-2"
                   style={{
-                    background: 'rgba(255,255,255,0.07)',
-                    border: '1px solid rgba(255,255,255,0.10)',
+                    background: 'rgba(250,252,253,0.08)',
+                    border: '1px solid rgba(250,252,253,0.14)',
                   }}
                 >
-                  <div
-                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                    style={{ background: p.color }}
-                  />
-                  <span
-                    className="text-xs font-bold"
-                    style={{ color: 'rgba(255,255,255,0.70)' }}
-                  >
-                    {p.label}
-                  </span>
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ background: p.color }} />
+                  <span className="text-xs font-bold" style={{ color: C.white }}>{p.label}</span>
                 </div>
               ))}
             </div>
@@ -221,9 +180,9 @@ export function LoginForm() {
                   key={c}
                   className="text-[10px] font-bold tracking-wider rounded-lg px-2.5 py-1"
                   style={{
-                    background: 'rgba(255,255,255,0.05)',
-                    color: 'rgba(255,255,255,0.35)',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    background: 'rgba(250,252,253,0.07)',
+                    color: 'rgba(250,252,253,0.50)',
+                    border: '1px solid rgba(250,252,253,0.10)',
                   }}
                 >
                   {c}
@@ -232,44 +191,21 @@ export function LoginForm() {
             </div>
           </div>
 
-          {/* Badge inferior de confianza */}
+          {/* Badge inferior */}
           <div className="flex items-center justify-center gap-3 mt-8">
             <div
               className="flex items-center gap-2 rounded-2xl px-4 py-2.5"
-              style={{
-                background: 'rgba(255,255,255,0.07)',
-                border: '1px solid rgba(255,255,255,0.10)',
-                backdropFilter: 'blur(8px)',
-              }}
+              style={{ background: 'rgba(250,252,253,0.08)', border: '1px solid rgba(250,252,253,0.14)' }}
             >
-              <ShieldCheck size={14} style={{ color: 'rgba(255,255,255,0.55)' }} />
-              <span
-                className="text-xs font-semibold"
-                style={{ color: 'rgba(255,255,255,0.65)' }}
-              >
-                Grado Médico
-              </span>
+              <ShieldCheck size={14} style={{ color: C.yellow }} />
+              <span className="text-xs font-semibold" style={{ color: C.white }}>Grado Médico</span>
             </div>
             <div
               className="flex items-center gap-2 rounded-2xl px-4 py-2.5"
-              style={{
-                background: 'rgba(255,255,255,0.07)',
-                border: '1px solid rgba(255,255,255,0.10)',
-                backdropFilter: 'blur(8px)',
-              }}
+              style={{ background: 'rgba(250,252,253,0.08)', border: '1px solid rgba(250,252,253,0.14)' }}
             >
-              <span
-                className="text-xs font-bold font-mono"
-                style={{ color: 'rgba(255,255,255,0.50)' }}
-              >
-                HIPAA
-              </span>
-              <span
-                className="text-xs font-semibold"
-                style={{ color: 'rgba(255,255,255,0.55)' }}
-              >
-                Compliant
-              </span>
+              <Dna size={14} style={{ color: C.yellow }} />
+              <span className="text-xs font-semibold" style={{ color: C.white }}>HIPAA Compliant</span>
             </div>
           </div>
         </div>
@@ -278,49 +214,28 @@ export function LoginForm() {
       {/* ═══════════════════════════════════════════════════════════
           PANEL DERECHO — formulario
       ════════════════════════════════════════════════════════════ */}
-      <main
-        className="flex-1 flex flex-col"
-        style={{ background: '#f4f6f5' }}
-      >
-        {/* ── Header móvil (solo <md) ── */}
+      <main className="flex-1 flex flex-col" style={{ background: C.white }}>
+
+        {/* Header móvil */}
         <div
           className="flex md:hidden flex-col items-center pt-14 pb-10 px-6"
-          style={{ background: '#0d1614' }}
+          style={{ background: C.teal, borderBottom: '1px solid rgba(250,252,253,0.12)' }}
         >
           <div
-            className="flex items-center justify-center mb-5"
-            style={{
-              width: 96, height: 96,
-              borderRadius: 28,
-              background: '#162220',
-              border: '1.5px solid rgba(27,122,107,0.40)',
-              boxShadow: '0 16px 40px rgba(0,0,0,0.40)',
-            }}
+            className="rounded-2xl flex items-center justify-center mb-4"
+            style={{ width: 72, height: 72, background: 'rgba(250,252,253,0.12)' }}
           >
-            <Image
-              src="/logo.png"
-              alt="BTS Integral"
-              width={60}
-              height={60}
-              className="object-contain"
-              priority
-            />
+            <Image src="/logo.png" alt="BTS Integral" width={48} height={48} className="object-contain" priority />
           </div>
-          <h1
-            className="text-white font-black text-2xl tracking-tight"
-            style={{ fontFamily: 'Manrope, sans-serif' }}
-          >
+          <h1 className="font-black text-2xl tracking-tight" style={{ fontFamily: 'Manrope, sans-serif', color: C.white }}>
             BTS INTEGRAL
           </h1>
-          <p
-            className="text-[11px] font-bold tracking-[0.25em] uppercase mt-2"
-            style={{ color: 'rgba(255,255,255,0.45)' }}
-          >
+          <p className="text-[11px] font-bold tracking-[0.25em] uppercase mt-2" style={{ color: 'rgba(250,252,253,0.55)' }}>
             Programa DX
           </p>
         </div>
 
-        {/* ── Área del formulario centrada ── */}
+        {/* Área del formulario */}
         <div className="flex-1 flex items-center justify-center px-5 py-10 sm:px-8">
           <div className="w-full max-w-md">
 
@@ -329,45 +244,45 @@ export function LoginForm() {
               className="rounded-3xl px-8 py-10 sm:px-10"
               style={{
                 background: '#ffffff',
-                boxShadow:
-                  '0 4px 6px rgba(0,0,0,0.03), 0 20px 60px rgba(0,0,0,0.08)',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.04), 0 20px 60px rgba(49,99,88,0.10)',
+                border: '1px solid rgba(49,99,88,0.10)',
               }}
             >
               {/* Encabezado */}
               <div className="mb-9">
+                <div
+                  className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold tracking-wide uppercase mb-4"
+                  style={{ background: `${C.teal}14`, color: C.teal }}
+                >
+                  <ShieldCheck size={11} />
+                  Portal Clínico
+                </div>
                 <h2
                   className="text-[1.75rem] font-black tracking-tight"
-                  style={{ color: '#101c19', fontFamily: 'Manrope, sans-serif' }}
+                  style={{ color: '#0d1a17', fontFamily: 'Manrope, sans-serif' }}
                 >
                   Bienvenido
                 </h2>
-                <p
-                  className="text-sm mt-1.5 font-medium"
-                  style={{ color: '#6e7976', lineHeight: 1.6 }}
-                >
-                  Ingresa tus credenciales para acceder al portal clínico.
+                <p className="text-sm mt-1.5 font-medium" style={{ color: '#5c7270', lineHeight: 1.6 }}>
+                  Ingresa tus credenciales para acceder al panel de gestión.
                 </p>
               </div>
 
               <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
 
-                {/* ── Email ── */}
+                {/* Email */}
                 <div className="space-y-1.5">
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-semibold"
-                    style={{ color: '#2e3d3a' }}
-                  >
+                  <label htmlFor="email" className="block text-sm font-semibold" style={{ color: '#1a2e2b' }}>
                     Correo electrónico
-                    <span className="ml-1" style={{ color: '#ba1a1a' }} aria-hidden="true">*</span>
+                    <span className="ml-1" style={{ color: C.err }} aria-hidden="true">*</span>
                   </label>
                   <div
                     className={`flex rounded-xl transition-all ${
                       errors.email
-                        ? 'border border-[#ba1a1a]'
-                        : 'border border-transparent bg-[#f2f5f4] focus-within:border-[#1B7A6B] focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(27,122,107,0.12)]'
+                        ? 'border border-[#ff6b6b]'
+                        : 'border border-transparent bg-[#f2f6f5] focus-within:border-[#316358] focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(49,99,88,0.12)]'
                     }`}
-                    style={errors.email ? { background: 'rgba(186,26,26,0.03)' } : undefined}
+                    style={errors.email ? { background: 'rgba(255,107,107,0.04)' } : undefined}
                   >
                     <input
                       id="email"
@@ -378,37 +293,28 @@ export function LoginForm() {
                       aria-invalid={Boolean(errors.email)}
                       aria-describedby={errors.email ? 'email-error' : undefined}
                       className="w-full bg-transparent rounded-xl px-4 text-sm font-medium focus:outline-none"
-                      style={{ height: 52, color: '#101c19' }}
+                      style={{ height: 52, color: '#0d1a17' }}
                       {...register('email')}
                     />
                   </div>
                   {errors.email && (
-                    <p
-                      id="email-error"
-                      role="alert"
-                      className="text-xs font-medium"
-                      style={{ color: '#ba1a1a' }}
-                    >
+                    <p id="email-error" role="alert" className="text-xs font-medium" style={{ color: C.err }}>
                       {errors.email.message}
                     </p>
                   )}
                 </div>
 
-                {/* ── Contraseña ── */}
+                {/* Contraseña */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label
-                      htmlFor="password"
-                      className="text-sm font-semibold"
-                      style={{ color: '#2e3d3a' }}
-                    >
+                    <label htmlFor="password" className="text-sm font-semibold" style={{ color: '#1a2e2b' }}>
                       Contraseña
-                      <span className="ml-1" style={{ color: '#ba1a1a' }} aria-hidden="true">*</span>
+                      <span className="ml-1" style={{ color: C.err }} aria-hidden="true">*</span>
                     </label>
                     <button
                       type="button"
                       className="text-xs font-semibold hover:underline underline-offset-2 transition-colors"
-                      style={{ color: '#006053' }}
+                      style={{ color: C.blue }}
                     >
                       ¿Olvidaste tu contraseña?
                     </button>
@@ -416,10 +322,10 @@ export function LoginForm() {
                   <div
                     className={`relative flex rounded-xl transition-all ${
                       errors.password
-                        ? 'border border-[#ba1a1a]'
-                        : 'border border-transparent bg-[#f2f5f4] focus-within:border-[#1B7A6B] focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(27,122,107,0.12)]'
+                        ? 'border border-[#ff6b6b]'
+                        : 'border border-transparent bg-[#f2f6f5] focus-within:border-[#316358] focus-within:bg-white focus-within:shadow-[0_0_0_3px_rgba(49,99,88,0.12)]'
                     }`}
-                    style={errors.password ? { background: 'rgba(186,26,26,0.03)' } : undefined}
+                    style={errors.password ? { background: 'rgba(255,107,107,0.04)' } : undefined}
                   >
                     <input
                       id="password"
@@ -430,48 +336,43 @@ export function LoginForm() {
                       aria-invalid={Boolean(errors.password)}
                       aria-describedby={errors.password ? 'password-error' : undefined}
                       className="w-full bg-transparent rounded-xl px-4 pr-14 text-sm font-medium focus:outline-none"
-                      style={{ height: 52, color: '#101c19' }}
+                      style={{ height: 52, color: '#0d1a17' }}
                       {...register('password')}
                     />
                     <button
                       type="button"
                       aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                       onClick={() => setShowPassword((p) => !p)}
-                      className="absolute right-0 top-0 h-full flex items-center justify-center rounded-r-xl transition-colors hover:text-[#6e7976]"
-                      style={{ width: 52, color: '#9eaaa7' }}
+                      className="absolute right-0 top-0 h-full flex items-center justify-center rounded-r-xl transition-colors"
+                      style={{ width: 52, color: '#8ea8a4' }}
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
                   {errors.password && (
-                    <p
-                      id="password-error"
-                      role="alert"
-                      className="text-xs font-medium"
-                      style={{ color: '#ba1a1a' }}
-                    >
+                    <p id="password-error" role="alert" className="text-xs font-medium" style={{ color: C.err }}>
                       {errors.password.message}
                     </p>
                   )}
                 </div>
 
-                {/* ── Error del servidor ── */}
+                {/* Error del servidor */}
                 {serverError && (
                   <div
                     role="alert"
                     aria-live="assertive"
                     className="rounded-xl px-4 py-3 text-sm font-medium"
                     style={{
-                      background: 'rgba(186,26,26,0.07)',
-                      border: '1px solid rgba(186,26,26,0.18)',
-                      color: '#9b1515',
+                      background: 'rgba(255,107,107,0.08)',
+                      border: '1px solid rgba(255,107,107,0.25)',
+                      color: '#c0392b',
                     }}
                   >
                     {serverError}
                   </div>
                 )}
 
-                {/* ── Botón de entrar ── */}
+                {/* Botón */}
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -480,13 +381,13 @@ export function LoginForm() {
                   style={{
                     height: 56,
                     background: isSubmitting
-                      ? '#006053'
-                      : 'linear-gradient(135deg, #005c4e 0%, #1B7A6B 55%, #22907e 100%)',
-                    color: '#ffffff',
+                      ? C.teal
+                      : `linear-gradient(135deg, ${C.tealDk} 0%, ${C.teal} 60%, #3d7a6e 100%)`,
+                    color: C.white,
                     fontFamily: 'Manrope, sans-serif',
                     boxShadow: isSubmitting
                       ? 'none'
-                      : '0 4px 24px rgba(27,122,107,0.35), 0 1px 3px rgba(0,0,0,0.15)',
+                      : '0 4px 24px rgba(49,99,88,0.35), 0 1px 3px rgba(0,0,0,0.12)',
                   }}
                 >
                   {isSubmitting ? (
@@ -497,37 +398,28 @@ export function LoginForm() {
                   ) : (
                     <>
                       <span>Entrar al portal</span>
-                      <ArrowRight
-                        size={18}
-                        className="group-hover:translate-x-1 transition-transform duration-200"
-                      />
+                      <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform duration-200" />
                     </>
                   )}
                 </button>
               </form>
 
-              {/* ── Enlace de registro ── */}
-              <p
-                className="mt-7 text-center text-sm"
-                style={{ color: '#6e7976' }}
-              >
+              {/* Enlace de registro */}
+              <p className="mt-7 text-center text-sm" style={{ color: '#5c7270' }}>
                 ¿Nuevo en la plataforma?{' '}
                 <button
                   type="button"
                   onClick={() => setShowRegister(true)}
                   className="font-bold hover:underline underline-offset-2 transition-colors"
-                  style={{ color: '#006053' }}
+                  style={{ color: C.blue }}
                 >
                   Solicitar acceso
                 </button>
               </p>
             </div>
 
-            {/* Pie de página */}
-            <p
-              className="text-center text-[10px] font-bold uppercase tracking-widest mt-7"
-              style={{ color: '#b0bab7' }}
-            >
+            {/* Pie */}
+            <p className="text-center text-[10px] font-bold uppercase tracking-widest mt-7" style={{ color: '#8ea8a4' }}>
               Seguridad de Grado Médico · HIPAA Compliant
             </p>
           </div>

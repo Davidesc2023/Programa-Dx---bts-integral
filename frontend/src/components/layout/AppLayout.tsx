@@ -13,7 +13,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-dvh overflow-hidden" style={{ background: '#f4f6f5' }}>
+    <div className="flex h-dvh overflow-hidden" style={{ background: '#f0f6f4' }}>
       {/* Desktop sidebar */}
       <div className="hidden lg:flex">
         <Sidebar onClose={() => setSidebarOpen(false)} />

@@ -2,7 +2,10 @@ import { AlertCircle, Clock, ShieldOff, CheckCircle2 } from 'lucide-react';
 import type { AutorizacionData } from '@/types/dx.types';
 import { PacienteAutorizacion } from '@/modules/autorizacion/PacienteAutorizacion';
 
-const BACKEND = process.env.BACKEND_URL ?? 'http://localhost:3000';
+const BACKEND =
+  process.env.BACKEND_URL ??
+  process.env.NEXT_PUBLIC_BACKEND_URL ??
+  'http://localhost:3000';
 
 interface Props {
   params: { token: string };

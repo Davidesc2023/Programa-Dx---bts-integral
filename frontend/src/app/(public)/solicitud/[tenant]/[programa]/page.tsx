@@ -2,7 +2,10 @@ import { notFound } from 'next/navigation';
 import { FormularioMedico } from '@/modules/formulario/FormularioMedico';
 import type { PublicFormData } from '@/types/dx.types';
 
-const BACKEND = process.env.BACKEND_URL ?? 'http://localhost:3000';
+const BACKEND =
+  process.env.BACKEND_URL ??
+  process.env.NEXT_PUBLIC_BACKEND_URL ??
+  'http://localhost:3000';
 
 interface Props {
   params: { tenant: string; programa: string };
