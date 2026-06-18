@@ -1,7 +1,7 @@
 # APP-DX — Estado del Proyecto
 
-**Última actualización:** 2026-06-17  
-**Versión:** 2.1.0  
+**Última actualización:** 2026-06-18  
+**Versión:** 2.1.1  
 **Entorno:** Frontend → Vercel · Backend → Supabase Edge Functions (us-east-2)
 
 ---
@@ -79,6 +79,16 @@
 
 ---
 
+## Correcciones aplicadas — v2.1.1 (2026-06-18)
+
+### Bugs resueltos
+| # | Bug | Causa raíz | Solución |
+|---|-----|-----------|---------|
+| 14 | Dashboard muestra "Error al cargar" en producción | Usuario `david.sanguino@bts-integral.com` tenía rol PACIENTE → 403 en `/admin/dashboard` | Rol actualizado a ADMIN en DB |
+| 15 | `por_programa` devolvía shape incorrecto | Query PostgREST con join anidado devuelve `{ programas: { codigo, nombre }, count }` en vez de `{ codigo, nombre, count }` | Calculado desde datos maestros `rawCasos`; eliminada la query separada |
+
+---
+
 ## Correcciones aplicadas — v2.1 (2026-06-17)
 
 ### Bugs críticos resueltos
@@ -124,7 +134,8 @@ El código usa `BACKEND_URL` en server-side (proxy, SSR) con fallback a `NEXT_PU
 ## Pendientes Técnicos
 
 ### Alta prioridad
-- [ ] Configurar `BACKEND_URL` en Vercel (causa del bug #1 y #2)
+- [x] Configurar `BACKEND_URL` en Vercel ✅ (ya estaba configurado)
+- [ ] Importar datos históricos (~789 DAAT + ~117 Wilson desde Excel)
 - [ ] Migrar JWT a httpOnly cookies (seguridad OWASP A03)
 
 ### Media prioridad

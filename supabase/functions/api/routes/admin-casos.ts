@@ -525,7 +525,6 @@ export async function obtenerDashboard(req: Request): Promise<Response> {
 
   const [
     porEstado,
-    porPrograma,
     porPais,
     porMes,
     pendienteAutorizacion,
@@ -533,8 +532,6 @@ export async function obtenerDashboard(req: Request): Promise<Response> {
     rawCasos,
   ] = await Promise.all([
     withFilters(db.from("casos").select("estado, count:id.count()")),
-
-    withFilters(db.from("casos").select("programas(codigo, nombre), count:id.count()")),
 
     withFilters(db.from("casos").select("pais_codigo, count:id.count()")),
 
@@ -552,7 +549,7 @@ export async function obtenerDashboard(req: Request): Promise<Response> {
 
     // Query maestra para todas las agregaciones BI
     withFilters(
-      db.from("casos").select("medico_email, medico_nombre, estado, tiene_indicacion_genetica, seguimiento_clinico, paciente_autorizacion, mes_solicitud, paciente_departamento, estado_genetico, programas(codigo)")
+      db.from("casos").select("medico_email, medico_nombre, estado, tiene_indicacion_genetica, seguimiento_clinico, paciente_autorizacion, mes_solicitud, paciente_departamento, estado_genetico, programas(codigo, nombre)")
     ),
   ])
 
@@ -566,8 +563,19 @@ export async function obtenerDashboard(req: Request): Promise<Response> {
     mes_solicitud:            string | null
     paciente_departamento:    string | null
     estado_genetico:          string | null
-    programas:                { codigo: string } | null
+    programas:                { codigo: string; nombre: string } | null
   }>
+
+  // ── Por programa (derivado de rawCasos para shape correcta) ─────────────
+  const progMap = new Map<string, { codigo: string; nombre: string; count: number }>()
+  for (const r of rows) {
+    const prog = r.programas as { codigo: string; nombre: string } | null
+    if (!prog?.codigo) continue
+    const entry = progMap.get(prog.codigo)
+    if (entry) entry.count++
+    else progMap.set(prog.codigo, { codigo: prog.codigo, nombre: prog.nombre ?? prog.codigo, count: 1 })
+  }
+  const por_programa = [...progMap.values()].sort((a, b) => b.count - a.count)
 
   // ── Por departamento (top 20, excluyendo nulos) ───────────────────────────
   const deptMap = new Map<string, number>()
@@ -740,7 +748,7 @@ export async function obtenerDashboard(req: Request): Promise<Response> {
 
   return ok({
     por_estado:              porEstado.data ?? [],
-    por_programa:            porPrograma.data ?? [],
+    por_programa,
     por_pais:                porPais.data ?? [],
     por_mes:                 porMes.data ?? [],
     pendientes_autorizacion: pendienteAutorizacion.count ?? 0,
