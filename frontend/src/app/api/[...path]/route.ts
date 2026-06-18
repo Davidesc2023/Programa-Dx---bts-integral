@@ -13,6 +13,8 @@ const BACKEND =
   process.env.NEXT_PUBLIC_BACKEND_URL ??
   'http://localhost:3000';
 
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY ?? '';
+
 type Ctx = { params: { path: string[] } };
 
 // Drop hop-by-hop and auto-calculated headers that must not be forwarded
@@ -36,6 +38,12 @@ async function proxy(req: NextRequest, ctx: Ctx): Promise<NextResponse> {
       headers[key] = value;
     }
   });
+
+  // Supabase Edge Functions require Authorization header even with verify_jwt=false.
+  // Inject the anon key when the browser hasn't sent a user JWT yet (e.g. login, public routes).
+  if (!headers['authorization'] && SUPABASE_ANON_KEY) {
+    headers['authorization'] = `Bearer ${SUPABASE_ANON_KEY}`;
+  }
 
   let body: BodyInit | undefined;
   if (req.method !== 'GET' && req.method !== 'HEAD') {
