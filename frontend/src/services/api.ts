@@ -21,11 +21,15 @@ async function attemptRefresh(): Promise<string | null> {
   const refreshToken = getRefreshToken();
   if (!refreshToken) return null;
   try {
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), 10000);
     const res = await fetch('/api/auth/refresh', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken }),
+      signal: controller.signal,
     });
+    clearTimeout(tid);
     if (!res.ok) return null;
     const body = (await res.json()) as { data?: { accessToken?: string; refreshToken?: string } };
     const { accessToken, refreshToken: newRefresh } = body.data ?? {};
@@ -59,7 +63,10 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isAuthRoute = originalRequest.url?.includes('/auth/login') ||
+      originalRequest.url?.includes('/auth/register');
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthRoute) {
       originalRequest._retry = true;
 
       if (isRefreshing) {
