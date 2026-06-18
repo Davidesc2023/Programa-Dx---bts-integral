@@ -39,10 +39,13 @@ async function proxy(req: NextRequest, ctx: Ctx): Promise<NextResponse> {
     }
   });
 
-  // Supabase Edge Functions require Authorization header even with verify_jwt=false.
-  // Inject the anon key when the browser hasn't sent a user JWT yet (e.g. login, public routes).
-  if (!headers['authorization'] && SUPABASE_ANON_KEY) {
+  // Supabase gateway rejects custom app JWTs (UNAUTHORIZED_LEGACY_JWT).
+  // Fix: always send anon key in Authorization (satisfies gateway), and move
+  // the user's JWT to x-user-token so requireAuth() in the Edge Function can read it.
+  if (SUPABASE_ANON_KEY) {
+    const userJwt = headers['authorization'];
     headers['authorization'] = `Bearer ${SUPABASE_ANON_KEY}`;
+    if (userJwt) headers['x-user-token'] = userJwt;
   }
 
   let body: BodyInit | undefined;

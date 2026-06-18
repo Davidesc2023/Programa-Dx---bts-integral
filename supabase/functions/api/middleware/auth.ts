@@ -32,7 +32,9 @@ export async function verifyRefresh(token: string): Promise<jose.JWTPayload | nu
 }
 
 export async function requireAuth(req: Request): Promise<AuthUser | Response> {
-  const auth = req.headers.get("Authorization")
+  // Proxy sends user JWT in x-user-token (Authorization is reserved for Supabase gateway anon key)
+  const xUser = req.headers.get("x-user-token")
+  const auth  = xUser ?? req.headers.get("Authorization")
   if (!auth?.startsWith("Bearer ")) return err(401, "Missing authorization token")
   const payload = await verifyAccess(auth.slice(7))
   if (!payload) return err(401, "Invalid or expired token")
