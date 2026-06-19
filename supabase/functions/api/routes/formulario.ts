@@ -34,7 +34,7 @@ export async function publicGetForm(_req: Request, tenantSlug: string, programa:
   if (!tenant) return err(404, "Programa no encontrado")
 
   const { data: prog } = await db.from("programas")
-    .select("id, nombre, codigo, descripcion, enfermedad, gen, umbral_json, activo")
+    .select("id, nombre, codigo, gen, prueba_serica, prueba_genetica, umbral_json, activo")
     .eq("tenant_id", tenant.id)
     .eq("codigo", programaCodigo)
     .eq("activo", true)
