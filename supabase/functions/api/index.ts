@@ -124,12 +124,13 @@ async function authRefresh(req: Request): Promise<Response> {
   if (!stored || stored.invalidatedAt || new Date(stored.expiresAt) < new Date()) return err(401, "Refresh token invalid")
   const { data: user } = await db.from("users").select("id, email, role").eq("id", stored.userId).single()
   if (!user) return err(401, "User not found")
-  // Rotate: invalidate consumed token, issue a fresh pair
+  // Rotate: insert new token FIRST so the old one is only invalidated after success
   const accessToken = await signAccess({ sub: user.id, email: user.email, role: user.role })
   const refreshToken = await signRefresh({ sub: user.id })
   const expiresAt = new Date(); expiresAt.setDate(expiresAt.getDate() + 7)
+  const { error: insertErr } = await db.from("refresh_tokens").insert({ token: refreshToken, userId: user.id, expiresAt: expiresAt.toISOString() })
+  if (insertErr) return err(500, "Token rotation failed, please try again")
   await db.from("refresh_tokens").update({ invalidatedAt: new Date().toISOString() }).eq("token", body.refreshToken)
-  await db.from("refresh_tokens").insert({ token: refreshToken, userId: user.id, expiresAt: expiresAt.toISOString() })
   return ok({ accessToken, refreshToken }, "Token refreshed")
 }
 
@@ -523,13 +524,7 @@ async function generateConsentPdf(
 
     if (opts.notes) {
       section("NOTAS")
-      const words = opts.notes.split(" ")
-      let line = ""
-      for (const w of words) {
-        if ((line + w).length > 80) { text(line.trim()); line = "" }
-        line += w + " "
-      }
-      if (line.trim()) text(line.trim())
+      text(opts.notes)
     }
 
     section("FIRMA DIGITAL")
@@ -705,15 +700,14 @@ async function labTestsPrerequisite(req: Request, id: string, patientId: string)
   return ok({ unlocked, requires: prereq ?? null })
 }
 
-async function labTestsCreate(req: Request, actor: AuthUser): Promise<Response> {
+async function labTestsCreate(req: Request, _actor: AuthUser): Promise<Response> {
   const body = await req.json().catch(() => null)
   if (!body?.code || !body?.name) return err(400, "code and name are required")
   const { data, error } = await getDb().from("lab_tests")
     .insert({ code: body.code, name: body.name, type: body.type??"OTRO",
       category: body.category??null, description: body.description??null,
       instructions: body.instructions??null, estimatedHours: body.estimatedHours??null,
-      requiresResultFromId: body.requiresResultFromId??null,
-      createdBy: actor.sub })
+      requiresResultFromId: body.requiresResultFromId??null })
     .select().single()
   if (error) return err(500, error.message)
   return created(data, "Lab test created")
