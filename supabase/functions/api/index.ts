@@ -45,7 +45,7 @@ type RouteParams = Record<string, string>
 // NOTIFICATION HELPER
 // ============================================================================
 async function notify(db: ReturnType<typeof createClient>, userId: string, type: string, title: string, message: string, metadata?: object) {
-  await db.from("notifications").insert({ userId, type, title, message, metadata: metadata ?? null }).catch(console.error)
+  await Promise.resolve(db.from("notifications").insert({ userId, type, title, message, metadata: metadata ?? null })).catch(console.error)
 }
 
 // ============================================================================

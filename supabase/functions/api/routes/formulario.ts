@@ -156,8 +156,9 @@ export async function publicCrearCaso(req: Request, tenantSlug: string, programa
   if (error) return err(500, error.message)
 
   // Audit log y notificación al médico (no bloquean la respuesta)
+  // Promise.resolve() wraps PromiseLike → full Promise (Deno edge runtime needs .catch())
   await Promise.all([
-    db.from("audit_log").insert({
+    Promise.resolve(db.from("audit_log").insert({
       tenant_id:  tenant.id,
       actor_tipo: "MEDICO_LINK",
       actor_id:   null,
@@ -167,7 +168,7 @@ export async function publicCrearCaso(req: Request, tenantSlug: string, programa
       datos_json: { programa: prog.codigo, pais: body.pais_codigo, consecutivo },
       ip,
       user_agent: req.headers.get("user-agent") ?? null,
-    }).catch(console.error),
+    })).catch(console.error),
 
     notificarCasoCreado({
       medicoEmail:       body.medico_email,
