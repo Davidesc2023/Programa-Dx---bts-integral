@@ -5,7 +5,7 @@ import { PDFDocument, rgb, StandardFonts } from "npm:pdf-lib@1.17.1"
 
 // ── Módulos v2.0 (Fase 2+) ──────────────────────────────────────────────────
 import { getDb }                        from "./utils/db.ts"
-import { ok, created, paginated, err }  from "./utils/responses.ts"
+import { ok, created, paginated, err, escHtml }  from "./utils/responses.ts"
 import { corsHeaders, withCors }        from "./middleware/cors.ts"
 import { matchPath, parsePagination }   from "./utils/router.ts"
 import {
@@ -13,6 +13,7 @@ import {
   requireAuth, requireRole,
   type UserRole, type AuthUser,
 } from "./middleware/auth.ts"
+import { checkRateLimit, clientIp } from "./middleware/rate-limit.ts"
 import {
   publicGetForm,
   publicCrearCaso,
@@ -137,14 +138,20 @@ async function authRefresh(req: Request): Promise<Response> {
 async function authLogout(req: Request): Promise<Response> {
   const body = await req.json().catch(() => null)
   if (!body?.refreshToken) return err(400, "refreshToken is required")
-  // Verify the token is valid and extract ownership before invalidating
-  const payload = await verifyRefresh(body.refreshToken)
-  if (!payload) return err(401, "Invalid refresh token")
   const db = getDb()
-  await db.from("refresh_tokens")
-    .update({ invalidatedAt: new Date().toISOString() })
-    .eq("token", body.refreshToken)
-    .eq("userId", payload.sub as string)
+  // Try to verify signature to get userId for narrower delete; if expired/invalid, still invalidate by token string
+  const payload = await verifyRefresh(body.refreshToken)
+  if (payload) {
+    await db.from("refresh_tokens")
+      .update({ invalidatedAt: new Date().toISOString() })
+      .eq("token", body.refreshToken)
+      .eq("userId", payload.sub as string)
+  } else {
+    // Token expired or invalid signature — invalidate by token string (token can't be reused anyway)
+    await db.from("refresh_tokens")
+      .update({ invalidatedAt: new Date().toISOString() })
+      .eq("token", body.refreshToken)
+  }
   return ok(null, "Logged out")
 }
 
@@ -564,16 +571,14 @@ async function consentSign(req: Request, orderId: string, actor: AuthUser): Prom
   const patientName = patient ? `${patient.firstName ?? ""} ${patient.lastName ?? ""}`.trim() : "Paciente"
 
   const now = new Date()
-  const esc = (s: string) =>
-    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;")
   const html = `<html><body style="font-family:sans-serif;max-width:800px;margin:auto;padding:20px">
 <h1>Consentimiento Informado</h1>
-<p><strong>Médico:</strong> ${esc(doctorName)}</p>
-<p><strong>Especialidad:</strong> ${esc(doc?.specialty ?? "N/A")}</p>
-<p><strong>Licencia:</strong> ${esc(doc?.medicalLicense ?? "N/A")}</p>
-<p><strong>Paciente:</strong> ${esc(patientName)}</p>
-<p><strong>Fecha de firma:</strong> ${esc(now.toLocaleString("es-CO"))}</p>
-<p><strong>Notas:</strong> ${esc(body.notes ?? "")}</p>
+<p><strong>Médico:</strong> ${escHtml(doctorName)}</p>
+<p><strong>Especialidad:</strong> ${escHtml(doc?.specialty ?? "N/A")}</p>
+<p><strong>Licencia:</strong> ${escHtml(doc?.medicalLicense ?? "N/A")}</p>
+<p><strong>Paciente:</strong> ${escHtml(patientName)}</p>
+<p><strong>Fecha de firma:</strong> ${escHtml(now.toLocaleString("es-CO"))}</p>
+<p><strong>Notas:</strong> ${escHtml(body.notes ?? "")}</p>
 </body></html>`
 
   const { data, error } = await db.from("consents")
@@ -1062,12 +1067,12 @@ Deno.serve(async (req: Request) => {
     else if (m==="GET"   && path==="/admin/dashboard")                              res = await obtenerDashboard(req)
     else if (m==="GET"   && path==="/admin/reporte")                               res = await generarReporte(req)
     else if (m==="GET"   && path==="/admin/casos")                                  res = await listarCasos(req)
-    else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/estado",path)))         res = await cambiarEstado(req, pp.id)
-    else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/serica",path)))         res = await registrarResultadoSerico(req, pp.id)
+    else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/estado",path)))         { const rl=checkRateLimit(`aw:${clientIp(req)}`,20,60_000); res=rl.allowed?await cambiarEstado(req,pp.id):withCors(err(429,"Demasiadas solicitudes"),req) }
+    else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/serica",path)))         { const rl=checkRateLimit(`aw:${clientIp(req)}`,20,60_000); res=rl.allowed?await registrarResultadoSerico(req,pp.id):withCors(err(429,"Demasiadas solicitudes"),req) }
     else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/indicacion",path)))     res = await setIndicacion(req, pp.id)
-    else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/genetica",path)))       res = await registrarResultadoGenetico(req, pp.id)
-    else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/seguimiento",path)))    res = await registrarSeguimiento(req, pp.id)
-    else if (m==="POST"  && (pp=matchPath("/admin/import/:tenant/:programa",path)))  res = await importarCasos(req, pp.tenant, pp.programa)
+    else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/genetica",path)))       { const rl=checkRateLimit(`aw:${clientIp(req)}`,20,60_000); res=rl.allowed?await registrarResultadoGenetico(req,pp.id):withCors(err(429,"Demasiadas solicitudes"),req) }
+    else if (m==="PATCH" && (pp=matchPath("/admin/casos/:id/seguimiento",path)))    { const rl=checkRateLimit(`aw:${clientIp(req)}`,20,60_000); res=rl.allowed?await registrarSeguimiento(req,pp.id):withCors(err(429,"Demasiadas solicitudes"),req) }
+    else if (m==="POST"  && (pp=matchPath("/admin/import/:tenant/:programa",path)))  { const rl=checkRateLimit(`aw:${clientIp(req)}`,5,60_000); res=rl.allowed?await importarCasos(req,pp.tenant,pp.programa):withCors(err(429,"Demasiadas solicitudes"),req) }
     else if (m==="DELETE"&& (pp=matchPath("/admin/casos/:id",path)))                res = await eliminarCaso(req, pp.id)
     else if (m==="GET"   && (pp=matchPath("/admin/casos/:id",path)))                res = await obtenerCaso(req, pp.id)
 

@@ -43,6 +43,9 @@ async function proxy(req: NextRequest, ctx: Ctx): Promise<NextResponse> {
   // Supabase gateway rejects custom app JWTs (UNAUTHORIZED_LEGACY_JWT).
   // Fix: always send anon key in Authorization (satisfies gateway), and move
   // the user's JWT to x-user-token so requireAuth() in the Edge Function can read it.
+  if (!SUPABASE_ANON_KEY && process.env.NODE_ENV !== 'production') {
+    console.warn('[proxy] SUPABASE_ANON_KEY not set — authenticated requests will fail at Supabase gateway')
+  }
   if (SUPABASE_ANON_KEY) {
     const userJwt = headers['authorization'];
     headers['authorization'] = `Bearer ${SUPABASE_ANON_KEY}`;

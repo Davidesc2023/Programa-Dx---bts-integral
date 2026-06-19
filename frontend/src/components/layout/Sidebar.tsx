@@ -14,6 +14,8 @@ import {
   Check,
   X,
   ChevronRight,
+  FileText,
+  Building2,
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -111,6 +113,10 @@ export function Sidebar({ onClose }: SidebarProps) {
   const SYS_ITEMS: NavItem[] = [
     ...(isAdmin ? [{
       label: 'Usuarios', href: '/users', icon: UserCog, desc: 'Gestionar administradores y operadores',
+    }, {
+      label: 'Plantillas', href: '/consent-templates', icon: FileText, desc: 'Gestión de plantillas de consentimiento',
+    }, {
+      label: 'Tenants', href: '/tenants', icon: Building2, desc: 'Gestión de organizaciones multi-tenant',
     }] : []),
   ];
 

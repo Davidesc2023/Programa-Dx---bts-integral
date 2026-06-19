@@ -1,6 +1,6 @@
 # Historias de Usuario — APP-DX v2.0
 
-**Última actualización:** 2026-06-12  
+**Última actualización:** 2026-06-19  
 **Formato:** Como [rol], quiero [acción], para [beneficio]
 
 ---
@@ -415,10 +415,10 @@
 
 | Historia | Fase | Prioridad | Estado |
 |---------|------|----------|--------|
-| US-01 a US-07 (Formulario médico) | Fase 5 | MVP | Pendiente |
-| US-08 a US-13 (Paciente) | Fase 6 | MVP | Pendiente |
-| US-14 a US-21 (Admin casos) | Fase 7 | MVP | Pendiente |
-| US-22 a US-23 (Importación) | Fase 8 | MVP | Pendiente |
-| US-24 a US-25 (Consentimientos) | Fase 10 | MVP | Pendiente |
+| US-01 a US-07 (Formulario médico) | Fase 5 | MVP | ✅ Implementado |
+| US-08 a US-13 (Paciente) | Fase 6 | MVP | ✅ Implementado |
+| US-14 a US-21 (Admin casos) | Fase 7 | MVP | ✅ Implementado |
+| US-22 a US-23 (Importación) | Fase 8 | MVP | ✅ Implementado (905 casos históricos migrados) |
+| US-24 a US-25 (Consentimientos) | Fase 10 | MVP | ✅ Implementado (servicio + páginas) |
 | US-26 a US-27 (Reportes) | Fase 11 | Post-MVP | Pendiente |
-| US-28 a US-29 (Multi-tenant) | Fase 1 | MVP (base) | Pendiente |
+| US-28 a US-29 (Multi-tenant) | Fase 1 | MVP (base) | ✅ Implementado (servicio + páginas) |
