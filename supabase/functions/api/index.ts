@@ -124,15 +124,26 @@ async function authRefresh(req: Request): Promise<Response> {
   if (!stored || stored.invalidatedAt || new Date(stored.expiresAt) < new Date()) return err(401, "Refresh token invalid")
   const { data: user } = await db.from("users").select("id, email, role").eq("id", stored.userId).single()
   if (!user) return err(401, "User not found")
+  // Rotate: invalidate consumed token, issue a fresh pair
   const accessToken = await signAccess({ sub: user.id, email: user.email, role: user.role })
-  return ok({ accessToken }, "Token refreshed")
+  const refreshToken = await signRefresh({ sub: user.id })
+  const expiresAt = new Date(); expiresAt.setDate(expiresAt.getDate() + 7)
+  await db.from("refresh_tokens").update({ invalidatedAt: new Date().toISOString() }).eq("token", body.refreshToken)
+  await db.from("refresh_tokens").insert({ token: refreshToken, userId: user.id, expiresAt: expiresAt.toISOString() })
+  return ok({ accessToken, refreshToken }, "Token refreshed")
 }
 
 async function authLogout(req: Request): Promise<Response> {
   const body = await req.json().catch(() => null)
   if (!body?.refreshToken) return err(400, "refreshToken is required")
+  // Verify the token is valid and extract ownership before invalidating
+  const payload = await verifyRefresh(body.refreshToken)
+  if (!payload) return err(401, "Invalid refresh token")
   const db = getDb()
-  await db.from("refresh_tokens").update({ invalidatedAt: new Date().toISOString() }).eq("token", body.refreshToken)
+  await db.from("refresh_tokens")
+    .update({ invalidatedAt: new Date().toISOString() })
+    .eq("token", body.refreshToken)
+    .eq("userId", payload.sub as string)
   return ok(null, "Logged out")
 }
 
@@ -469,8 +480,19 @@ async function generateConsentPdf(
     let y = height - m
 
     const text = (t: string, size = 11, font = regular, color = rgb(0, 0, 0)) => {
-      page.drawText(t.slice(0, 90), { x: m, y, size, font, color })
-      y -= size + 6
+      const maxChars = Math.floor(75 * (11 / size))
+      const words = t.split(" ")
+      let line = ""
+      for (const word of words) {
+        const candidate = line ? `${line} ${word}` : word
+        if (candidate.length > maxChars) {
+          if (line) { page.drawText(line, { x: m, y, size, font, color }); y -= size + 6 }
+          line = word
+        } else {
+          line = candidate
+        }
+      }
+      if (line) { page.drawText(line, { x: m, y, size, font, color }); y -= size + 6 }
     }
     const section = (title: string) => {
       y -= 8
@@ -524,7 +546,7 @@ async function generateConsentPdf(
       .upload(path, pdfBytes, { contentType: "application/pdf", upsert: true })
     if (upErr) { console.error("PDF upload error:", upErr.message); return null }
 
-    const { data: signed } = await db.storage.from("consents-pdf").createSignedUrl(path, 31536000)
+    const { data: signed } = await db.storage.from("consents-pdf").createSignedUrl(path, 7776000) // 90 days
     return signed?.signedUrl ?? null
   } catch (e) {
     console.error("Error generating/uploading consent PDF", e)
@@ -547,14 +569,16 @@ async function consentSign(req: Request, orderId: string, actor: AuthUser): Prom
   const patientName = patient ? `${patient.firstName ?? ""} ${patient.lastName ?? ""}`.trim() : "Paciente"
 
   const now = new Date()
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;")
   const html = `<html><body style="font-family:sans-serif;max-width:800px;margin:auto;padding:20px">
 <h1>Consentimiento Informado</h1>
-<p><strong>Médico:</strong> ${doctorName}</p>
-<p><strong>Especialidad:</strong> ${doc?.specialty ?? "N/A"}</p>
-<p><strong>Licencia:</strong> ${doc?.medicalLicense ?? "N/A"}</p>
-<p><strong>Paciente:</strong> ${patientName}</p>
-<p><strong>Fecha de firma:</strong> ${now.toLocaleString("es-CO")}</p>
-<p><strong>Notas:</strong> ${body.notes ?? ""}</p>
+<p><strong>Médico:</strong> ${esc(doctorName)}</p>
+<p><strong>Especialidad:</strong> ${esc(doc?.specialty ?? "N/A")}</p>
+<p><strong>Licencia:</strong> ${esc(doc?.medicalLicense ?? "N/A")}</p>
+<p><strong>Paciente:</strong> ${esc(patientName)}</p>
+<p><strong>Fecha de firma:</strong> ${esc(now.toLocaleString("es-CO"))}</p>
+<p><strong>Notas:</strong> ${esc(body.notes ?? "")}</p>
 </body></html>`
 
   const { data, error } = await db.from("consents")
@@ -688,10 +712,10 @@ async function labTestsCreate(req: Request, actor: AuthUser): Promise<Response> 
     .insert({ code: body.code, name: body.name, type: body.type??"OTRO",
       category: body.category??null, description: body.description??null,
       instructions: body.instructions??null, estimatedHours: body.estimatedHours??null,
-      requiresResultFromId: body.requiresResultFromId??null })
+      requiresResultFromId: body.requiresResultFromId??null,
+      createdBy: actor.sub })
     .select().single()
   if (error) return err(500, error.message)
-  void actor
   return created(data, "Lab test created")
 }
 
@@ -917,7 +941,7 @@ async function portalMe(req: Request, actor: AuthUser): Promise<Response> {
   return ok(data)
 }
 
-async function portalDashboard(req: Request, actor: AuthUser): Promise<Response> {
+async function portalDashboard(_req: Request, actor: AuthUser): Promise<Response> {
   const db = getDb()
   const { data: pat } = await db.from("patients").select("id").eq("userId", actor.sub).is("deletedAt", null).single()
   if (!pat) return err(404, "Patient profile not found")
@@ -935,7 +959,6 @@ async function portalDashboard(req: Request, actor: AuthUser): Promise<Response>
     db.from("appointments").select("id, scheduledAt, status").eq("patientId",pat.id).is("deletedAt",null)
       .gte("scheduledAt",new Date().toISOString()).order("scheduledAt").limit(1),
   ])
-  void req
   return ok({ activeOrders: a.data??[], pendingConsents: c.data??[], recentResults: r.data??[], nextAppointment: ap.data?.[0]??null })
 }
 
@@ -972,7 +995,7 @@ async function portalOrderConsent(req: Request, orderId: string, actor: AuthUser
   return ok(data)
 }
 
-async function portalConsentRespond(req: Request, consentId: string, response: "ACEPTADO"|"RECHAZADO", actor: AuthUser): Promise<Response> {
+async function portalConsentRespond(_req: Request, consentId: string, response: "ACEPTADO"|"RECHAZADO", actor: AuthUser): Promise<Response> {
   const db = getDb()
   const { data: pat } = await db.from("patients").select("id").eq("userId", actor.sub).is("deletedAt", null).single()
   if (!pat) return err(404, "Patient profile not found")
@@ -986,7 +1009,6 @@ async function portalConsentRespond(req: Request, consentId: string, response: "
   await db.from("consents").update({ status: response, accepted, patientResponseAt: now, patientSignedAt: accepted?now:null, updatedAt: now }).eq("id", consentId)
   await db.from("orders").update({ status: accepted?"ACCEPTED":"RECHAZADA" }).eq("id", consent.orderId)
   if (ord.doctorId) void notify(db, ord.doctorId, "CONSENT_RESPONDED", "Respuesta al consentimiento", `Paciente ${accepted?"aceptó":"rechazó"} el consentimiento`)
-  void req
   return ok({ id: consentId, status: response }, "Response recorded")
 }
 

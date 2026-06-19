@@ -17,10 +17,11 @@ const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY ?? '';
 
 type Ctx = { params: { path: string[] } };
 
-// Drop hop-by-hop and auto-calculated headers that must not be forwarded
+// Drop hop-by-hop, auto-calculated, and spoofable internal headers
 const SKIP_REQUEST_HEADERS = new Set([
   'host', 'connection', 'keep-alive', 'transfer-encoding',
   'content-length', 'content-encoding',
+  'x-user-token', // always stripped — proxy sets this itself after auth, never trust client-supplied value
 ]);
 
 const SKIP_RESPONSE_HEADERS = new Set([

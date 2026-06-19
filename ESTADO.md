@@ -1,7 +1,7 @@
 # APP-DX — Estado del Proyecto
 
-**Última actualización:** 2026-06-18  
-**Versión:** 2.1.1  
+**Última actualización:** 2026-06-19  
+**Versión:** 2.1.2  
 **Entorno:** Frontend → Vercel · Backend → Supabase Edge Functions (us-east-2)
 
 ---
@@ -79,6 +79,24 @@
 
 ---
 
+## Correcciones aplicadas — v2.1.2 (2026-06-19)
+
+### Seguridad y calidad — code review
+
+| # | Hallazgo | Severidad | Solución |
+|---|---------|-----------|---------|
+| S1 | `x-user-token` injection bypass — cliente podía suplantar usuario enviando header directamente | **Crítica** | Agregado `x-user-token` a `SKIP_REQUEST_HEADERS` en proxy; el proxy siempre lo sobreescribe |
+| S2 | Token refresh roto — `authRefresh` solo devolvía `accessToken`, el cliente esperaba también `refreshToken`; sesión expirada forzaba logout | **Alta** | Backend ahora rota el refresh token (invalida el usado, emite uno nuevo); cliente recibe `{ accessToken, refreshToken }` |
+| S3 | XSS almacenado en HTML del consentimiento — `body.notes` y nombre del médico se interpolaban sin escapar | **Alta** | Agregado helper `esc()` con escape de `& < > "` antes de insertar en HTML |
+| S4 | Refresh token no se invalidaba al renovarse (token reuse attack) | Media | Resuelto como parte de S2 — rotación completa en cada refresh |
+| S5 | URLs firmadas de PDFs médicos con duración 1 año | Media | Reducido a 90 días (7 776 000 s) |
+| S6 | `authLogout` invalidaba cualquier refresh token sin verificar propiedad | Media | Ahora verifica el token con `verifyRefresh()` y filtra por `userId` antes de invalidar |
+| Q1 | `void actor` en `labTestsCreate` — sin audit trail de creador | Baja | Actor usado como `createdBy` en el insert |
+| Q2 | `void req` anti-pattern en `portalDashboard` y `portalConsentRespond` | Baja | Renombrado a `_req` para indicar intencional |
+| Q3 | PDF generaba texto truncado a 90 caracteres — datos médicos se cortaban | Baja | Reemplazado con word-wrap real (máx 75 chars por línea) |
+
+---
+
 ## Correcciones aplicadas — v2.1.1 (2026-06-18)
 
 ### Bugs resueltos
@@ -105,6 +123,7 @@
 | 5 | JWT en localStorage | Alta | ⚠️ Pendiente migración a httpOnly cookies |
 | 6 | RLS no utilizado (service_role) | Media | ⚠️ Pendiente políticas RLS explícitas |
 | 7 | Sin rate limiting en endpoints admin | Media | ⚠️ Pendiente |
+| S1–S6 | Ver tabla v2.1.2 | Crítica–Media | ✅ Resueltos en v2.1.2 |
 
 ### UX / Diseño
 | # | Cambio | Descripción |
