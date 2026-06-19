@@ -141,7 +141,7 @@ export async function cambiarEstado(req: Request, casoId: string): Promise<Respo
   const prog = (caso.programas as { nombre: string; codigo: string } | null)
 
   await Promise.all([
-    db.from("audit_log").insert({
+    Promise.resolve(db.from("audit_log").insert({
       tenant_id:  caso.tenant_id,
       actor_tipo: "ADMIN",
       actor_id:   null,
@@ -151,7 +151,7 @@ export async function cambiarEstado(req: Request, casoId: string): Promise<Respo
       datos_json: { estado_anterior: caso.estado, estado_nuevo: body.estado, motivo: body.motivo ?? null },
       ip:         clientIp(req),
       user_agent: req.headers.get("user-agent") ?? null,
-    }).catch(console.error),
+    })).catch(console.error),
 
     // Notificar al médico si el caso llega a COMPLETADO
     body.estado === "COMPLETADO" && caso.medico_email
@@ -238,7 +238,7 @@ export async function registrarResultadoSerico(req: Request, casoId: string): Pr
   const estadoFinalSerico = (update.estado ?? caso.estado) as string
 
   await Promise.all([
-    db.from("audit_log").insert({
+    Promise.resolve(db.from("audit_log").insert({
       tenant_id:  caso.tenant_id,
       actor_tipo: "ADMIN",
       actor_id:   null,
@@ -248,7 +248,7 @@ export async function registrarResultadoSerico(req: Request, casoId: string): Pr
       datos_json: { r1, r2, indicacion, estado_nuevo: estadoFinalSerico },
       ip:         clientIp(req),
       user_agent: req.headers.get("user-agent") ?? null,
-    }).catch(console.error),
+    })).catch(console.error),
 
     // Notificar al médico cuando el resultado sérico está disponible
     estadoFinalSerico === "RESULTADO_SERICO_DISPONIBLE" && caso.medico_email
@@ -312,7 +312,7 @@ export async function setIndicacion(req: Request, casoId: string): Promise<Respo
   const indicProg = (caso.programas as { nombre: string; codigo: string } | null)
 
   await Promise.all([
-    db.from("audit_log").insert({
+    Promise.resolve(db.from("audit_log").insert({
       tenant_id:  caso.tenant_id,
       actor_tipo: "ADMIN",
       actor_id:   null,
@@ -322,7 +322,7 @@ export async function setIndicacion(req: Request, casoId: string): Promise<Respo
       datos_json: { tiene_indicacion_genetica: tieneIndicacion, estado_nuevo: estadoNuevo, motivo: body.motivo ?? null },
       ip:         clientIp(req),
       user_agent: req.headers.get("user-agent") ?? null,
-    }).catch(console.error),
+    })).catch(console.error),
 
     caso.medico_email
       ? notificarIndicacionGenetica({
@@ -382,7 +382,7 @@ export async function registrarResultadoGenetico(req: Request, casoId: string): 
   const { error } = await db.from("casos").update(update).eq("id", casoId)
   if (error) return err(500, error.message)
 
-  await db.from("audit_log").insert({
+  await Promise.resolve(db.from("audit_log").insert({
     tenant_id:  caso.tenant_id,
     actor_tipo: "ADMIN",
     actor_id:   null,
@@ -396,7 +396,7 @@ export async function registrarResultadoGenetico(req: Request, casoId: string): 
     },
     ip:         clientIp(req),
     user_agent: req.headers.get("user-agent") ?? null,
-  }).catch(console.error)
+  })).catch(console.error)
 
   return ok({ id: casoId, estado: update.estado ?? caso.estado }, "Resultado genético registrado")
 }
@@ -437,7 +437,7 @@ export async function registrarSeguimiento(req: Request, casoId: string): Promis
     updated_at:               nowS,
   }).eq("id", casoId)
 
-  await db.from("audit_log").insert({
+  await Promise.resolve(db.from("audit_log").insert({
     tenant_id:  caso.tenant_id,
     actor_tipo: "ADMIN",
     actor_id:   null,
@@ -447,7 +447,7 @@ export async function registrarSeguimiento(req: Request, casoId: string): Promis
     datos_json: { seguimiento_clinico: body.seguimiento_clinico, notas: body.notas_seguimiento ?? null },
     ip:         clientIp(req),
     user_agent: req.headers.get("user-agent") ?? null,
-  }).catch(console.error)
+  })).catch(console.error)
 
   return ok({ id: casoId, seguimiento_clinico: body.seguimiento_clinico })
 }
@@ -471,7 +471,7 @@ export async function eliminarCaso(req: Request, casoId: string): Promise<Respon
 
   await db.from("casos").update({ deleted_at: new Date().toISOString() }).eq("id", casoId)
 
-  await db.from("audit_log").insert({
+  await Promise.resolve(db.from("audit_log").insert({
     tenant_id:  caso.tenant_id,
     actor_tipo: "ADMIN",
     actor_id:   null,
@@ -481,7 +481,7 @@ export async function eliminarCaso(req: Request, casoId: string): Promise<Respon
     datos_json: { consecutivo: caso.consecutivo },
     ip:         clientIp(req),
     user_agent: req.headers.get("user-agent") ?? null,
-  }).catch(console.error)
+  })).catch(console.error)
 
   return ok(null, "Caso eliminado")
 }

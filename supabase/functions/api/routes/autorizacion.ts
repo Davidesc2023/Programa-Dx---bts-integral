@@ -80,7 +80,7 @@ export async function generarLinkPaciente(req: Request, casoId: string): Promise
   }
 
   // Audit log
-  await db.from("audit_log").insert({
+  await Promise.resolve(db.from("audit_log").insert({
     tenant_id:  caso.tenant_id,
     actor_tipo: "ADMIN",
     actor_id:   null,
@@ -90,7 +90,7 @@ export async function generarLinkPaciente(req: Request, casoId: string): Promise
     datos_json: { tipo: "PACIENTE_FIRMA", expira_horas: EXPIRY_HOURS },
     ip:         clientIp(req),
     user_agent: req.headers.get("user-agent") ?? null,
-  }).catch(console.error)
+  })).catch(console.error)
 
   const url = `${FRONTEND_URL}/autorizar/${tokenPlano}`
 
@@ -158,15 +158,16 @@ export async function obtenerCasoParaAutorizacion(req: Request, tokenPlano: stri
   if (!caso) return err(404, "Caso no encontrado")
 
   // Obtener consentimiento del paciente activo para su país
-  const { data: consentimiento } = await db.from("consentimientos")
-    .select("id, titulo, cuerpo_html, version, marco_legal")
-    .eq("tipo", "PACIENTE")
-    .eq("pais_codigo", caso.pais_codigo)
-    .eq("activo", true)
-    .order("version", { ascending: false })
-    .limit(1)
-    .single()
-    .catch(() => ({ data: null }))
+  const { data: consentimiento } = await Promise.resolve(
+    db.from("consentimientos")
+      .select("id, titulo, cuerpo_html, version, marco_legal")
+      .eq("tipo", "PACIENTE")
+      .eq("pais_codigo", caso.pais_codigo)
+      .eq("activo", true)
+      .order("version", { ascending: false })
+      .limit(1)
+      .single()
+  ).catch(() => ({ data: null }))
 
   return ok({
     caso,
@@ -246,7 +247,7 @@ export async function responderAutorizacion(req: Request, tokenPlano: string): P
   // Audit log + notificación al médico si el paciente NO autorizó
   const programa = (caso.programas as { nombre: string; codigo: string } | null)
   await Promise.all([
-    db.from("audit_log").insert({
+    Promise.resolve(db.from("audit_log").insert({
       tenant_id:  caso.tenant_id,
       actor_tipo: "PACIENTE_LINK",
       actor_id:   null,
@@ -260,7 +261,7 @@ export async function responderAutorizacion(req: Request, tokenPlano: string): P
       },
       ip,
       user_agent: ua,
-    }).catch(console.error),
+    })).catch(console.error),
 
     respuesta === "NO_AUTORIZADO" && caso.medico_email
       ? notificarNoAutorizacion({

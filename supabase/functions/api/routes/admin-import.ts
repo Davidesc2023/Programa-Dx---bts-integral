@@ -142,7 +142,7 @@ export async function importarCasos(
       continue
     }
 
-    await db.from("audit_log").insert({
+    await Promise.resolve(db.from("audit_log").insert({
       tenant_id:  tenant.id,
       actor_tipo: "ADMIN",
       actor_id:   auth.sub,
@@ -152,7 +152,7 @@ export async function importarCasos(
       datos_json: { programa: prog.codigo, fila, consecutivo, importado_por: auth.email ?? auth.sub },
       ip:         "import",
       user_agent: importUA,
-    }).catch(console.error)
+    })).catch(console.error)
 
     casos.push({ id: caso.id, consecutivo: caso.consecutivo, fila })
   }
