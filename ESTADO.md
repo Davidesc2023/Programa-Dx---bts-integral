@@ -94,7 +94,7 @@
 | Fase | Descripción | Prioridad | Estado |
 |------|-------------|-----------|--------|
 | **A** | Audit trail correcto + rate limiting login/register | Alta | ✅ Completado (v2.2.0) |
-| **B** | Importar datos históricos (~789 DAAT + ~117 Wilson) | Alta | ⏳ Pendiente |
+| **B** | Importar datos históricos (789 DAAT + 117 Wilson) | Alta | ✅ Completado (commit 3173d89) |
 | **C** | Migrar JWT de localStorage a httpOnly cookies (OWASP A03) | Media | ⏳ Pendiente |
 | **D** | Zod validation en endpoints de escritura del backend | Baja | ⏳ Pendiente |
 | **D** | Políticas RLS explícitas para rol `authenticated` | Baja | ⏳ Pendiente |
@@ -180,7 +180,7 @@ El código usa `BACKEND_URL` en server-side (proxy, SSR) con fallback a `NEXT_PU
 - [x] Configurar `BACKEND_URL` en Vercel ✅ (ya estaba configurado)
 - [x] Rate limiting en `/auth/login` y `/auth/register-patient` ✅ (v2.2.0)
 - [x] `actor_id` correcto en audit_log ✅ (v2.2.0)
-- [ ] Importar datos históricos (~789 DAAT + ~117 Wilson desde Excel)
+- [x] Importar datos históricos ✅ — 788 DAAT + 117 Wilson = **905 casos** en producción (commit 3173d89)
 - [ ] Migrar JWT a httpOnly cookies (seguridad OWASP A03)
 
 ### Media prioridad
