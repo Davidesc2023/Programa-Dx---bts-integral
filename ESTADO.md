@@ -1,7 +1,7 @@
 # APP-DX — Estado del Proyecto
 
-**Última actualización:** 2026-06-19  
-**Versión:** 2.1.2  
+**Última actualización:** 2026-06-23  
+**Versión:** 2.2.0  
 **Entorno:** Frontend → Vercel · Backend → Supabase Edge Functions (us-east-2)
 
 ---
@@ -76,6 +76,30 @@
 ### Fase 11 — Notificaciones ✅
 - Notificaciones en header con contador de no leídas
 - Notificaciones por email en eventos críticos (completado, resultado sérico)
+
+---
+
+## Correcciones aplicadas — v2.2.0 (2026-06-23)
+
+### Revisión de código — hallazgos y fixes
+
+| # | Hallazgo | Severidad | Solución |
+|---|---------|-----------|---------|
+| B1 | `actor_id: null` en todos los inserts de `audit_log` en `admin-casos.ts` — 6 endpoints (cambiarEstado, registrarResultadoSerico, setIndicacion, registrarResultadoGenetico, registrarSeguimiento, eliminarCaso) ignoraban `auth.sub` | **Alta** | Reemplazado `actor_id: null` por `actor_id: auth.sub` en los 6 inserts — ahora el audit trail registra quién realizó cada acción |
+| B2 | `/auth/login` sin rate limiting — único endpoint crítico sin protección brute-force | **Alta** | Agregado `checkRateLimit` con límite 10 req/min por IP (`login:{ip}`) |
+| B3 | `/auth/register-patient` sin rate limiting — exposición a spam de cuentas de paciente | **Media** | Agregado `checkRateLimit` con límite 5 req/min por IP (`regpat:{ip}`) |
+
+### Plan de acción por fase
+
+| Fase | Descripción | Prioridad | Estado |
+|------|-------------|-----------|--------|
+| **A** | Audit trail correcto + rate limiting login/register | Alta | ✅ Completado (v2.2.0) |
+| **B** | Importar datos históricos (~789 DAAT + ~117 Wilson) | Alta | ⏳ Pendiente |
+| **C** | Migrar JWT de localStorage a httpOnly cookies (OWASP A03) | Media | ⏳ Pendiente |
+| **D** | Zod validation en endpoints de escritura del backend | Baja | ⏳ Pendiente |
+| **D** | Políticas RLS explícitas para rol `authenticated` | Baja | ⏳ Pendiente |
+| **D** | Split Edge Function monolítica en módulos por dominio | Baja | ⏳ Pendiente |
+| **D** | Tests E2E con Playwright para flujo completo | Baja | ⏳ Pendiente |
 
 ---
 
@@ -154,12 +178,13 @@ El código usa `BACKEND_URL` en server-side (proxy, SSR) con fallback a `NEXT_PU
 
 ### Alta prioridad
 - [x] Configurar `BACKEND_URL` en Vercel ✅ (ya estaba configurado)
+- [x] Rate limiting en `/auth/login` y `/auth/register-patient` ✅ (v2.2.0)
+- [x] `actor_id` correcto en audit_log ✅ (v2.2.0)
 - [ ] Importar datos históricos (~789 DAAT + ~117 Wilson desde Excel)
 - [ ] Migrar JWT a httpOnly cookies (seguridad OWASP A03)
 
 ### Media prioridad
-- [ ] Implementar políticas RLS explícitas en Supabase
-- [ ] Agregar rate limiting a endpoints de escritura admin
+- [ ] Implementar políticas RLS explícitas para rol `authenticated` en Supabase
 - [ ] Agregar Zod validation a requests en el backend Deno
 
 ### Baja prioridad

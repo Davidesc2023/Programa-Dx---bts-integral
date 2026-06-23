@@ -1077,9 +1077,9 @@ Deno.serve(async (req: Request) => {
     else if (m==="GET"   && (pp=matchPath("/admin/casos/:id",path)))                res = await obtenerCaso(req, pp.id)
 
     // ── Auth ─────────────────────────────────────────────────────────────────
-    else if (m==="POST"  && path==="/auth/login")             res = await authLogin(req)
+    else if (m==="POST"  && path==="/auth/login")             { const rl=checkRateLimit(`login:${clientIp(req)}`,10,60_000); res=rl.allowed?await authLogin(req):withCors(err(429,"Demasiadas solicitudes"),req) }
     else if (m==="POST"  && path==="/auth/register")          res = await authRegister(req)
-    else if (m==="POST"  && path==="/auth/register-patient")  res = await authRegisterPatient(req)
+    else if (m==="POST"  && path==="/auth/register-patient")  { const rl=checkRateLimit(`regpat:${clientIp(req)}`,5,60_000); res=rl.allowed?await authRegisterPatient(req):withCors(err(429,"Demasiadas solicitudes"),req) }
     else if (m==="POST"  && path==="/auth/refresh")           res = await authRefresh(req)
     else if (m==="POST"  && path==="/auth/logout")            res = await authLogout(req)
     else if (m==="GET"   && path==="/auth/me")                res = await authMe(req)

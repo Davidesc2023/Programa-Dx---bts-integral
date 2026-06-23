@@ -144,7 +144,7 @@ export async function cambiarEstado(req: Request, casoId: string): Promise<Respo
     Promise.resolve(db.from("audit_log").insert({
       tenant_id:  caso.tenant_id,
       actor_tipo: "ADMIN",
-      actor_id:   null,
+      actor_id:   auth.sub,
       accion:     "ESTADO_CAMBIADO",
       entidad:    "casos",
       entidad_id: casoId,
@@ -241,7 +241,7 @@ export async function registrarResultadoSerico(req: Request, casoId: string): Pr
     Promise.resolve(db.from("audit_log").insert({
       tenant_id:  caso.tenant_id,
       actor_tipo: "ADMIN",
-      actor_id:   null,
+      actor_id:   auth.sub,
       accion:     "RESULTADO_SERICO_REGISTRADO",
       entidad:    "casos",
       entidad_id: casoId,
@@ -315,7 +315,7 @@ export async function setIndicacion(req: Request, casoId: string): Promise<Respo
     Promise.resolve(db.from("audit_log").insert({
       tenant_id:  caso.tenant_id,
       actor_tipo: "ADMIN",
-      actor_id:   null,
+      actor_id:   auth.sub,
       accion:     "INDICACION_GENETICA_ESTABLECIDA",
       entidad:    "casos",
       entidad_id: casoId,
@@ -385,7 +385,7 @@ export async function registrarResultadoGenetico(req: Request, casoId: string): 
   await Promise.resolve(db.from("audit_log").insert({
     tenant_id:  caso.tenant_id,
     actor_tipo: "ADMIN",
-    actor_id:   null,
+    actor_id:   auth.sub,
     accion:     "RESULTADO_GENETICO_REGISTRADO",
     entidad:    "casos",
     entidad_id: casoId,
@@ -440,7 +440,7 @@ export async function registrarSeguimiento(req: Request, casoId: string): Promis
   await Promise.resolve(db.from("audit_log").insert({
     tenant_id:  caso.tenant_id,
     actor_tipo: "ADMIN",
-    actor_id:   null,
+    actor_id:   auth.sub,
     accion:     "SEGUIMIENTO_REGISTRADO",
     entidad:    "casos",
     entidad_id: casoId,
@@ -474,7 +474,7 @@ export async function eliminarCaso(req: Request, casoId: string): Promise<Respon
   await Promise.resolve(db.from("audit_log").insert({
     tenant_id:  caso.tenant_id,
     actor_tipo: "ADMIN",
-    actor_id:   null,
+    actor_id:   auth.sub,
     accion:     "CASO_ELIMINADO",
     entidad:    "casos",
     entidad_id: casoId,
