@@ -1,51 +1,41 @@
 import {
-  getAccessToken,
-  getRefreshToken,
-  setTokens,
-  clearTokens,
+  getUserSession,
+  setUserSession,
+  clearUserSession,
   decodeJwtPayload,
-  isTokenExpired,
 } from '@/lib/token';
 
-// ─── localStorage helpers ─────────────────────────────────────────────────────
+// ─── sessionStorage helpers ───────────────────────────────────────────────────
 
-describe('token storage', () => {
+describe('user session (sessionStorage)', () => {
   beforeEach(() => {
-    localStorage.clear();
+    sessionStorage.clear();
   });
 
-  it('getAccessToken returns null when not set', () => {
-    expect(getAccessToken()).toBeNull();
+  it('getUserSession returns null when not set', () => {
+    expect(getUserSession()).toBeNull();
   });
 
-  it('getRefreshToken returns null when not set', () => {
-    expect(getRefreshToken()).toBeNull();
+  it('setUserSession stores user and getUserSession retrieves it', () => {
+    setUserSession({ id: 'u1', email: 'a@b.com', role: 'ADMIN' });
+    expect(getUserSession()).toEqual({ id: 'u1', email: 'a@b.com', role: 'ADMIN' });
   });
 
-  it('setTokens stores both tokens', () => {
-    setTokens('access-123', 'refresh-456');
-    expect(getAccessToken()).toBe('access-123');
-    expect(getRefreshToken()).toBe('refresh-456');
+  it('clearUserSession removes the stored user', () => {
+    setUserSession({ id: 'u1', email: 'a@b.com', role: 'ADMIN' });
+    clearUserSession();
+    expect(getUserSession()).toBeNull();
   });
 
-  it('clearTokens removes both tokens', () => {
-    setTokens('access-123', 'refresh-456');
-    clearTokens();
-    expect(getAccessToken()).toBeNull();
-    expect(getRefreshToken()).toBeNull();
-  });
-
-  it('overwrites existing tokens on setTokens', () => {
-    setTokens('access-old', 'refresh-old');
-    setTokens('access-new', 'refresh-new');
-    expect(getAccessToken()).toBe('access-new');
-    expect(getRefreshToken()).toBe('refresh-new');
+  it('setUserSession overwrites existing session', () => {
+    setUserSession({ id: 'u1', email: 'old@b.com', role: 'OPERADOR' });
+    setUserSession({ id: 'u2', email: 'new@b.com', role: 'MEDICO' });
+    expect(getUserSession()).toEqual({ id: 'u2', email: 'new@b.com', role: 'MEDICO' });
   });
 });
 
 // ─── decodeJwtPayload ─────────────────────────────────────────────────────────
 
-// Build a fake JWT (header.payload.signature — signature not verified)
 function buildToken(payload: object): string {
   const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
   const body = btoa(JSON.stringify(payload))
@@ -79,30 +69,5 @@ describe('decodeJwtPayload', () => {
     const header = btoa('{}');
     const body   = btoa('not-json');
     expect(decodeJwtPayload(`${header}.${body}.sig`)).toBeNull();
-  });
-});
-
-// ─── isTokenExpired ───────────────────────────────────────────────────────────
-
-describe('isTokenExpired', () => {
-  it('returns true for an expired token', () => {
-    const pastExp = Math.floor(Date.now() / 1000) - 3600; // 1 hour ago
-    const token = buildToken({ sub: 'user', exp: pastExp });
-    expect(isTokenExpired(token)).toBe(true);
-  });
-
-  it('returns false for a valid (non-expired) token', () => {
-    const futureExp = Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
-    const token = buildToken({ sub: 'user', exp: futureExp });
-    expect(isTokenExpired(token)).toBe(false);
-  });
-
-  it('returns true when exp is missing from payload', () => {
-    const token = buildToken({ sub: 'user' });
-    expect(isTokenExpired(token)).toBe(true);
-  });
-
-  it('returns true for malformed token', () => {
-    expect(isTokenExpired('not-a-token')).toBe(true);
   });
 });

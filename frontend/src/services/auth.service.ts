@@ -21,8 +21,9 @@ export async function loginRequest(payload: LoginPayload): Promise<LoginResponse
   return response.data.data;
 }
 
-export async function logoutRequest(refreshToken: string): Promise<void> {
-  await api.post('/auth/logout', { refreshToken });
+// No token needed — proxy reads the refresh cookie automatically
+export async function logoutRequest(): Promise<void> {
+  await api.post('/auth/logout');
 }
 
 export async function registerPatientRequest(

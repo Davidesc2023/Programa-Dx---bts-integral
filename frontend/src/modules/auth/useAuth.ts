@@ -1,55 +1,36 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from './authStore';
-import {
-  clearTokens,
-  decodeJwtPayload,
-  getAccessToken,
-  getRefreshToken,
-  isTokenExpired,
-  setTokens,
-} from '@/lib/token';
+import { setUserSession, clearUserSession } from '@/lib/token';
 import { loginRequest, logoutRequest } from '@/services/auth.service';
 import type { LoginPayload } from '@/services/auth.service';
-import type { JwtPayload } from '@/types/api.types';
 import { UserRole } from '@/types/enums';
 
 export function useAuth() {
-  const { user, isAuthenticated, setUserFromToken, clearUser } = useAuthStore();
+  const { user, isAuthenticated, setUser, clearUser } = useAuthStore();
   const router = useRouter();
-
-  // Rehydrate user from localStorage token on mount
-  useEffect(() => {
-    if (isAuthenticated) return;
-    const token = getAccessToken();
-    if (token && !isTokenExpired(token)) {
-      setUserFromToken(token);
-    }
-  }, [isAuthenticated, setUserFromToken]);
 
   const login = useCallback(
     async (payload: LoginPayload) => {
-      const tokens = await loginRequest(payload);
-      setTokens(tokens.accessToken, tokens.refreshToken);
-      setUserFromToken(tokens.accessToken);
-      const decoded = decodeJwtPayload<JwtPayload>(tokens.accessToken);
+      const { user: loginUser } = await loginRequest(payload);
+      setUser({ id: loginUser.id, email: loginUser.email, role: loginUser.role });
+      setUserSession({ id: loginUser.id, email: loginUser.email, role: loginUser.role });
       const destination =
-        decoded?.role === UserRole.PACIENTE ? '/portal/dashboard' : '/dx/dashboard';
+        loginUser.role === UserRole.PACIENTE ? '/portal/dashboard' : '/dx/dashboard';
       router.push(destination);
     },
-    [router, setUserFromToken],
+    [router, setUser],
   );
 
   const logout = useCallback(async () => {
-    const refreshToken = getRefreshToken();
     try {
-      if (refreshToken) await logoutRequest(refreshToken);
+      await logoutRequest();
     } catch {
       // Ignorar errores de logout en el servidor
     } finally {
-      clearTokens();
+      clearUserSession();
       clearUser();
       router.push('/login');
     }

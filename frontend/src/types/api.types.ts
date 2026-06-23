@@ -40,9 +40,16 @@ export interface ApiError {
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
+export interface LoginUser {
+  id: string;
+  email: string;
+  role: UserRole;
+  firstName: string | null;
+  lastName: string | null;
+}
+
 export interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
+  user: LoginUser;
 }
 
 export interface RegisterResponse {

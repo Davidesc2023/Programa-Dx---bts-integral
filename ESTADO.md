@@ -1,7 +1,7 @@
 # APP-DX — Estado del Proyecto
 
 **Última actualización:** 2026-06-23  
-**Versión:** 2.2.0  
+**Versión:** 2.3.0  
 **Entorno:** Frontend → Vercel · Backend → Supabase Edge Functions (us-east-2)
 
 ---
@@ -79,6 +79,26 @@
 
 ---
 
+## Correcciones aplicadas — v2.3.0 (2026-06-23)
+
+### Migración JWT → httpOnly cookies (OWASP A03)
+
+| Archivo | Cambio |
+|---------|--------|
+| `app/api/[...path]/route.ts` | Proxy intercepta login/refresh/logout para gestionar cookies. Lee `app_dx_access` cookie y la pasa como `x-user-token` al backend. Elimina tokens del cuerpo de respuesta de login. |
+| `lib/token.ts` | Eliminadas funciones de localStorage. Nuevas helpers de sessionStorage: `getUserSession`, `setUserSession`, `clearUserSession` (info de usuario no-sensible). |
+| `services/api.ts` | Eliminado interceptor de request (cookies son automáticas). Simplificado interceptor 401: `attemptRefresh()` llama a `/auth/refresh` sin body. |
+| `services/auth.service.ts` | `logoutRequest()` sin argumentos (proxy lee cookie). `loginRequest()` retorna `{ user }` en lugar de `{ accessToken, refreshToken }`. |
+| `types/api.types.ts` | `LoginResponse` actualizado: `{ user: LoginUser }` en lugar de tokens. |
+| `modules/auth/authStore.ts` | `setUserFromToken(token)` → `setUser(user: AuthUser)`. |
+| `modules/auth/useAuth.ts` | Login usa `response.user` + `setUserSession`. Logout sin token explícito. |
+| `app/(protected)/layout.tsx` | Rehydración: sessionStorage → `/auth/me` (cookie enviada automáticamente). |
+| `app/(portal)/layout.tsx` | Mismo patrón de rehydración. |
+
+**Resultado:** Tokens de auth solo existen en cookies httpOnly (inaccesibles desde JS). XSS ya no puede robar sesiones activas.
+
+---
+
 ## Correcciones aplicadas — v2.2.0 (2026-06-23)
 
 ### Revisión de código — hallazgos y fixes
@@ -95,7 +115,7 @@
 |------|-------------|-----------|--------|
 | **A** | Audit trail correcto + rate limiting login/register | Alta | ✅ Completado (v2.2.0) |
 | **B** | Importar datos históricos (789 DAAT + 117 Wilson) | Alta | ✅ Completado (commit 3173d89) |
-| **C** | Migrar JWT de localStorage a httpOnly cookies (OWASP A03) | Media | ⏳ Pendiente |
+| **C** | Migrar JWT de localStorage a httpOnly cookies (OWASP A03) | Media | ✅ Completado (v2.3.0) |
 | **D** | Zod validation en endpoints de escritura del backend | Baja | ⏳ Pendiente |
 | **D** | Políticas RLS explícitas para rol `authenticated` | Baja | ⏳ Pendiente |
 | **D** | Split Edge Function monolítica en módulos por dominio | Baja | ⏳ Pendiente |
@@ -181,7 +201,7 @@ El código usa `BACKEND_URL` en server-side (proxy, SSR) con fallback a `NEXT_PU
 - [x] Rate limiting en `/auth/login` y `/auth/register-patient` ✅ (v2.2.0)
 - [x] `actor_id` correcto en audit_log ✅ (v2.2.0)
 - [x] Importar datos históricos ✅ — 788 DAAT + 117 Wilson = **905 casos** en producción (commit 3173d89)
-- [ ] Migrar JWT a httpOnly cookies (seguridad OWASP A03)
+- [x] Migrar JWT a httpOnly cookies ✅ (v2.3.0)
 
 ### Media prioridad
 - [ ] Implementar políticas RLS explícitas para rol `authenticated` en Supabase

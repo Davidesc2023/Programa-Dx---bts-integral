@@ -36,10 +36,10 @@ describe('loginRequest', () => {
 });
 
 describe('logoutRequest', () => {
-  it('posts to /auth/logout with refresh token', async () => {
+  it('posts to /auth/logout with no body (proxy uses cookie)', async () => {
     mockPost.mockResolvedValue({ data: {} });
-    await logoutRequest('my-refresh-token');
-    expect(mockPost).toHaveBeenCalledWith('/auth/logout', { refreshToken: 'my-refresh-token' });
+    await logoutRequest();
+    expect(mockPost).toHaveBeenCalledWith('/auth/logout');
   });
 });
 

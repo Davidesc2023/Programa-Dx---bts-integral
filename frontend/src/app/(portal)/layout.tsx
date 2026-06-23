@@ -3,34 +3,40 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { getAccessToken, decodeJwtPayload, isTokenExpired } from '@/lib/token';
+import { getUserSession, setUserSession } from '@/lib/token';
 import { useAuthStore } from '@/modules/auth/authStore';
+import { api } from '@/services/api';
 import { getPortalDashboard } from '@/services/portal.service';
 import { UserRole } from '@/types/enums';
-import type { JwtPayload } from '@/types/api.types';
 import { NotificationBell } from '@/components/ui/NotificationBell';
 
 export default function PortalLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { isAuthenticated, user, setUserFromToken } = useAuthStore();
+  const { isAuthenticated, user, setUser } = useAuthStore();
 
   useEffect(() => {
-    const token = getAccessToken();
-
-    if (!token || isTokenExpired(token)) {
-      router.replace('/login');
+    if (isAuthenticated) {
+      if (user?.role !== UserRole.PACIENTE) router.replace('/dashboard');
       return;
     }
 
-    if (!isAuthenticated) {
-      setUserFromToken(token);
+    const session = getUserSession();
+    if (session) {
+      setUser({ id: session.id, email: session.email, role: session.role as UserRole });
+      if (session.role !== UserRole.PACIENTE) router.replace('/dashboard');
+      return;
     }
 
-    const payload = decodeJwtPayload<JwtPayload>(token);
-    if (payload?.role !== UserRole.PACIENTE) {
-      router.replace('/dashboard');
-    }
-  }, [isAuthenticated, router, setUserFromToken]);
+    api
+      .get<{ data: { id: string; email: string; role: UserRole } }>('/auth/me')
+      .then(({ data }) => {
+        const u = data.data;
+        setUser({ id: u.id, email: u.email, role: u.role });
+        setUserSession({ id: u.id, email: u.email, role: u.role });
+        if (u.role !== UserRole.PACIENTE) router.replace('/dashboard');
+      })
+      .catch(() => router.replace('/login'));
+  }, [isAuthenticated, user, router, setUser]);
 
   const { data: dashboardData } = useQuery({
     queryKey: ['portal-dashboard-nav'],

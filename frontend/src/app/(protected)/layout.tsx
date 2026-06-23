@@ -2,43 +2,43 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAccessToken, decodeJwtPayload, isTokenExpired } from '@/lib/token';
 import { useAuthStore } from '@/modules/auth/authStore';
+import { getUserSession, setUserSession } from '@/lib/token';
+import { api } from '@/services/api';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { UserRole } from '@/types/enums';
-import type { JwtPayload } from '@/types/api.types';
 
-export default function ProtectedLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { isAuthenticated, setUserFromToken } = useAuthStore();
+  const { isAuthenticated, user, setUser } = useAuthStore();
 
   useEffect(() => {
-    const token = getAccessToken();
-
-    if (!token || isTokenExpired(token)) {
-      router.replace('/login');
+    if (isAuthenticated) {
+      if (user?.role === UserRole.PACIENTE) router.replace('/portal/dashboard');
       return;
     }
 
-    if (!isAuthenticated) {
-      setUserFromToken(token);
+    // Rehydración rápida desde sessionStorage
+    const session = getUserSession();
+    if (session) {
+      setUser({ id: session.id, email: session.email, role: session.role as UserRole });
+      if (session.role === UserRole.PACIENTE) router.replace('/portal/dashboard');
+      return;
     }
 
-    // PACIENTE no debe acceder al panel de staff — redirigir al portal
-    const payload = decodeJwtPayload<JwtPayload>(token);
-    if (payload?.role === UserRole.PACIENTE) {
-      router.replace('/portal/dashboard');
-    }
-  }, [isAuthenticated, router, setUserFromToken]);
+    // Sin sesión local → verificar con el servidor (cookie enviada automáticamente)
+    api
+      .get<{ data: { id: string; email: string; role: UserRole } }>('/auth/me')
+      .then(({ data }) => {
+        const u = data.data;
+        setUser({ id: u.id, email: u.email, role: u.role });
+        setUserSession({ id: u.id, email: u.email, role: u.role });
+        if (u.role === UserRole.PACIENTE) router.replace('/portal/dashboard');
+      })
+      .catch(() => router.replace('/login'));
+  }, [isAuthenticated, user, router, setUser]);
 
-  if (!isAuthenticated) {
-    // Evitar flash de contenido protegido
-    return null;
-  }
+  if (!isAuthenticated) return null;
 
   return <AppLayout>{children}</AppLayout>;
 }

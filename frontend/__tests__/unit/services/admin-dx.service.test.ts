@@ -85,7 +85,7 @@ describe('getDxDashboard', () => {
     const dash = { totalCasos: 5, porEstado: {} };
     mockGet.mockResolvedValue({ data: { data: dash } });
     const result = await getDxDashboard();
-    expect(mockGet).toHaveBeenCalledWith('/admin/dashboard');
+    expect(mockGet).toHaveBeenCalledWith('/admin/dashboard', { params: {} });
     expect(result).toEqual(dash);
   });
 });
