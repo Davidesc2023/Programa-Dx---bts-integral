@@ -6,6 +6,35 @@
 
 ---
 
+## Resumen ejecutivo
+
+APP-DX es una aplicación multi-tenant de seguimiento clínico para programas de genética médica (DAAT, Wilson, Duchenne). Arquitectura: Next.js 14 (Vercel) → proxy `/api/[...path]` → Supabase Edge Function (Deno).
+
+### ✅ Funcionalidades en producción
+
+| Área | Descripción |
+|------|-------------|
+| Autenticación | JWT httpOnly cookies, refresh rotation, magic links paciente, roles ADMIN/OPERADOR/LAB/MEDICO/PACIENTE |
+| Panel admin | Gestión completa de casos, state machine, result sérico/genético/seguimiento, audit trail |
+| Formulario público | URL por tenant/programa sin login, consecutivo automático, notif. email al médico |
+| Analytics DX | Dashboard con 15+ métricas, embudo de conversión, heatmap médico×mes, filtros avanzados |
+| Portal paciente | Órdenes, resultados, citas, consentimientos |
+| Importación | Carga masiva histórica — **905 casos** en producción (788 DAAT + 117 Wilson) |
+| Exportación | CSV con filtros desde el panel admin |
+| Notificaciones | In-app + email en eventos críticos |
+| Seguridad | Rate limiting, Zod validation en 21 endpoints, audit log con actor_id correcto |
+
+### ⏳ Pendientes (baja prioridad)
+
+| # | Tarea | Descripción |
+|---|-------|-------------|
+| P1 | RLS policies | Agregar políticas RLS explícitas para rol `authenticated` en Supabase (actualmente todo pasa por `service_role`) |
+| P2 | Split Edge Function | Dividir `index.ts` (~1300 líneas) en módulos por dominio (auth, users, orders, portal…) |
+| P3 | Tests E2E | Playwright para flujo completo: login → caso → formulario → autorización → resultado |
+| P4 | Archivar legacy | Tablas `orders`, `patients`, `results` del modelo antiguo no se usan en el flujo DX |
+
+---
+
 ## URLs de Producción
 
 | Servicio | URL |
@@ -181,9 +210,9 @@
 | # | Hallazgo | Severidad | Estado |
 |---|---------|-----------|--------|
 | 4 | Race condition en token refresh | Media | ✅ Resuelto — implementado promise queue |
-| 5 | JWT en localStorage | Alta | ⚠️ Pendiente migración a httpOnly cookies |
-| 6 | RLS no utilizado (service_role) | Media | ⚠️ Pendiente políticas RLS explícitas |
-| 7 | Sin rate limiting en endpoints admin | Media | ⚠️ Pendiente |
+| 5 | JWT en localStorage | Alta | ✅ Resuelto — migrado a httpOnly cookies (v2.3.0) |
+| 6 | RLS no utilizado (service_role) | Media | ⏳ Pendiente — ver P1 en resumen ejecutivo |
+| 7 | Sin rate limiting en endpoints admin | Media | ✅ Resuelto — rate limiting en login/register (v2.2.0) |
 | S1–S6 | Ver tabla v2.1.2 | Crítica–Media | ✅ Resueltos en v2.1.2 |
 
 ### UX / Diseño
@@ -213,21 +242,19 @@ El código usa `BACKEND_URL` en server-side (proxy, SSR) con fallback a `NEXT_PU
 
 ## Pendientes Técnicos
 
-### Alta prioridad
-- [x] Configurar `BACKEND_URL` en Vercel ✅ (ya estaba configurado)
+### Completados
+- [x] `BACKEND_URL` en Vercel ✅
 - [x] Rate limiting en `/auth/login` y `/auth/register-patient` ✅ (v2.2.0)
 - [x] `actor_id` correcto en audit_log ✅ (v2.2.0)
 - [x] Importar datos históricos ✅ — 788 DAAT + 117 Wilson = **905 casos** en producción (commit 3173d89)
 - [x] Migrar JWT a httpOnly cookies ✅ (v2.3.0)
+- [x] Zod validation en 21 endpoints de escritura del backend ✅ (v2.4.0)
 
-### Media prioridad
-- [ ] Implementar políticas RLS explícitas para rol `authenticated` en Supabase
-- [x] Agregar Zod validation a requests en el backend Deno ✅ (v2.4.0)
-
-### Baja prioridad
-- [ ] Implementar tests E2E (Playwright) para flujo completo
-- [ ] Archivar tablas legacy (`orders`, `patients`, `results`)
-- [ ] Dividir Edge Function monolítica en módulos por dominio
+### Pendientes (ver Resumen ejecutivo para detalle)
+- [ ] P1 — Políticas RLS explícitas para rol `authenticated`
+- [ ] P2 — Split Edge Function monolítica en módulos por dominio
+- [ ] P3 — Tests E2E con Playwright
+- [ ] P4 — Archivar tablas legacy (`orders`, `patients`, `results`)
 
 ---
 
@@ -255,7 +282,7 @@ frontend/src/
     dx.types.ts                 ← Tipos TypeScript del módulo DX
 
 supabase/functions/api/
-  index.ts                      ← Router principal (~1200 líneas)
+  index.ts                      ← Router principal (~1300 líneas)
   routes/
     admin-casos.ts              ← CRUD casos + dashboard (con filtros v2.1)
     formulario.ts               ← Formulario público
@@ -266,6 +293,7 @@ supabase/functions/api/
     auth.ts                     ← JWT verify + roles
     cors.ts                     ← CORS headers
   utils/
+    validate.ts                 ← Helper parseBody(req, zodSchema) — v2.4.0
     states.ts                   ← State machine + umbral genético
     email.ts                    ← Notificaciones por email
 ```
