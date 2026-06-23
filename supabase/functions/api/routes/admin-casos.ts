@@ -12,6 +12,49 @@ import {
   notificarCasoCompletado,
   notificarIndicacionGenetica,
 } from "../utils/email.ts"
+import { z, parseBody } from "../utils/validate.ts"
+
+// ─── Schemas de validación ────────────────────────────────────────────────────
+
+const CambiarEstadoSchema = z.object({
+  estado: z.string().min(1, "Campo requerido: estado"),
+  motivo: z.string().nullish(),
+})
+
+const ResultadoSericoSchema = z.object({
+  resultado_serico_1:     z.string().nullish(),
+  resultado_serico_2:     z.string().nullish(),
+  interpretacion_serico:  z.string().nullish(),
+  notas_serico:           z.string().nullish(),
+})
+
+const SetIndicacionSchema = z.object({
+  tiene_indicacion_genetica: z.boolean({ message: "Campo requerido: tiene_indicacion_genetica (true | false)" }),
+  motivo: z.string().nullish(),
+})
+
+const ESTADOS_GENETICO = [
+  "PROGRAMADO", "EN_PROCESAMIENTO", "REALIZADO",
+  "SIN_INDICACION_GENETICA", "N_A", "NO_ACEPTA",
+] as const
+
+const ResultadoGeneticoSchema = z.object({
+  laboratorio_genetico: z.string().nullish(),
+  fecha_genetica:       z.string().nullish(),
+  resultado_genetico:   z.string().nullish(),
+  estado_genetico:      z.enum(ESTADOS_GENETICO, { message: `estado_genetico inválido. Valores: ${["PROGRAMADO","EN_PROCESAMIENTO","REALIZADO","SIN_INDICACION_GENETICA","N_A","NO_ACEPTA"].join(", ")}` }).nullish(),
+  fenotipo:             z.string().nullish(),
+})
+
+const SEGUIMIENTO_VALS = [
+  "NEGATIVO", "PORTADOR", "POSITIVO", "EN_TRATAMIENTO",
+  "FORMULADO", "TRASPLANTADO", "DROP_OUT", "FALLECIDO", "N_A",
+] as const
+
+const SeguimientoSchema = z.object({
+  seguimiento_clinico: z.enum(SEGUIMIENTO_VALS, { message: `Valor inválido para seguimiento_clinico` }),
+  notas_seguimiento:   z.string().nullish(),
+})
 
 // Campos que se devuelven en el listado (sin campos de resultado pesados)
 const COLS_LISTA =
@@ -117,8 +160,9 @@ export async function cambiarEstado(req: Request, casoId: string): Promise<Respo
   const denied = requireRole(auth, ...ROLES_ADMIN)
   if (denied) return denied
 
-  const body = await req.json().catch(() => null)
-  if (!body?.estado) return err(400, "Campo requerido: estado")
+  const parsed = await parseBody(req, CambiarEstadoSchema)
+  if (!parsed.ok) return parsed.response
+  const { estado, motivo } = parsed.data
 
   const db = getDb()
 
@@ -129,12 +173,12 @@ export async function cambiarEstado(req: Request, casoId: string): Promise<Respo
     .single()
   if (!caso) return err(404, "Caso no encontrado")
 
-  if (!validarTransicion(caso.estado, body.estado)) {
-    return err(422, `Transición no permitida: ${caso.estado} → ${body.estado}`)
+  if (!validarTransicion(caso.estado, estado)) {
+    return err(422, `Transición no permitida: ${caso.estado} → ${estado}`)
   }
 
   await db.from("casos").update({
-    estado:     body.estado,
+    estado,
     updated_at: new Date().toISOString(),
   }).eq("id", casoId)
 
@@ -148,13 +192,13 @@ export async function cambiarEstado(req: Request, casoId: string): Promise<Respo
       accion:     "ESTADO_CAMBIADO",
       entidad:    "casos",
       entidad_id: casoId,
-      datos_json: { estado_anterior: caso.estado, estado_nuevo: body.estado, motivo: body.motivo ?? null },
+      datos_json: { estado_anterior: caso.estado, estado_nuevo: estado, motivo: motivo ?? null },
       ip:         clientIp(req),
       user_agent: req.headers.get("user-agent") ?? null,
     })).catch(console.error),
 
     // Notificar al médico si el caso llega a COMPLETADO
-    body.estado === "COMPLETADO" && caso.medico_email
+    estado === "COMPLETADO" && caso.medico_email
       ? notificarCasoCompletado({
           medicoEmail:            caso.medico_email,
           medicoNombre:           caso.medico_nombre ?? "",
@@ -168,7 +212,7 @@ export async function cambiarEstado(req: Request, casoId: string): Promise<Respo
       : Promise.resolve(),
   ])
 
-  return ok({ id: casoId, estado: body.estado }, "Estado actualizado")
+  return ok({ id: casoId, estado }, "Estado actualizado")
 }
 
 // ─── PATCH /admin/casos/:id/serica ────────────────────────────────────────────
@@ -179,7 +223,10 @@ export async function registrarResultadoSerico(req: Request, casoId: string): Pr
   const denied = requireRole(auth, ...ROLES_ADMIN)
   if (denied) return denied
 
-  const body = await req.json().catch(() => null) ?? {}
+  const parsed = await parseBody(req, ResultadoSericoSchema)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.data
+
   const db = getDb()
 
   const { data: caso } = await db.from("casos")
@@ -189,13 +236,12 @@ export async function registrarResultadoSerico(req: Request, casoId: string): Pr
     .single()
   if (!caso) return err(404, "Caso no encontrado")
 
-  const CAMPOS = [
-    "resultado_serico_1", "resultado_serico_2",
-    "interpretacion_serico", "notas_serico",
-  ]
   const now = new Date().toISOString()
   const update: Record<string, unknown> = { updated_at: now, serica_registrada_at: now }
-  for (const k of CAMPOS) if (body[k] !== undefined) update[k] = body[k] || null
+  if (body.resultado_serico_1    !== undefined) update.resultado_serico_1    = body.resultado_serico_1    ?? null
+  if (body.resultado_serico_2    !== undefined) update.resultado_serico_2    = body.resultado_serico_2    ?? null
+  if (body.interpretacion_serico !== undefined) update.interpretacion_serico = body.interpretacion_serico ?? null
+  if (body.notas_serico          !== undefined) update.notas_serico          = body.notas_serico          ?? null
 
   // Evaluar umbral automáticamente si hay valores séricos
   const r1 = (update.resultado_serico_1 ?? caso.resultado_serico_1) as string | null
@@ -279,12 +325,10 @@ export async function setIndicacion(req: Request, casoId: string): Promise<Respo
   const denied = requireRole(auth, ...ROLES_ADMIN)
   if (denied) return denied
 
-  const body = await req.json().catch(() => null)
-  if (body?.tiene_indicacion_genetica === undefined) {
-    return err(400, "Campo requerido: tiene_indicacion_genetica (true | false)")
-  }
+  const parsed = await parseBody(req, SetIndicacionSchema)
+  if (!parsed.ok) return parsed.response
+  const { tiene_indicacion_genetica: tieneIndicacion, motivo: indicMotivo } = parsed.data
 
-  const tieneIndicacion = Boolean(body.tiene_indicacion_genetica)
   const db = getDb()
 
   const { data: caso } = await db.from("casos")
@@ -303,7 +347,7 @@ export async function setIndicacion(req: Request, casoId: string): Promise<Respo
   const nowI = new Date().toISOString()
   await db.from("casos").update({
     tiene_indicacion_genetica: tieneIndicacion,
-    indicacion_motivo:         body.motivo ?? null,
+    indicacion_motivo:         indicMotivo ?? null,
     indicacion_registrada_at:  nowI,
     estado:                    estadoNuevo,
     updated_at:                nowI,
@@ -319,7 +363,7 @@ export async function setIndicacion(req: Request, casoId: string): Promise<Respo
       accion:     "INDICACION_GENETICA_ESTABLECIDA",
       entidad:    "casos",
       entidad_id: casoId,
-      datos_json: { tiene_indicacion_genetica: tieneIndicacion, estado_nuevo: estadoNuevo, motivo: body.motivo ?? null },
+      datos_json: { tiene_indicacion_genetica: tieneIndicacion, estado_nuevo: estadoNuevo, motivo: indicMotivo ?? null },
       ip:         clientIp(req),
       user_agent: req.headers.get("user-agent") ?? null,
     })).catch(console.error),
@@ -332,7 +376,7 @@ export async function setIndicacion(req: Request, casoId: string): Promise<Respo
           programa:          indicProg?.codigo ?? "",
           pacienteIniciales: caso.paciente_iniciales ?? "",
           tieneIndicacion:   tieneIndicacion,
-          motivo:            body.motivo ?? null,
+          motivo:            indicMotivo ?? null,
         }).catch(console.error)
       : Promise.resolve(),
   ])
@@ -347,7 +391,10 @@ export async function registrarResultadoGenetico(req: Request, casoId: string): 
   const denied = requireRole(auth, ...ROLES_ADMIN)
   if (denied) return denied
 
-  const body = await req.json().catch(() => null) ?? {}
+  const parsed = await parseBody(req, ResultadoGeneticoSchema)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.data
+
   const db = getDb()
 
   const { data: caso } = await db.from("casos")
@@ -357,22 +404,12 @@ export async function registrarResultadoGenetico(req: Request, casoId: string): 
     .single()
   if (!caso) return err(404, "Caso no encontrado")
 
-  const CAMPOS = [
-    "laboratorio_genetico", "fecha_genetica",
-    "resultado_genetico", "estado_genetico",
-  ]
-  const ESTADOS_GENETICO_VALIDOS = new Set([
-    "PROGRAMADO", "EN_PROCESAMIENTO", "REALIZADO",
-    "SIN_INDICACION_GENETICA", "N_A", "NO_ACEPTA",
-  ])
-
   const nowG = new Date().toISOString()
   const update: Record<string, unknown> = { updated_at: nowG, genetica_registrada_at: nowG }
-  for (const k of CAMPOS) if (body[k] !== undefined) update[k] = body[k] || null
-
-  if (update.estado_genetico && !ESTADOS_GENETICO_VALIDOS.has(update.estado_genetico as string)) {
-    return err(400, `estado_genetico inválido: ${update.estado_genetico}`)
-  }
+  if (body.laboratorio_genetico !== undefined) update.laboratorio_genetico = body.laboratorio_genetico ?? null
+  if (body.fecha_genetica       !== undefined) update.fecha_genetica       = body.fecha_genetica       ?? null
+  if (body.resultado_genetico   !== undefined) update.resultado_genetico   = body.resultado_genetico   ?? null
+  if (body.estado_genetico      !== undefined) update.estado_genetico      = body.estado_genetico      ?? null
 
   // Si hay resultado_genetico, avanzar el estado del caso a GENETICA_RESULTADO_DISPONIBLE
   if (body.resultado_genetico && validarTransicion(caso.estado, "GENETICA_RESULTADO_DISPONIBLE")) {
@@ -409,16 +446,9 @@ export async function registrarSeguimiento(req: Request, casoId: string): Promis
   const denied = requireRole(auth, ...ROLES_ADMIN)
   if (denied) return denied
 
-  const body = await req.json().catch(() => null)
-  if (!body?.seguimiento_clinico) return err(400, "Campo requerido: seguimiento_clinico")
-
-  const VALORES_VALIDOS = new Set([
-    "NEGATIVO", "PORTADOR", "POSITIVO", "EN_TRATAMIENTO",
-    "FORMULADO", "TRASPLANTADO", "DROP_OUT", "FALLECIDO", "N_A",
-  ])
-  if (!VALORES_VALIDOS.has(body.seguimiento_clinico)) {
-    return err(400, `Valor inválido: ${body.seguimiento_clinico}`)
-  }
+  const parsed = await parseBody(req, SeguimientoSchema)
+  if (!parsed.ok) return parsed.response
+  const { seguimiento_clinico, notas_seguimiento } = parsed.data
 
   const db = getDb()
 
@@ -431,8 +461,8 @@ export async function registrarSeguimiento(req: Request, casoId: string): Promis
 
   const nowS = new Date().toISOString()
   await db.from("casos").update({
-    seguimiento_clinico:      body.seguimiento_clinico,
-    notas_seguimiento:        body.notas_seguimiento ?? null,
+    seguimiento_clinico:      seguimiento_clinico,
+    notas_seguimiento:        notas_seguimiento ?? null,
     seguimiento_registrado_at: nowS,
     updated_at:               nowS,
   }).eq("id", casoId)
@@ -444,12 +474,12 @@ export async function registrarSeguimiento(req: Request, casoId: string): Promis
     accion:     "SEGUIMIENTO_REGISTRADO",
     entidad:    "casos",
     entidad_id: casoId,
-    datos_json: { seguimiento_clinico: body.seguimiento_clinico, notas: body.notas_seguimiento ?? null },
+    datos_json: { seguimiento_clinico, notas: notas_seguimiento ?? null },
     ip:         clientIp(req),
     user_agent: req.headers.get("user-agent") ?? null,
   })).catch(console.error)
 
-  return ok({ id: casoId, seguimiento_clinico: body.seguimiento_clinico })
+  return ok({ id: casoId, seguimiento_clinico })
 }
 
 // ─── DELETE /admin/casos/:id ──────────────────────────────────────────────────

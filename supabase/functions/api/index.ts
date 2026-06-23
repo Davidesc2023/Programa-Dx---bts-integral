@@ -8,6 +8,126 @@ import { getDb }                        from "./utils/db.ts"
 import { ok, created, paginated, err, escHtml }  from "./utils/responses.ts"
 import { corsHeaders, withCors }        from "./middleware/cors.ts"
 import { matchPath, parsePagination }   from "./utils/router.ts"
+import { z, parseBody }                 from "./utils/validate.ts"
+
+// ── Schemas de validación (definidos a nivel de módulo para evitar re-creación) ─
+
+const LoginSchema = z.object({
+  email:    z.string().email("email inválido"),
+  password: z.string().min(1, "password es requerido"),
+})
+
+const ROLES_STAFF = ["ADMIN", "OPERADOR", "LABORATORIO", "MEDICO"] as const
+
+const AuthRegisterSchema = z.object({
+  email:          z.string().email().optional(),
+  password:       z.string().min(8, "password required (min 8 chars)"),
+  role:           z.enum(ROLES_STAFF, { message: "Invalid role" }),
+  firstName:      z.string().nullish(),
+  lastName:       z.string().nullish(),
+  documentType:   z.string().nullish(),
+  documentNumber: z.string().nullish(),
+  phone:          z.string().nullish(),
+  specialty:      z.string().nullish(),
+  medicalLicense: z.string().nullish(),
+})
+
+const RegisterPatientSchema = z.object({
+  email:          z.string().email("email inválido"),
+  password:       z.string().min(8, "Password must be at least 8 characters"),
+  firstName:      z.string().nullish(),
+  lastName:       z.string().nullish(),
+  documentType:   z.string().nullish(),
+  documentNumber: z.string().nullish(),
+})
+
+const TokenSchema = z.object({
+  refreshToken: z.string().min(1, "refreshToken is required"),
+})
+
+const UserCreateSchema = z.object({
+  email:          z.string().email().optional(),
+  password:       z.string().min(8, "password required (min 8 chars)"),
+  role:           z.string().min(1, "role is required"),
+  firstName:      z.string().nullish(),
+  lastName:       z.string().nullish(),
+  documentType:   z.string().nullish(),
+  documentNumber: z.string().nullish(),
+  phone:          z.string().nullish(),
+  specialty:      z.string().nullish(),
+  medicalLicense: z.string().nullish(),
+})
+
+const PatientCreateSchema = z.object({
+  documentType:   z.string().min(1, "documentType is required"),
+  documentNumber: z.string().min(1, "documentNumber is required"),
+  firstName:      z.string().min(1, "firstName is required"),
+  lastName:       z.string().min(1, "lastName is required"),
+  birthDate:      z.string().min(1, "birthDate is required"),
+  phone:          z.string().nullish(),
+  email:          z.string().nullish(),
+  city:           z.string().nullish(),
+  address:        z.string().nullish(),
+  insurance:      z.string().nullish(),
+})
+
+const OrderCreateSchema = z.object({
+  patientId:               z.string().uuid("patientId must be a valid UUID"),
+  doctorId:                z.string().uuid().nullish(),
+  physician:               z.string().nullish(),
+  diagnosis:               z.string().nullish(),
+  priority:                z.enum(["NORMAL", "URGENTE"]).optional(),
+  observations:            z.string().nullish(),
+  estimatedCompletionDate: z.string().nullish(),
+})
+
+const OrderStatusSchema = z.object({
+  status: z.string().min(1, "status is required"),
+})
+
+const ConsentRespondSchema = z.object({
+  response: z.enum(["ACEPTADO", "RECHAZADO"], { message: "response must be ACEPTADO or RECHAZADO" }),
+})
+
+const OrderTestSchema = z.object({
+  examCode:  z.string().min(1, "examCode is required"),
+  examName:  z.string().min(1, "examName is required"),
+  labTestId: z.string().uuid().nullish(),
+  notes:     z.string().nullish(),
+})
+
+const LabTestCreateSchema = z.object({
+  code:                 z.string().min(1, "code is required"),
+  name:                 z.string().min(1, "name is required"),
+  type:                 z.string().optional(),
+  category:             z.string().nullish(),
+  description:          z.string().nullish(),
+  instructions:         z.string().nullish(),
+  estimatedHours:       z.number().int().positive().nullish(),
+  requiresResultFromId: z.string().uuid().nullish(),
+})
+
+const ResultCreateSchema = z.object({
+  orderId:        z.string().uuid("orderId must be a valid UUID"),
+  examType:       z.string().min(1, "examType is required"),
+  value:          z.string().min(1, "value is required"),
+  unit:           z.string().nullish(),
+  referenceRange: z.string().nullish(),
+  notes:          z.string().nullish(),
+})
+
+const AppointmentCreateSchema = z.object({
+  patientId:   z.string().uuid("patientId must be a valid UUID"),
+  orderId:     z.string().uuid().nullish(),
+  scheduledAt: z.string().min(1, "scheduledAt is required"),
+  notes:       z.string().nullish(),
+})
+
+const AppointmentStatusSchema = z.object({
+  status: z.enum(["PROGRAMADA", "CONFIRMADA", "CANCELADA", "COMPLETADA"], {
+    message: "status must be PROGRAMADA, CONFIRMADA, CANCELADA or COMPLETADA",
+  }),
+})
 import {
   signAccess, signRefresh, verifyRefresh,
   requireAuth, requireRole,
@@ -52,14 +172,15 @@ async function notify(db: ReturnType<typeof createClient>, userId: string, type:
 // AUTH
 // ============================================================================
 async function authLogin(req: Request): Promise<Response> {
-  const body = await req.json().catch(() => null)
-  if (!body?.email || !body?.password) return err(400, "email and password are required")
+  const parsed = await parseBody(req, LoginSchema)
+  if (!parsed.ok) return parsed.response
+  const { email, password } = parsed.data
   const db = getDb()
   const { data: user } = await db.from("users")
     .select("id, email, password, role, firstName, lastName, deletedAt")
-    .eq("email", body.email).single()
+    .eq("email", email).single()
   if (!user || user.deletedAt) return err(401, "Invalid credentials")
-  const valid = await bcrypt.compare(body.password, user.password)
+  const valid = await bcrypt.compare(password, user.password)
   if (!valid) return err(401, "Invalid credentials")
   const accessToken = await signAccess({ sub: user.id, email: user.email, role: user.role })
   const refreshToken = await signRefresh({ sub: user.id })
@@ -72,9 +193,9 @@ async function authRegister(req: Request): Promise<Response> {
   const authResult = await requireAuth(req)
   if (authResult instanceof Response) return authResult
   const denied = requireRole(authResult, "ADMIN"); if (denied) return denied
-  const body = await req.json().catch(() => null)
-  if (!body?.password || body.password.length < 8) return err(400, "password required (min 8 chars)")
-  if (!body?.role || !["ADMIN","OPERADOR","LABORATORIO","MEDICO"].includes(body.role)) return err(400, "Invalid role")
+  const parsed = await parseBody(req, AuthRegisterSchema)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.data
   const db = getDb()
   if (body.email) {
     const { data: ex } = await db.from("users").select("id").eq("email", body.email).single()
@@ -93,9 +214,9 @@ async function authRegister(req: Request): Promise<Response> {
 }
 
 async function authRegisterPatient(req: Request): Promise<Response> {
-  const body = await req.json().catch(() => null)
-  if (!body?.email || !body?.password) return err(400, "email and password are required")
-  if (body.password.length < 8) return err(400, "Password must be at least 8 characters")
+  const parsed = await parseBody(req, RegisterPatientSchema)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.data
   const db = getDb()
   const { data: ex } = await db.from("users").select("id").eq("email", body.email).single()
   if (ex) return err(409, "Email already in use")
@@ -115,42 +236,44 @@ async function authRegisterPatient(req: Request): Promise<Response> {
 }
 
 async function authRefresh(req: Request): Promise<Response> {
-  const body = await req.json().catch(() => null)
-  if (!body?.refreshToken) return err(400, "refreshToken is required")
-  const payload = await verifyRefresh(body.refreshToken)
+  const parsed = await parseBody(req, TokenSchema)
+  if (!parsed.ok) return parsed.response
+  const { refreshToken } = parsed.data
+  const payload = await verifyRefresh(refreshToken)
   if (!payload) return err(401, "Invalid or expired refresh token")
   const db = getDb()
   const { data: stored } = await db.from("refresh_tokens")
-    .select("userId, expiresAt, invalidatedAt").eq("token", body.refreshToken).single()
+    .select("userId, expiresAt, invalidatedAt").eq("token", refreshToken).single()
   if (!stored || stored.invalidatedAt || new Date(stored.expiresAt) < new Date()) return err(401, "Refresh token invalid")
   const { data: user } = await db.from("users").select("id, email, role").eq("id", stored.userId).single()
   if (!user) return err(401, "User not found")
   // Rotate: insert new token FIRST so the old one is only invalidated after success
   const accessToken = await signAccess({ sub: user.id, email: user.email, role: user.role })
-  const refreshToken = await signRefresh({ sub: user.id })
+  const newRefreshToken = await signRefresh({ sub: user.id })
   const expiresAt = new Date(); expiresAt.setDate(expiresAt.getDate() + 7)
-  const { error: insertErr } = await db.from("refresh_tokens").insert({ token: refreshToken, userId: user.id, expiresAt: expiresAt.toISOString() })
+  const { error: insertErr } = await db.from("refresh_tokens").insert({ token: newRefreshToken, userId: user.id, expiresAt: expiresAt.toISOString() })
   if (insertErr) return err(500, "Token rotation failed, please try again")
-  await db.from("refresh_tokens").update({ invalidatedAt: new Date().toISOString() }).eq("token", body.refreshToken)
-  return ok({ accessToken, refreshToken }, "Token refreshed")
+  await db.from("refresh_tokens").update({ invalidatedAt: new Date().toISOString() }).eq("token", refreshToken)
+  return ok({ accessToken, refreshToken: newRefreshToken }, "Token refreshed")
 }
 
 async function authLogout(req: Request): Promise<Response> {
-  const body = await req.json().catch(() => null)
-  if (!body?.refreshToken) return err(400, "refreshToken is required")
+  const parsed = await parseBody(req, TokenSchema)
+  if (!parsed.ok) return parsed.response
+  const { refreshToken } = parsed.data
   const db = getDb()
   // Try to verify signature to get userId for narrower delete; if expired/invalid, still invalidate by token string
-  const payload = await verifyRefresh(body.refreshToken)
+  const payload = await verifyRefresh(refreshToken)
   if (payload) {
     await db.from("refresh_tokens")
       .update({ invalidatedAt: new Date().toISOString() })
-      .eq("token", body.refreshToken)
+      .eq("token", refreshToken)
       .eq("userId", payload.sub as string)
   } else {
     // Token expired or invalid signature — invalidate by token string (token can't be reused anyway)
     await db.from("refresh_tokens")
       .update({ invalidatedAt: new Date().toISOString() })
-      .eq("token", body.refreshToken)
+      .eq("token", refreshToken)
   }
   return ok(null, "Logged out")
 }
@@ -172,9 +295,9 @@ async function usersCreate(req: Request): Promise<Response> {
   const authResult = await requireAuth(req)
   if (authResult instanceof Response) return authResult
   const denied = requireRole(authResult, "ADMIN"); if (denied) return denied
-  const body = await req.json().catch(() => null)
-  if (!body?.password || body.password.length < 8) return err(400, "password required (min 8 chars)")
-  if (!body?.role) return err(400, "role is required")
+  const parsed = await parseBody(req, UserCreateSchema)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.data
   const db = getDb()
   if (body.email) {
     const { data: ex } = await db.from("users").select("id").eq("email", body.email).single()
@@ -258,9 +381,9 @@ async function usersDelete(req: Request, id: string): Promise<Response> {
 // PATIENTS
 // ============================================================================
 async function patientsCreate(req: Request, actor: AuthUser): Promise<Response> {
-  const body = await req.json().catch(() => null)
-  if (!body?.documentType || !body?.documentNumber || !body?.firstName || !body?.lastName || !body?.birthDate)
-    return err(400, "documentType, documentNumber, firstName, lastName, birthDate are required")
+  const parsed = await parseBody(req, PatientCreateSchema)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.data
   const db = getDb()
   const { data: ex } = await db.from("patients").select("id")
     .eq("documentType", body.documentType).eq("documentNumber", body.documentNumber).is("deletedAt", null).single()
@@ -344,8 +467,9 @@ function canTransition(from: string, to: string, role: UserRole): boolean {
 }
 
 async function ordersCreate(req: Request, actor: AuthUser): Promise<Response> {
-  const body = await req.json().catch(() => null)
-  if (!body?.patientId) return err(400, "patientId is required")
+  const parsed = await parseBody(req, OrderCreateSchema)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.data
   const db = getDb()
   const { data: pat } = await db.from("patients").select("id").eq("id", body.patientId).is("deletedAt", null).single()
   if (!pat) return err(404, "Patient not found")
@@ -406,8 +530,9 @@ async function ordersUpdate(req: Request, id: string, actor: AuthUser): Promise<
 }
 
 async function ordersUpdateStatus(req: Request, id: string, actor: AuthUser): Promise<Response> {
-  const body = await req.json().catch(() => null)
-  if (!body?.status) return err(400, "status is required")
+  const parsed = await parseBody(req, OrderStatusSchema)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.data
   const db = getDb()
   const { data: order } = await db.from("orders")
     .select("id, status, patientId, patients(userId)")
@@ -619,8 +744,9 @@ async function consentSend(req: Request, orderId: string, actor: AuthUser): Prom
 }
 
 async function consentRespond(req: Request, orderId: string, actor: AuthUser): Promise<Response> {
-  const body = await req.json().catch(() => null)
-  if (!body?.response || !["ACEPTADO","RECHAZADO"].includes(body.response)) return err(400, "response must be ACEPTADO or RECHAZADO")
+  const parsed = await parseBody(req, ConsentRespondSchema)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.data
   const db = getDb()
   const { data: consent } = await db.from("consents").select("id, status, orderId").eq("orderId", orderId).is("deletedAt", null).single()
   if (!consent) return err(404, "Consent not found")
@@ -640,8 +766,9 @@ async function consentRespond(req: Request, orderId: string, actor: AuthUser): P
 // ORDER TESTS
 // ============================================================================
 async function orderTestsCreate(req: Request, orderId: string, actor: AuthUser): Promise<Response> {
-  const body = await req.json().catch(() => null)
-  if (!body?.examCode || !body?.examName) return err(400, "examCode and examName are required")
+  const parsed = await parseBody(req, OrderTestSchema)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.data
   const db = getDb()
   const { data: order } = await db.from("orders").select("id").eq("id", orderId).is("deletedAt", null).single()
   if (!order) return err(404, "Order not found")
@@ -706,8 +833,9 @@ async function labTestsPrerequisite(req: Request, id: string, patientId: string)
 }
 
 async function labTestsCreate(req: Request, _actor: AuthUser): Promise<Response> {
-  const body = await req.json().catch(() => null)
-  if (!body?.code || !body?.name) return err(400, "code and name are required")
+  const parsed = await parseBody(req, LabTestCreateSchema)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.data
   const { data, error } = await getDb().from("lab_tests")
     .insert({ code: body.code, name: body.name, type: body.type??"OTRO",
       category: body.category??null, description: body.description??null,
@@ -746,8 +874,9 @@ async function labTestsDeactivate(req: Request, id: string): Promise<Response> {
 // RESULTS
 // ============================================================================
 async function resultsCreate(req: Request, actor: AuthUser): Promise<Response> {
-  const body = await req.json().catch(() => null)
-  if (!body?.orderId || !body?.examType || !body?.value) return err(400, "orderId, examType, value are required")
+  const parsed = await parseBody(req, ResultCreateSchema)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.data
   const db = getDb()
   const { data: order } = await db.from("orders").select("id, status").eq("id", body.orderId).is("deletedAt", null).single()
   if (!order) return err(404, "Order not found")
@@ -814,8 +943,9 @@ async function resultsDelete(req: Request, id: string): Promise<Response> {
 // APPOINTMENTS
 // ============================================================================
 async function appointmentsCreate(req: Request, actor: AuthUser): Promise<Response> {
-  const body = await req.json().catch(() => null)
-  if (!body?.patientId || !body?.scheduledAt) return err(400, "patientId and scheduledAt are required")
+  const parsed = await parseBody(req, AppointmentCreateSchema)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.data
   const db = getDb()
   const { data: pat } = await db.from("patients").select("id, userId").eq("id", body.patientId).is("deletedAt", null).single()
   if (!pat) return err(404, "Patient not found")
@@ -869,9 +999,9 @@ async function appointmentsUpdate(req: Request, id: string, actor: AuthUser): Pr
 }
 
 async function appointmentsUpdateStatus(req: Request, id: string, actor: AuthUser): Promise<Response> {
-  const body = await req.json().catch(() => null)
-  if (!body?.status) return err(400, "status is required")
-  if (!["PROGRAMADA","CONFIRMADA","CANCELADA","COMPLETADA"].includes(body.status)) return err(400, "Invalid status")
+  const parsed = await parseBody(req, AppointmentStatusSchema)
+  if (!parsed.ok) return parsed.response
+  const body = parsed.data
   const db = getDb()
   const { data: ex } = await db.from("appointments").select("id").eq("id", id).is("deletedAt", null).single()
   if (!ex) return err(404, "Appointment not found")

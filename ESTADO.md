@@ -1,7 +1,7 @@
 # APP-DX — Estado del Proyecto
 
 **Última actualización:** 2026-06-23  
-**Versión:** 2.3.0  
+**Versión:** 2.4.0  
 **Entorno:** Frontend → Vercel · Backend → Supabase Edge Functions (us-east-2)
 
 ---
@@ -79,6 +79,23 @@
 
 ---
 
+## Correcciones aplicadas — v2.4.0 (2026-06-23)
+
+### Zod validation en todos los endpoints de escritura del backend
+
+| Componente | Detalle |
+|-----------|---------|
+| `utils/validate.ts` (nuevo) | Helper `parseBody(req, schema)` — parsea JSON del request, retorna `{ ok, data }` o `{ ok: false, response: err(400, ...) }` con mensajes de error por campo. |
+| `deno.json` | Agregado `"zod": "npm:zod@3"` en `imports`. |
+| `routes/formulario.ts` | Schema `CrearCasoSchema` reemplaza el loop manual de campos requeridos + `PAISES_VALIDOS`. Valida email del médico, enum de país, campos obligatorios. |
+| `routes/admin-casos.ts` | 5 schemas: `CambiarEstadoSchema`, `ResultadoSericoSchema`, `SetIndicacionSchema`, `ResultadoGeneticoSchema` (con enum `ESTADOS_GENETICO`), `SeguimientoSchema` (con enum `SEGUIMIENTO_VALS`). |
+| `index.ts` | 16 schemas para todos los endpoints de mutación: auth (login, register, register-patient, refresh, logout), users, patients, orders (create + updateStatus), consentRespond, orderTests, labTests, results, appointments (create + updateStatus). |
+
+**Cobertura:** 21 endpoints con validación Zod.  
+**Beneficio:** errores 400 con mensajes por campo (ej. `"medico_email: formato de email inválido"`), enums validados en tiempo de ejecución, UUIDs verificados antes de llegar a la DB.
+
+---
+
 ## Correcciones aplicadas — v2.3.0 (2026-06-23)
 
 ### Migración JWT → httpOnly cookies (OWASP A03)
@@ -116,7 +133,7 @@
 | **A** | Audit trail correcto + rate limiting login/register | Alta | ✅ Completado (v2.2.0) |
 | **B** | Importar datos históricos (789 DAAT + 117 Wilson) | Alta | ✅ Completado (commit 3173d89) |
 | **C** | Migrar JWT de localStorage a httpOnly cookies (OWASP A03) | Media | ✅ Completado (v2.3.0) |
-| **D** | Zod validation en endpoints de escritura del backend | Baja | ⏳ Pendiente |
+| **D** | Zod validation en endpoints de escritura del backend | Baja | ✅ Completado (v2.4.0) |
 | **D** | Políticas RLS explícitas para rol `authenticated` | Baja | ⏳ Pendiente |
 | **D** | Split Edge Function monolítica en módulos por dominio | Baja | ⏳ Pendiente |
 | **D** | Tests E2E con Playwright para flujo completo | Baja | ⏳ Pendiente |
@@ -205,7 +222,7 @@ El código usa `BACKEND_URL` en server-side (proxy, SSR) con fallback a `NEXT_PU
 
 ### Media prioridad
 - [ ] Implementar políticas RLS explícitas para rol `authenticated` en Supabase
-- [ ] Agregar Zod validation a requests en el backend Deno
+- [x] Agregar Zod validation a requests en el backend Deno ✅ (v2.4.0)
 
 ### Baja prioridad
 - [ ] Implementar tests E2E (Playwright) para flujo completo

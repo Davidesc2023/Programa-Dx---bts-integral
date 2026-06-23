@@ -5,6 +5,7 @@ import { getDb } from "../utils/db.ts"
 import { ok, created, err } from "../utils/responses.ts"
 import { checkRateLimit, clientIp } from "../middleware/rate-limit.ts"
 import { notificarCasoCreado } from "../utils/email.ts"
+import { z, parseBody } from "../utils/validate.ts"
 
 // Mapa de slug de URL → código interno del programa
 const PROGRAMA_SLUGS: Record<string, string> = {
@@ -13,10 +14,36 @@ const PROGRAMA_SLUGS: Record<string, string> = {
   duchenne: "DUCHENNE",
 }
 
-// Países habilitados con sus nombres
-const PAISES_VALIDOS = new Set([
-  "CO", "EC", "PA", "CL", "CR", "SV", "DO", "GT",
-])
+const PAISES_ENUM = ["CO", "EC", "PA", "CL", "CR", "SV", "DO", "GT"] as const
+
+const CrearCasoSchema = z.object({
+  pais_codigo:             z.enum(PAISES_ENUM, { message: "País no soportado" }),
+  medico_nombre:           z.string().min(1, "medico_nombre: requerido"),
+  medico_especialidad:     z.string().min(1, "medico_especialidad: requerido"),
+  medico_numero_registro:  z.string().min(1, "medico_numero_registro: requerido"),
+  medico_email:            z.string().email("medico_email: formato de email inválido"),
+  paciente_nombre:         z.string().min(1, "paciente_nombre: requerido"),
+  paciente_tipo_doc:       z.string().min(1, "paciente_tipo_doc: requerido"),
+  paciente_num_doc:        z.string().min(1, "paciente_num_doc: requerido"),
+  // opcionales
+  medico_tipo_registro:    z.string().nullish(),
+  medico_institucion:      z.string().nullish(),
+  medico_ciudad:           z.string().nullish(),
+  medico_whatsapp:         z.string().nullish(),
+  paciente_genero:         z.string().nullish(),
+  paciente_eps:            z.string().nullish(),
+  paciente_telefono:       z.string().nullish(),
+  paciente_email:          z.string().nullish(),
+  paciente_ciudad:         z.string().nullish(),
+  paciente_departamento:   z.string().nullish(),
+  paciente_pais:           z.string().nullish(),
+  paciente_direccion:      z.string().nullish(),
+  rep_nombre:              z.string().nullish(),
+  rep_doc:                 z.string().nullish(),
+  rep_parentesco:          z.string().nullish(),
+  resultado_previo_valor:          z.string().nullish(),
+  resultado_previo_interpretacion: z.string().nullish(),
+})
 
 // ─── GET /public/:tenantSlug/:programa ────────────────────────────────────────
 // Devuelve: datos del tenant + programa + plantillas de consentimiento activas
@@ -59,21 +86,9 @@ export async function publicCrearCaso(req: Request, tenantSlug: string, programa
   const rl = checkRateLimit(`form:${ip}`, 20, 60 * 60 * 1000)
   if (!rl.allowed) return err(429, "Demasiadas solicitudes. Intente de nuevo en una hora.")
 
-  const body = await req.json().catch(() => null)
-  if (!body) return err(400, "Body JSON requerido")
-
-  const required: Array<keyof typeof body> = [
-    "pais_codigo",
-    "medico_nombre", "medico_especialidad", "medico_numero_registro", "medico_email",
-    "paciente_nombre", "paciente_tipo_doc", "paciente_num_doc",
-  ]
-  for (const f of required) {
-    if (!body[f]) return err(400, `Campo requerido: ${f}`)
-  }
-
-  if (!PAISES_VALIDOS.has(body.pais_codigo)) {
-    return err(400, `País no soportado: ${body.pais_codigo}`)
-  }
+  const parsed = await parseBody(req, CrearCasoSchema)
+  if (!parsed.ok) return parsed.response
+  const data = parsed.data
 
   const programaCodigo = PROGRAMA_SLUGS[programa]
   if (!programaCodigo) return err(404, "Programa inválido")
@@ -106,7 +121,7 @@ export async function publicCrearCaso(req: Request, tenantSlug: string, programa
   const mesStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
 
   // Calcular iniciales del paciente (primera letra de cada palabra)
-  const iniciales = String(body.paciente_nombre)
+  const iniciales = data.paciente_nombre
     .split(/\s+/)
     .map((w: string) => w[0]?.toUpperCase() ?? "")
     .join("")
@@ -115,39 +130,39 @@ export async function publicCrearCaso(req: Request, tenantSlug: string, programa
     tenant_id: tenant.id,
     programa_id: prog.id,
     consecutivo,
-    pais_codigo: body.pais_codigo,
+    pais_codigo: data.pais_codigo,
 
-    medico_nombre:          body.medico_nombre,
-    medico_especialidad:    body.medico_especialidad,
-    medico_tipo_registro:   body.medico_tipo_registro   ?? null,
-    medico_numero_registro: body.medico_numero_registro,
-    medico_institucion:     body.medico_institucion     ?? null,
-    medico_ciudad:          body.medico_ciudad          ?? null,
-    medico_email:           body.medico_email,
-    medico_whatsapp:        body.medico_whatsapp        ?? null,
+    medico_nombre:          data.medico_nombre,
+    medico_especialidad:    data.medico_especialidad,
+    medico_tipo_registro:   data.medico_tipo_registro   ?? null,
+    medico_numero_registro: data.medico_numero_registro,
+    medico_institucion:     data.medico_institucion     ?? null,
+    medico_ciudad:          data.medico_ciudad          ?? null,
+    medico_email:           data.medico_email,
+    medico_whatsapp:        data.medico_whatsapp        ?? null,
     medico_firmado_at:      now.toISOString(),
     medico_ip:              ip,
     medico_ua:              req.headers.get("user-agent") ?? null,
 
-    paciente_nombre:       body.paciente_nombre,
-    paciente_tipo_doc:     body.paciente_tipo_doc,
-    paciente_num_doc:      body.paciente_num_doc,
-    paciente_genero:       body.paciente_genero       ?? null,
-    paciente_eps:          body.paciente_eps          ?? null,
-    paciente_telefono:     body.paciente_telefono     ?? null,
-    paciente_email:        body.paciente_email        ?? null,
-    paciente_ciudad:       body.paciente_ciudad       ?? null,
-    paciente_departamento: body.paciente_departamento ?? null,
-    paciente_pais:         body.paciente_pais         ?? null,
-    paciente_direccion:    body.paciente_direccion    ?? null,
+    paciente_nombre:       data.paciente_nombre,
+    paciente_tipo_doc:     data.paciente_tipo_doc,
+    paciente_num_doc:      data.paciente_num_doc,
+    paciente_genero:       data.paciente_genero       ?? null,
+    paciente_eps:          data.paciente_eps          ?? null,
+    paciente_telefono:     data.paciente_telefono     ?? null,
+    paciente_email:        data.paciente_email        ?? null,
+    paciente_ciudad:       data.paciente_ciudad       ?? null,
+    paciente_departamento: data.paciente_departamento ?? null,
+    paciente_pais:         data.paciente_pais         ?? null,
+    paciente_direccion:    data.paciente_direccion    ?? null,
     paciente_iniciales:    iniciales,
 
-    rep_nombre:     body.rep_nombre     ?? null,
-    rep_doc:        body.rep_doc        ?? null,
-    rep_parentesco: body.rep_parentesco ?? null,
+    rep_nombre:     data.rep_nombre     ?? null,
+    rep_doc:        data.rep_doc        ?? null,
+    rep_parentesco: data.rep_parentesco ?? null,
 
-    resultado_previo_valor:          body.resultado_previo_valor          ?? null,
-    resultado_previo_interpretacion: body.resultado_previo_interpretacion ?? null,
+    resultado_previo_valor:          data.resultado_previo_valor          ?? null,
+    resultado_previo_interpretacion: data.resultado_previo_interpretacion ?? null,
 
     mes_solicitud: mesStr,
     estado:        "SOLICITUD_RECIBIDA",
@@ -165,18 +180,18 @@ export async function publicCrearCaso(req: Request, tenantSlug: string, programa
       accion:     "CASO_CREADO",
       entidad:    "casos",
       entidad_id: caso.id,
-      datos_json: { programa: prog.codigo, pais: body.pais_codigo, consecutivo },
+      datos_json: { programa: prog.codigo, pais: data.pais_codigo, consecutivo },
       ip,
       user_agent: req.headers.get("user-agent") ?? null,
     })).catch(console.error),
 
     notificarCasoCreado({
-      medicoEmail:       body.medico_email,
-      medicoNombre:      body.medico_nombre,
+      medicoEmail:       data.medico_email,
+      medicoNombre:      data.medico_nombre,
       consecutivo,
       programa:          prog.codigo,
-      pais:              body.pais_codigo,
-      pacienteNombre:    body.paciente_nombre,
+      pais:              data.pais_codigo,
+      pacienteNombre:    data.paciente_nombre,
       pacienteIniciales: iniciales,
     }).catch(console.error),
   ])
